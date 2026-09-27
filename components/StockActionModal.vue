@@ -181,8 +181,8 @@
         @click="handleSubmit"
       >
         <UIcon v-if="isSubmitting" name="i-lucide-loader-2" class="w-5 h-5 animate-spin" />
-        <span v-if="type === 'IN'">Подтвердить приход (+{{ quantity }} шт)</span>
-        <span v-else>Списать со склада (-{{ quantity }} шт)</span>
+        <span v-if="type === 'IN'">Пополнить рюкзак (+{{ quantity }} шт)</span>
+        <span v-else>Списать из рюкзака (-{{ quantity }} шт)</span>
       </button>
     </div>
   </UModal>
@@ -246,9 +246,9 @@ const isSubmitDisabled = computed(() => {
 
 const quickReasons = computed(() => {
   if (type.value === 'IN') {
-    return ['Поступление от поставщика', 'С разбора (донор)', 'Возврат клиента', 'Инвентаризация (+)']
+    return ['Закупка деталей', 'С разбора (донор)', 'Возврат клиента', 'Инвентаризация (+)']
   }
-  return ['Заказ-наряд #', 'Плановое ТО / декальцинация', 'Ремонт по гарантии', 'Брак / износ деталей']
+  return ['Ремонт DeLonghi', 'Ремонт Jura', 'Ремонт Saeco/Philips', 'Плановое ТО', 'Брак / дефект']
 })
 
 function setPreset(amount: number) {
@@ -260,7 +260,7 @@ async function handleSubmit() {
 
   isSubmitting.value = true
   try {
-    const finalReason = reason.value.trim() || (type.value === 'IN' ? 'Поступление на склад' : 'Выдача со склада')
+    const finalReason = reason.value.trim() || (type.value === 'IN' ? 'Пополнение рюкзака' : 'Расход на ремонт')
 
     await partsStore.recordMovement({
       partId: props.part.id,

@@ -24,7 +24,7 @@
             </div>
           </div>
           <div class="p-2.5 rounded-lg bg-zinc-950 border border-zinc-800/80">
-            <div class="text-zinc-500 text-[11px]">Всего на складе</div>
+            <div class="text-zinc-500 text-[11px]">Всего в наличии (в рюкзаке)</div>
             <div class="text-base font-bold text-zinc-200 font-mono mt-0.5">
               {{ partsStore.stats.totalNewQuantity + partsStore.stats.totalUsedQuantity }} <span class="text-xs font-normal text-zinc-500">шт</span>
             </div>

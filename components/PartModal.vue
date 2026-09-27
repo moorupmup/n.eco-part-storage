@@ -17,31 +17,18 @@
       </div>
 
       <form @submit.prevent="handleSave" class="space-y-4">
-        <!-- Article / Code & Location -->
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-semibold text-zinc-300 mb-1">
-              Артикул / Код *
-            </label>
-            <input
-              v-model="form.code"
-              type="text"
-              placeholder="ULKA-EX5"
-              required
-              class="w-full h-10 px-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm font-mono text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner"
-            />
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-zinc-300 mb-1">
-              Ячейка / Место
-            </label>
-            <input
-              v-model="form.location"
-              type="text"
-              placeholder="Коробка П-1"
-              class="w-full h-10 px-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner"
-            />
-          </div>
+        <!-- Article / Code -->
+        <div>
+          <label class="block text-xs font-semibold text-zinc-300 mb-1">
+            Артикул / Каталожный код *
+          </label>
+          <input
+            v-model="form.code"
+            type="text"
+            placeholder="ULKA-EX5, 5513214821..."
+            required
+            class="w-full h-10 px-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm font-mono text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner"
+          />
         </div>
 
         <!-- Name -->
@@ -82,11 +69,11 @@
           </div>
         </div>
 
-        <!-- Stock and Min Stock -->
+        <!-- Stock and Min Stock in backpack -->
         <div class="p-3 bg-zinc-950/80 rounded-xl border border-zinc-800 space-y-3">
           <div class="text-xs font-bold text-zinc-300 flex items-center gap-1.5">
-            <UIcon name="i-lucide-boxes" class="w-4 h-4 text-emerald-400" />
-            Остатки на складе
+            <UIcon name="i-lucide-backpack" class="w-4 h-4 text-emerald-400" />
+            Наличие в рюкзаке
           </div>
 
           <div class="grid grid-cols-3 gap-2">
@@ -125,7 +112,7 @@
             </div>
           </div>
           <p class="text-[10px] text-zinc-500">
-            * Минимальный остаток используется для автоматического формирования списка на заказ/выдачу.
+            * Минимальное количество, которое всегда должно быть с собой в рюкзаке.
           </p>
         </div>
 
@@ -165,7 +152,7 @@
           <textarea
             v-model="form.notes"
             rows="2"
-            placeholder="Модели авто, кросс-номера, дефекты..."
+            placeholder="Модели кофемашин, дефекты, нюансы..."
             class="w-full p-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 transition-colors shadow-inner resize-none"
           />
         </div>

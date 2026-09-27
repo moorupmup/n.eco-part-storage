@@ -1,15 +1,15 @@
 export interface Part {
   id: number
-  code: string           // Каталожный номер / артикул (например, 2108-1003020)
-  name: string           // Название (например, Прокладка ГБЦ)
-  category: string       // Категория / узел (Двигатель, Тормозная система, Подвеска...)
-  location: string       // Ячейка / полка (Стеллаж А-3, Полка 2)
-  stock_new: number      // Остаток новых запчастей
-  stock_used: number     // Остаток б/у запчастей
-  min_stock: number      // Минимальный остаток (порог для заявки на выдачу/закупку)
-  price_new: number      // Цена новой запчасти (руб)
-  price_used: number     // Цена б/у запчасти (руб)
-  notes: string          // Примечания, совместимость
+  code: string           // Каталожный номер / артикул (например, ULKA-EX5, 5513214821)
+  name: string           // Название детали (например, Помпа вибрационная Ulka EX5)
+  category: string       // Категория / узел (Помпы, Заварочный блок, Клапаны...)
+  location?: string      // Опционально для обратной совместимости
+  stock_new: number      // В наличии новых (шт)
+  stock_used: number     // В наличии б/у (шт)
+  min_stock: number      // Минимальный остаток в рюкзаке
+  price_new: number      // Цена новой детали (руб)
+  price_used: number     // Цена б/у детали (руб)
+  notes: string          // Примечания, совместимость с моделями
   created_at: string
   updated_at: string
 }

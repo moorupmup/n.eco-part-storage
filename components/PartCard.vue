@@ -47,14 +47,13 @@
       {{ part.name }}
     </h3>
 
-    <!-- Location & notes if any -->
-    <div class="flex items-center gap-3 text-xs text-zinc-400 mb-3 flex-wrap">
-      <span v-if="part.location" class="inline-flex items-center gap-1">
-        <UIcon name="i-lucide-map-pin" class="w-3.5 h-3.5 text-zinc-500" />
-        {{ part.location }}
-      </span>
+    <!-- Min stock & notes if any -->
+    <div v-if="part.min_stock > 0 || part.notes" class="flex items-center gap-3 text-xs text-zinc-400 mb-3 flex-wrap">
       <span v-if="part.min_stock > 0" class="inline-flex items-center gap-1 text-zinc-500">
-        Мин: {{ part.min_stock }} шт
+        Минимум с собой: {{ part.min_stock }} шт
+      </span>
+      <span v-if="part.notes" class="inline-flex items-center gap-1 text-zinc-500 truncate max-w-[260px]">
+        {{ part.notes }}
       </span>
     </div>
 

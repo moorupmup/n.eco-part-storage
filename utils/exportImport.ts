@@ -1,17 +1,16 @@
 import * as XLSX from 'xlsx'
 import type { Part, Transaction } from '~/types'
 
-export function exportPartsToExcel(parts: Part[], filename = 'sklad_zapchastey.xlsx') {
+export function exportPartsToExcel(parts: Part[], filename = 'neco_parts_backpack.xlsx') {
   const data = parts.map(p => ({
     'ID': p.id,
     'Артикул / Код': p.code,
     'Наименование': p.name,
     'Категория': p.category,
-    'Ячейка / Место': p.location,
     'Новые (шт)': p.stock_new,
     'Б/У (шт)': p.stock_used,
     'Всего (шт)': p.stock_new + p.stock_used,
-    'Мин. остаток (шт)': p.min_stock,
+    'Мин. в рюкзаке (шт)': p.min_stock,
     'Цена новая (руб)': p.price_new,
     'Цена б/у (руб)': p.price_used,
     'Примечание': p.notes,
@@ -62,7 +61,7 @@ export function exportFullBackupJSON(parts: Part[], transactions: Transaction[])
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `backup_sklad_${new Date().toISOString().slice(0, 10)}.json`
+  a.download = `backup_neco_${new Date().toISOString().slice(0, 10)}.json`
   a.click()
   URL.revokeObjectURL(url)
 }

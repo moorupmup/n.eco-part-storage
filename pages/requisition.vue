@@ -2,8 +2,8 @@
   <div>
     <!-- Top Header -->
     <AppHeader
-      title="Потребность и заказ"
-      :subtitle="`${partsStore.lowStockParts.length} позиций ниже минимального остатка`"
+      title="Потребность в рюкзак"
+      :subtitle="`${partsStore.lowStockParts.length} позиций ниже минимума`"
     >
       <template #actions>
         <button
@@ -37,8 +37,8 @@
               <UIcon name="i-lucide-alert-circle" class="w-5 h-5" />
             </div>
             <div>
-              <h2 class="text-xs font-bold text-amber-300">Дефицит запчастей</h2>
-              <p class="text-[11px] text-zinc-400">Позиции, требующие закупки или выдачи</p>
+              <h2 class="text-xs font-bold text-amber-300">Дефицит в рюкзаке</h2>
+              <p class="text-[11px] text-zinc-400">Позиции, которые закончились или на исходе</p>
             </div>
           </div>
           <span class="text-lg font-bold text-amber-400 font-mono">
@@ -52,7 +52,7 @@
             variant="solid"
             size="xs"
             icon="i-lucide-copy"
-            label="Скопировать для заявки"
+            label="Скопировать список"
             class="font-semibold"
             @click="copyRequisitionText"
           />
@@ -74,10 +74,6 @@
               <h3 class="text-sm font-bold text-zinc-100">
                 {{ item.name }}
               </h3>
-              <p v-if="item.location" class="text-xs text-zinc-400 mt-0.5 flex items-center gap-1">
-                <UIcon name="i-lucide-map-pin" class="w-3.5 h-3.5 text-zinc-500" />
-                {{ item.location }}
-              </p>
             </div>
 
             <!-- Shortage Badge -->
@@ -85,14 +81,14 @@
               <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-500/15 text-rose-300 border border-rose-500/30 text-xs font-bold font-mono">
                 +{{ item.deficit }} шт
               </span>
-              <div class="text-[10px] text-zinc-500 mt-0.5">дефицит</div>
+              <div class="text-[10px] text-zinc-500 mt-0.5">докупить</div>
             </div>
           </div>
 
           <!-- Stock detail breakdown -->
           <div class="flex items-center justify-between p-2 rounded-lg bg-zinc-950/70 text-xs">
             <span class="text-zinc-400">
-              Текущий: <strong class="text-zinc-200 font-mono">{{ item.totalStock }}</strong> шт
+              В наличии: <strong class="text-zinc-200 font-mono">{{ item.totalStock }}</strong> шт
               <span class="text-[10px] text-zinc-500">(нов: {{ item.stock_new }}, б/у: {{ item.stock_used }})</span>
             </span>
             <span class="text-zinc-400">
@@ -108,7 +104,7 @@
               @click="openStockModal(item)"
             >
               <UIcon name="i-lucide-plus" class="w-4 h-4 stroke-[2.5]" />
-              <span>Оформить приход</span>
+              <span>Пополнить рюкзак</span>
             </button>
           </div>
         </div>
@@ -126,7 +122,7 @@
           Все позиции в норме
         </h3>
         <p class="text-xs text-zinc-400 max-w-xs">
-          Ни одна запчасть не опустилась ниже минимального остатка.
+          Ни одна запчасть не опустилась ниже минимального количества в рюкзаке.
         </p>
       </div>
     </div>
@@ -167,14 +163,13 @@ function handleSuccess() {
 
 function getRequisitionText(): string {
   const dateStr = new Date().toLocaleDateString('ru-RU')
-  let text = `📋 ЗАЯВКА НА ЗАКУПКУ / ВЫДАЧУ (${dateStr})\n`
+  let text = `📋 СПИСОК НА ЗАКУПКУ В РЮКЗАК (${dateStr})\n`
   text += `Всего позиций: ${partsStore.lowStockParts.length} шт\n`
   text += `------------------------------------\n`
 
   partsStore.lowStockParts.forEach((item, idx) => {
     text += `${idx + 1}. [${item.code}] ${item.name}\n`
-    text += `   К заказу: ${item.deficit} шт (Остаток: ${item.totalStock} шт, Мин: ${item.min_stock} шт)\n`
-    if (item.location) text += `   Ячейка: ${item.location}\n`
+    text += `   Докупить: ${item.deficit} шт (В рюкзаке: ${item.totalStock} шт, Мин: ${item.min_stock} шт)\n`
   })
 
   return text
@@ -186,7 +181,7 @@ async function copyRequisitionText() {
     await navigator.clipboard.writeText(text)
     toast.add({
       title: 'Скопировано в буфер!',
-      description: 'Список можно отправить в мессенджер или на печать',
+      description: 'Список можно отправить в мессенджер',
       color: 'emerald'
     })
   } catch {
@@ -203,7 +198,7 @@ async function shareRequisition() {
   if (navigator.share) {
     try {
       await navigator.share({
-        title: 'Заявка на запчасти',
+        title: 'Закупка в рюкзак',
         text
       })
     } catch {
@@ -219,12 +214,11 @@ function downloadRequisitionExcel() {
     'Артикул': item.code,
     'Наименование': item.name,
     'Категория': item.category,
-    'Ячейка': item.location,
-    'Текущий остаток': item.totalStock,
+    'В наличии в рюкзаке': item.totalStock,
     'Новые (шт)': item.stock_new,
     'Б/У (шт)': item.stock_used,
     'Минимальный остаток': item.min_stock,
-    'Требуется заказать (шт)': item.deficit
+    'Требуется докупить (шт)': item.deficit
   }))
 
   const worksheet = XLSX.utils.json_to_sheet(data)
