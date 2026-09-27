@@ -45,7 +45,7 @@
             </div>
             <div>
               <h2 class="text-sm font-extrabold text-zinc-100 tracking-tight">
-                N.ECO PART STORAGE
+                <span class="text-emerald-400 font-black">N.ECO</span> PART STORAGE
               </h2>
               <p class="text-xs text-zinc-400 mt-0.5">
                 Текущая версия: <span class="text-emerald-400 font-mono font-semibold">{{ currentVersion }}</span>

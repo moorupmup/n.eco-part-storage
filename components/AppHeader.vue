@@ -18,7 +18,14 @@
 
         <div class="min-w-0">
           <h1 class="text-sm font-extrabold text-zinc-100 leading-none tracking-tight truncate">
-            {{ title }}
+            <slot name="title">
+              <template v-if="title && title.includes('N.ECO')">
+                <span class="text-emerald-400 font-black">N.ECO</span>{{ title.replace('N.ECO', '') }}
+              </template>
+              <template v-else>
+                {{ title }}
+              </template>
+            </slot>
           </h1>
           <p v-if="subtitle" class="text-[11px] text-zinc-400 mt-1 leading-none truncate">
             {{ subtitle }}
