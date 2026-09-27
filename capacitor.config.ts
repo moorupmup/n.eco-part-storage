@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli'
 
 const config: CapacitorConfig = {
   appId: 'com.necopart.storage',
-  appName: 'Склад Запчастей',
+  appName: 'N.ECO PART STORAGE',
   webDir: 'dist',
   bundledWebRuntime: false,
   server: {

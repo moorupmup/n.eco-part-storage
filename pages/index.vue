@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- Top Header -->
-    <AppHeader title="Склад запчастей" :subtitle="`${partsStore.stats.totalPositions} позиций · Новые: ${partsStore.stats.totalNewQuantity} · Б/У: ${partsStore.stats.totalUsedQuantity}`">
+    <AppHeader title="N.ECO PART STORAGE" :subtitle="`${partsStore.stats.totalPositions} позиций · Новые: ${partsStore.stats.totalNewQuantity} · Б/У: ${partsStore.stats.totalUsedQuantity}`">
       <template #actions>
         <button
           type="button"

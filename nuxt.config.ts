@@ -33,7 +33,7 @@ export default defineNuxtConfig({
       bodyAttrs: {
         class: 'dark bg-zinc-950 text-zinc-100'
       },
-      title: 'Склад Запчастей',
+      title: 'N.ECO PART STORAGE',
       meta: [
         { charset: 'utf-8' },
         {
