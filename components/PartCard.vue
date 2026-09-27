@@ -13,20 +13,13 @@
       </div>
 
       <div class="flex items-center gap-1">
-        <!-- Low stock indicator pill -->
+        <!-- Out of stock indicator pill -->
         <span
           v-if="isOut"
           class="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20"
         >
-          <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+          <span class="w-1.5 h-1.5 rounded-full bg-rose-500" />
           Нет
-        </span>
-        <span
-          v-else-if="isLow"
-          class="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20"
-        >
-          <span class="w-1.5 h-1.5 rounded-full bg-amber-500" />
-          Мало
         </span>
 
         <!-- More options menu -->
@@ -47,12 +40,9 @@
       {{ part.name }}
     </h3>
 
-    <!-- Min stock & notes if any -->
-    <div v-if="part.min_stock > 0 || part.notes" class="flex items-center gap-3 text-xs text-zinc-400 mb-3 flex-wrap">
-      <span v-if="part.min_stock > 0" class="inline-flex items-center gap-1 text-zinc-500">
-        Минимум с собой: {{ part.min_stock }} шт
-      </span>
-      <span v-if="part.notes" class="inline-flex items-center gap-1 text-zinc-500 truncate max-w-[260px]">
+    <!-- Notes if any -->
+    <div v-if="part.notes" class="flex items-center gap-3 text-xs text-zinc-400 mb-3 flex-wrap">
+      <span class="inline-flex items-center gap-1 text-zinc-500 truncate max-w-[260px]">
         {{ part.notes }}
       </span>
     </div>
@@ -121,7 +111,6 @@ const emit = defineEmits<{
 
 const totalStock = computed(() => props.part.stock_new + props.part.stock_used)
 const isOut = computed(() => totalStock.value === 0)
-const isLow = computed(() => props.part.min_stock > 0 && totalStock.value <= props.part.min_stock && totalStock.value > 0)
 
 const menuItems = computed(() => [
   [

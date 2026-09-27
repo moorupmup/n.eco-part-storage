@@ -70,14 +70,14 @@
           </div>
         </div>
 
-        <!-- Stock and Min Stock in backpack -->
+        <!-- Stock in backpack -->
         <div class="p-3 bg-zinc-950/80 rounded-xl border border-zinc-800 space-y-3">
           <div class="text-xs font-bold text-zinc-300 flex items-center gap-1.5">
             <UIcon name="i-lucide-backpack" class="w-4 h-4 text-emerald-400" />
             Наличие в рюкзаке
           </div>
 
-          <div class="grid grid-cols-3 gap-2">
+          <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-[11px] font-medium text-blue-400 mb-1">
                 Новые (шт)
@@ -100,21 +100,7 @@
                 class="w-full h-10 rounded-xl bg-zinc-900 border border-zinc-800 text-center font-mono text-sm font-bold text-amber-400 focus:outline-none focus:border-amber-500 shadow-inner"
               />
             </div>
-            <div>
-              <label class="block text-[11px] font-medium text-rose-400 mb-1">
-                Мин. остаток
-              </label>
-              <input
-                v-model.number="form.min_stock"
-                type="number"
-                min="0"
-                class="w-full h-10 rounded-xl bg-zinc-900 border border-zinc-800 text-center font-mono text-sm font-bold text-rose-400 focus:outline-none focus:border-rose-500 shadow-inner"
-              />
-            </div>
           </div>
-          <p class="text-[10px] text-zinc-500">
-            * Минимальное количество, которое всегда должно быть с собой в рюкзаке.
-          </p>
         </div>
 
         <!-- Prices (Optional) -->
@@ -241,7 +227,7 @@ watch(() => props.modelValue, (open) => {
       form.location = ''
       form.stock_new = 0
       form.stock_used = 0
-      form.min_stock = 2
+      form.min_stock = 0
       form.price_new = 0
       form.price_used = 0
       form.notes = ''

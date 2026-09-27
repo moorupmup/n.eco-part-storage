@@ -209,8 +209,7 @@ const toast = useToast()
 const stockFilters = computed(() => [
   { id: 'all', label: 'Все' },
   { id: 'in_stock', label: 'В наличии' },
-  { id: 'low', label: 'Мало', count: partsStore.stats.lowStockPositions },
-  { id: 'out', label: 'Нет' }
+  { id: 'out', label: 'Закончились' }
 ])
 
 // Modal states

@@ -10,7 +10,6 @@ export function exportPartsToExcel(parts: Part[], filename = 'neco_parts_backpac
     'Новые (шт)': p.stock_new,
     'Б/У (шт)': p.stock_used,
     'Всего (шт)': p.stock_new + p.stock_used,
-    'Мин. в рюкзаке (шт)': p.min_stock,
     'Цена новая (руб)': p.price_new,
     'Цена б/у (руб)': p.price_used,
     'Примечание': p.notes,

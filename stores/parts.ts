@@ -7,7 +7,7 @@ interface PartsState {
   categoriesList: Category[]
   searchQuery: string
   selectedCategory: string
-  stockFilter: 'all' | 'low' | 'out' | 'in_stock'
+  stockFilter: 'all' | 'in_stock' | 'out'
   isLoading: boolean
   error: string | null
 }
@@ -64,13 +64,12 @@ export const usePartsStore = defineStore('parts', {
     filteredParts: (state): Part[] => {
       let result = [...state.parts]
 
-      // Search by code, name, location
+      // Search by code, name
       if (state.searchQuery.trim()) {
         const query = state.searchQuery.toLowerCase().trim()
         result = result.filter(p =>
           p.code.toLowerCase().includes(query) ||
           p.name.toLowerCase().includes(query) ||
-          (p.location && p.location.toLowerCase().includes(query)) ||
           (p.notes && p.notes.toLowerCase().includes(query))
         )
       }
@@ -81,9 +80,7 @@ export const usePartsStore = defineStore('parts', {
       }
 
       // Filter by stock level
-      if (state.stockFilter === 'low') {
-        result = result.filter(p => (p.stock_new + p.stock_used) <= p.min_stock && (p.stock_new + p.stock_used) > 0)
-      } else if (state.stockFilter === 'out') {
+      if (state.stockFilter === 'out') {
         result = result.filter(p => (p.stock_new + p.stock_used) === 0)
       } else if (state.stockFilter === 'in_stock') {
         result = result.filter(p => (p.stock_new + p.stock_used) > 0)
