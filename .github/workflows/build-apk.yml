@@ -49,6 +49,11 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: |
+            platform-tools
+            platforms;android-34
+            build-tools;34.0.0
 
       - name: Install Node Dependencies
         run: npm ci || npm install
@@ -98,6 +103,7 @@ jobs:
       - name: Build Android APK
         run: |
           cd android
+          chmod +x gradlew
           ./gradlew assembleDebug --stacktrace
 
       - name: Align and Sign APK with Permanent Key
