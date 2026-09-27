@@ -51,8 +51,8 @@
           v-for="filter in stockFilters"
           :key="filter.id"
           type="button"
-          class="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all active:scale-95"
-          :class="partsStore.stockFilter === filter.id ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-semibold shadow-sm' : 'bg-zinc-900/80 border border-zinc-800/80 text-zinc-400 hover:text-zinc-200'"
+          class="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap border shrink-0 transition-colors active:scale-95"
+          :class="partsStore.stockFilter === filter.id ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 font-semibold shadow-sm' : 'bg-zinc-900/80 border-zinc-800/80 text-zinc-400 hover:text-zinc-200'"
           @click="partsStore.stockFilter = filter.id"
         >
           <span>{{ filter.label }}</span>
@@ -70,8 +70,10 @@
       <div v-if="partsStore.categories.length > 0" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
         <button
           type="button"
-          class="px-2.5 py-1 rounded-lg text-[11px] whitespace-nowrap transition-all"
-          :class="partsStore.selectedCategory === 'all' ? 'bg-zinc-800 text-zinc-200 font-semibold' : 'text-zinc-500 hover:text-zinc-300'"
+          class="px-2.5 py-1 rounded-lg text-[11px] font-medium whitespace-nowrap border shrink-0 transition-colors"
+          :class="partsStore.selectedCategory === 'all'
+            ? 'bg-zinc-800 text-zinc-100 border-zinc-700 shadow-sm'
+            : 'border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'"
           @click="partsStore.selectedCategory = 'all'"
         >
           Все категории
@@ -80,15 +82,17 @@
           v-for="cat in partsStore.categories"
           :key="cat"
           type="button"
-          class="px-2.5 py-1 rounded-lg text-[11px] whitespace-nowrap transition-all"
-          :class="partsStore.selectedCategory === cat ? 'bg-zinc-800 text-zinc-200 font-semibold border border-zinc-700' : 'text-zinc-500 hover:text-zinc-300'"
+          class="px-2.5 py-1 rounded-lg text-[11px] font-medium whitespace-nowrap border shrink-0 transition-colors"
+          :class="partsStore.selectedCategory === cat
+            ? 'bg-zinc-800 text-zinc-100 border-zinc-700 shadow-sm'
+            : 'border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'"
           @click="partsStore.selectedCategory = cat"
         >
           {{ cat }}
         </button>
         <NuxtLink
           to="/categories"
-          class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] whitespace-nowrap bg-zinc-900/90 border border-zinc-800 text-zinc-400 hover:text-emerald-400 transition-all shrink-0"
+          class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium whitespace-nowrap bg-zinc-900/90 border border-zinc-800 text-zinc-400 hover:text-emerald-400 transition-colors shrink-0"
           title="Управление категориями"
         >
           <UIcon name="i-lucide-folder-cog" class="w-3 h-3 text-emerald-400" />
