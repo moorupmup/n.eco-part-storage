@@ -4,11 +4,23 @@
       <!-- Modal Header -->
       <div class="flex items-start justify-between gap-3 mb-4">
         <div>
-          <div class="inline-flex items-center gap-1 font-mono text-xs font-semibold px-2 py-0.5 rounded bg-zinc-800 text-primary-400 mb-1">
-            {{ part?.code }}
-          </div>
-          <h2 class="text-base font-bold text-zinc-100">
-            {{ part?.name }}
+          <button
+            v-if="part?.code"
+            type="button"
+            class="inline-flex items-center gap-1 font-mono text-xs font-semibold px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700/80 active:scale-95 text-primary-400 mb-1 cursor-pointer transition-all border border-zinc-700/60"
+            title="Нажмите, чтобы скопировать артикул"
+            @click="copyToClipboard(part.code, 'Артикул')"
+          >
+            <span>{{ part.code }}</span>
+            <UIcon name="i-lucide-copy" class="w-3 h-3 text-zinc-500 opacity-60" />
+          </button>
+          <h2
+            v-if="part?.name"
+            class="text-base font-bold text-zinc-100 hover:text-emerald-300 transition-colors cursor-pointer"
+            title="Нажмите, чтобы скопировать наименование"
+            @click="copyToClipboard(part.name, 'Название детали')"
+          >
+            {{ part.name }}
           </h2>
         </div>
         <UButton
@@ -207,6 +219,7 @@ const emit = defineEmits<{
 const partsStore = usePartsStore()
 const transStore = useTransactionsStore()
 const toast = useToast()
+const { copyToClipboard } = useClipboardCopy()
 
 const isOpen = computed({
   get: () => props.modelValue,

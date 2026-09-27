@@ -3,10 +3,16 @@
     <!-- Top row: Code + Category + Dropdown menu -->
     <div class="flex items-center justify-between gap-2 mb-1.5">
       <div class="flex items-center gap-1.5 flex-wrap">
-        <span class="inline-flex items-center gap-1 font-mono text-xs font-semibold px-2 py-0.5 rounded bg-zinc-800 text-primary-400 border border-zinc-700/60">
-          <UIcon name="i-lucide-barcode" class="w-3.5 h-3.5" />
-          {{ part.code }}
-        </span>
+        <button
+          type="button"
+          class="inline-flex items-center gap-1 font-mono text-xs font-semibold px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700/80 active:scale-95 text-primary-400 border border-zinc-700/60 hover:border-emerald-500/40 transition-all cursor-pointer group"
+          title="Нажмите, чтобы скопировать артикул"
+          @click.stop="copyToClipboard(part.code, 'Артикул')"
+        >
+          <UIcon name="i-lucide-barcode" class="w-3.5 h-3.5 text-primary-400/80 group-hover:text-primary-300" />
+          <span>{{ part.code }}</span>
+          <UIcon name="i-lucide-copy" class="w-3 h-3 text-zinc-500 opacity-60 group-hover:opacity-100 transition-opacity ml-0.5" />
+        </button>
         <span v-if="part.category" class="text-[11px] px-2 py-0.5 rounded-full bg-zinc-800/80 text-zinc-400">
           {{ part.category }}
         </span>
@@ -36,8 +42,13 @@
     </div>
 
     <!-- Part Name -->
-    <h3 class="text-sm font-semibold text-zinc-100 leading-snug mb-2">
-      {{ part.name }}
+    <h3
+      class="text-sm font-semibold text-zinc-100 leading-snug mb-2 hover:text-emerald-300 active:opacity-75 transition-colors cursor-pointer group inline-flex items-center gap-1.5"
+      title="Нажмите, чтобы скопировать наименование"
+      @click.stop="copyToClipboard(part.name, 'Название')"
+    >
+      <span>{{ part.name }}</span>
+      <UIcon name="i-lucide-copy" class="w-3.5 h-3.5 text-zinc-500 opacity-40 group-hover:opacity-100 transition-opacity shrink-0" />
     </h3>
 
     <!-- Notes if any -->
@@ -102,6 +113,8 @@ import type { Part, MovementType } from '~/types'
 const props = defineProps<{
   part: Part
 }>()
+
+const { copyToClipboard } = useClipboardCopy()
 
 const emit = defineEmits<{
   (e: 'action', payload: { part: Part; type: MovementType }): void

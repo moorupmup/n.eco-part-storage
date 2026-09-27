@@ -112,13 +112,25 @@
 
           <!-- Part info -->
           <div>
-            <div class="flex items-center gap-1.5 mb-0.5">
-              <span class="font-mono text-xs text-primary-400 font-semibold">
+            <div class="flex items-center gap-1.5 mb-0.5 flex-wrap">
+              <button
+                v-if="item.part_code"
+                type="button"
+                class="font-mono text-xs text-primary-400 font-semibold hover:text-primary-300 transition-colors cursor-pointer"
+                title="Скопировать артикул"
+                @click.stop="copyToClipboard(item.part_code, 'Артикул')"
+              >
                 {{ item.part_code }}
-              </span>
-              <span class="text-xs font-medium text-zinc-200 line-clamp-1">
+              </button>
+              <button
+                v-if="item.part_name"
+                type="button"
+                class="text-xs font-medium text-zinc-200 hover:text-emerald-300 transition-colors cursor-pointer text-left line-clamp-1"
+                title="Скопировать наименование"
+                @click.stop="copyToClipboard(item.part_name, 'Название')"
+              >
                 {{ item.part_name }}
-              </span>
+              </button>
             </div>
           </div>
 
@@ -265,6 +277,7 @@ import { exportTransactionsToExcel } from '~/utils/exportImport'
 const transStore = useTransactionsStore()
 const partsStore = usePartsStore()
 const toast = useToast()
+const { copyToClipboard } = useClipboardCopy()
 
 const isFilterDrawerOpen = ref(false)
 const tempPartId = ref<number | null>(null)
