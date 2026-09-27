@@ -285,25 +285,22 @@ function handleMovementSuccess() {
 
 <style scoped>
 @keyframes partCardFadeIn {
-  0% {
+  from {
     opacity: 0;
-    transform: translateY(6px);
   }
-  100% {
+  to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
 .card-enter {
-  animation: partCardFadeIn 150ms cubic-bezier(0.16, 1, 0.3, 1) var(--enter-delay, 0ms) both;
+  animation: partCardFadeIn 140ms ease-out var(--enter-delay, 0ms) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .card-enter {
     animation: none !important;
     opacity: 1 !important;
-    transform: none !important;
   }
 }
 </style>
