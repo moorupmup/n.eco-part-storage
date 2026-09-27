@@ -26,7 +26,7 @@
             <input
               v-model="form.code"
               type="text"
-              placeholder="04465-33450"
+              placeholder="ULKA-EX5"
               required
               class="w-full h-10 px-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm font-mono text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner"
             />
@@ -38,7 +38,7 @@
             <input
               v-model="form.location"
               type="text"
-              placeholder="Стеллаж A-1"
+              placeholder="Коробка П-1"
               class="w-full h-10 px-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner"
             />
           </div>
@@ -52,7 +52,7 @@
           <input
             v-model="form.name"
             type="text"
-            placeholder="Колодки тормозные передние"
+            placeholder="Помпа вибрационная Ulka EX5 (48W, 230V)"
             required
             class="w-full h-10 px-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner"
           />
@@ -66,7 +66,7 @@
           <input
             v-model="form.category"
             type="text"
-            placeholder="Тормозная система, Двигатель..."
+            placeholder="Помпы / Насосы, Заварочный блок..."
             class="w-full h-10 px-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner"
           />
           <div class="flex items-center gap-1.5 mt-2 flex-wrap">
@@ -218,7 +218,7 @@ const isOpen = computed({
 const isEdit = computed(() => !!props.partToEdit)
 const isSaving = ref(false)
 
-const commonCategories = ['Двигатель', 'Тормозная система', 'Подвеска', 'Электрика', 'Кузов', 'Фильтры / ТО', 'Трансмиссия']
+const commonCategories = ['Помпы / Насосы', 'Заварочный блок', 'Кофемолка', 'Уплотнители', 'Клапаны', 'Бойлеры / ТЭНы', 'Электроника', 'Гидравлика']
 
 const form = reactive({
   code: '',

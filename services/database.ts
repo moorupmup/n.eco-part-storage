@@ -101,11 +101,13 @@ class DatabaseService {
     if (!this.db) return
     const now = new Date().toISOString()
     const sampleParts = [
-      { code: '04465-33450', name: 'Колодки тормозные передние', category: 'Тормоза', location: 'Стеллаж A-1', stock_new: 8, stock_used: 2, min_stock: 4, price_new: 3200, price_used: 1200, notes: 'Camry, RAV4' },
-      { code: '90919-01247', name: 'Свеча зажигания иридиевая', category: 'Двигатель', location: 'Полка B-2', stock_new: 12, stock_used: 0, min_stock: 6, price_new: 950, price_used: 0, notes: 'Denso FK20HR11' },
-      { code: '90915-10003', name: 'Фильтр масляный', category: 'Двигатель', location: 'Стеллаж A-2', stock_new: 2, stock_used: 0, min_stock: 5, price_new: 650, price_used: 0, notes: 'Критический остаток' },
-      { code: '48510-80490', name: 'Амортизатор передний левый', category: 'Подвеска', location: 'Зона С-4', stock_new: 1, stock_used: 3, min_stock: 2, price_new: 8500, price_used: 3500, notes: 'Б/у в отличном состоянии' },
-      { code: '17801-21050', name: 'Фильтр воздушный', category: 'Впуск', location: 'Полка B-1', stock_new: 0, stock_used: 0, min_stock: 3, price_new: 700, price_used: 0, notes: 'Нужен срочный заказ' }
+      { code: 'ULKA-EX5', name: 'Помпа вибрационная Ulka EX5 (48W, 230V)', category: 'Помпы / Насосы', location: 'Коробка П-1', stock_new: 6, stock_used: 2, min_stock: 3, price_new: 1850, price_used: 700, notes: 'Универсальная 230V 50Hz (DeLonghi, Saeco, Jura, Nivona)' },
+      { code: '5513214821', name: 'Жернова конические (пара) DeLonghi', category: 'Кофемолка', location: 'Ячейка К-3', stock_new: 4, stock_used: 1, min_stock: 2, price_new: 2400, price_used: 900, notes: 'Для кофемолок ECAM, ETAM, ESAM. Закаленная сталь.' },
+      { code: 'OR-KIT-DEL', name: 'Ремкомплект уплотнителей заварочного блока (O-Ring)', category: 'Уплотнители', location: 'Органайзер O-1', stock_new: 18, stock_used: 0, min_stock: 6, price_new: 450, price_used: 0, notes: 'Пищевой силикон VMQ / EPDM. Манжеты верхнего и нижнего поршня.' },
+      { code: '70163-JUR', name: 'Заварочный блок в сборе Jura Claris / E-серия', category: 'Заварочный блок', location: 'Полка З-2', stock_new: 1, stock_used: 3, min_stock: 2, price_new: 9800, price_used: 3800, notes: 'Б/у перебран: новые манжеты, смазан пищевой силиконовой смазкой OKS 1110' },
+      { code: '5213218421', name: 'Электромагнитный клапан 3-ходовой Ceme (230V)', category: 'Клапаны', location: 'Ячейка Э-4', stock_new: 0, stock_used: 1, min_stock: 2, price_new: 3100, price_used: 1200, notes: 'Клапан пар/вода DeLonghi. Закончились новые, срочно дозаказать!' },
+      { code: '5232104600', name: 'Датчик температуры бойлера NTC (термистор)', category: 'Электроника', location: 'Органайзер Э-1', stock_new: 7, stock_used: 2, min_stock: 3, price_new: 650, price_used: 250, notes: 'Датчик температуры бойлера с кабелем и разъемом DeLonghi Magnifica' },
+      { code: '62999-JUR', name: 'Дренажный клапан Jura в сборе', category: 'Гидравлика', location: 'Коробка Д-2', stock_new: 2, stock_used: 4, min_stock: 3, price_new: 2200, price_used: 800, notes: 'Частая неисправность: сброс кофе/воды в поддон при заваривании' }
     ]
 
     for (const p of sampleParts) {
@@ -120,12 +122,22 @@ class DatabaseService {
     await this.db.run(
       `INSERT INTO transactions (part_id, type, condition, quantity, stock_before, stock_after, reason, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [1, 'IN', 'NEW', 10, 0, 10, 'Поступление от поставщика ООО "АвтоПарт"', now]
+      [1, 'IN', 'NEW', 10, 0, 10, 'Поступление партии помп Ulka от ООО "КофеСнаб"', now]
     )
     await this.db.run(
       `INSERT INTO transactions (part_id, type, condition, quantity, stock_before, stock_after, reason, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [1, 'OUT', 'NEW', 2, 10, 8, 'Заказ-наряд #1042', now]
+      [1, 'OUT', 'NEW', 1, 10, 9, 'Заказ-наряд #412 (DeLonghi Magnifica S - замена помпы)', now]
+    )
+    await this.db.run(
+      `INSERT INTO transactions (part_id, type, condition, quantity, stock_before, stock_after, reason, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [4, 'IN', 'USED', 2, 0, 2, 'Поступление с разбора донора Jura Impressa F50', now]
+    )
+    await this.db.run(
+      `INSERT INTO transactions (part_id, type, condition, quantity, stock_before, stock_after, reason, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [3, 'OUT', 'NEW', 1, 19, 18, 'Заказ-наряд #415 (DeLonghi Dinamica - ТО и замена колец заварника)', now]
     )
   }
 
@@ -149,18 +161,25 @@ class DatabaseService {
       }
     }
 
-    if (this.webParts.length === 0) {
+    // If empty or if contains old automotive demo parts, reset to coffee machine parts
+    const hasOldCarParts = this.webParts.some(p => p.code === '04465-33450' || p.name.includes('Колодки'))
+    if (this.webParts.length === 0 || hasOldCarParts) {
       const now = new Date().toISOString()
       this.webParts = [
-        { id: 1, code: '04465-33450', name: 'Колодки тормозные передние', category: 'Тормоза', location: 'Стеллаж A-1', stock_new: 8, stock_used: 2, min_stock: 4, price_new: 3200, price_used: 1200, notes: 'Camry, RAV4', created_at: now, updated_at: now },
-        { id: 2, code: '90919-01247', name: 'Свеча зажигания иридиевая', category: 'Двигатель', location: 'Полка B-2', stock_new: 12, stock_used: 0, min_stock: 6, price_new: 950, price_used: 0, notes: 'Denso FK20HR11', created_at: now, updated_at: now },
-        { id: 3, code: '90915-10003', name: 'Фильтр масляный', category: 'Двигатель', location: 'Стеллаж A-2', stock_new: 2, stock_used: 0, min_stock: 5, price_new: 650, price_used: 0, notes: 'Критический остаток', created_at: now, updated_at: now },
-        { id: 4, code: '48510-80490', name: 'Амортизатор передний левый', category: 'Подвеска', location: 'Зона С-4', stock_new: 1, stock_used: 3, min_stock: 2, price_new: 8500, price_used: 3500, notes: 'Б/у в отличном состоянии', created_at: now, updated_at: now },
-        { id: 5, code: '17801-21050', name: 'Фильтр воздушный', category: 'Впуск', location: 'Полка B-1', stock_new: 0, stock_used: 0, min_stock: 3, price_new: 700, price_used: 0, notes: 'Нужен срочный заказ', created_at: now, updated_at: now }
+        { id: 1, code: 'ULKA-EX5', name: 'Помпа вибрационная Ulka EX5 (48W, 230V)', category: 'Помпы / Насосы', location: 'Коробка П-1', stock_new: 6, stock_used: 2, min_stock: 3, price_new: 1850, price_used: 700, notes: 'Универсальная 230V 50Hz (DeLonghi, Saeco, Jura, Nivona)', created_at: now, updated_at: now },
+        { id: 2, code: '5513214821', name: 'Жернова конические (пара) DeLonghi', category: 'Кофемолка', location: 'Ячейка К-3', stock_new: 4, stock_used: 1, min_stock: 2, price_new: 2400, price_used: 900, notes: 'Для кофемолок ECAM, ETAM, ESAM. Закаленная сталь.', created_at: now, updated_at: now },
+        { id: 3, code: 'OR-KIT-DEL', name: 'Ремкомплект уплотнителей заварочного блока (O-Ring)', category: 'Уплотнители', location: 'Органайзер O-1', stock_new: 18, stock_used: 0, min_stock: 6, price_new: 450, price_used: 0, notes: 'Пищевой силикон VMQ / EPDM. Манжеты верхнего и нижнего поршня.', created_at: now, updated_at: now },
+        { id: 4, code: '70163-JUR', name: 'Заварочный блок в сборе Jura Claris / E-серия', category: 'Заварочный блок', location: 'Полка З-2', stock_new: 1, stock_used: 3, min_stock: 2, price_new: 9800, price_used: 3800, notes: 'Б/у перебран: новые манжеты, смазан пищевой силиконовой смазкой OKS 1110', created_at: now, updated_at: now },
+        { id: 5, code: '5213218421', name: 'Электромагнитный клапан 3-ходовой Ceme (230V)', category: 'Клапаны', location: 'Ячейка Э-4', stock_new: 0, stock_used: 1, min_stock: 2, price_new: 3100, price_used: 1200, notes: 'Клапан пар/вода DeLonghi. Закончились новые, срочно дозаказать!', created_at: now, updated_at: now },
+        { id: 6, code: '5232104600', name: 'Датчик температуры бойлера NTC (термистор)', category: 'Электроника', location: 'Органайзер Э-1', stock_new: 7, stock_used: 2, min_stock: 3, price_new: 650, price_used: 250, notes: 'Датчик температуры бойлера с кабелем и разъемом DeLonghi Magnifica', created_at: now, updated_at: now },
+        { id: 7, code: '62999-JUR', name: 'Дренажный клапан Jura в сборе', category: 'Гидравлика', location: 'Коробка Д-2', stock_new: 2, stock_used: 4, min_stock: 3, price_new: 2200, price_used: 800, notes: 'Частая неисправность: сброс кофе/воды в поддон при заваривании', created_at: now, updated_at: now }
       ]
       this.webTransactions = [
-        { id: 1, part_id: 1, part_code: '04465-33450', part_name: 'Колодки тормозные передние', type: 'IN', condition: 'NEW', quantity: 10, stock_before: 0, stock_after: 10, reason: 'Поступление от поставщика ООО "АвтоПарт"', created_at: now },
-        { id: 2, part_id: 1, part_code: '04465-33450', part_name: 'Колодки тормозные передние', type: 'OUT', condition: 'NEW', quantity: 2, stock_before: 10, stock_after: 8, reason: 'Заказ-наряд #1042', created_at: now }
+        { id: 1, part_id: 1, part_code: 'ULKA-EX5', part_name: 'Помпа вибрационная Ulka EX5 (48W, 230V)', type: 'IN', condition: 'NEW', quantity: 10, stock_before: 0, stock_after: 10, reason: 'Поступление партии помп Ulka от ООО "КофеСнаб"', created_at: now },
+        { id: 2, part_id: 1, part_code: 'ULKA-EX5', part_name: 'Помпа вибрационная Ulka EX5 (48W, 230V)', type: 'OUT', condition: 'NEW', quantity: 1, stock_before: 10, stock_after: 9, reason: 'Заказ-наряд #412 (DeLonghi Magnifica S - замена помпы)', created_at: now },
+        { id: 3, part_id: 4, part_code: '70163-JUR', part_name: 'Заварочный блок в сборе Jura Claris / E-серия', type: 'IN', condition: 'USED', quantity: 2, stock_before: 0, stock_after: 2, reason: 'Поступление с разбора донора Jura Impressa F50', created_at: now },
+        { id: 4, part_id: 3, part_code: 'OR-KIT-DEL', part_name: 'Ремкомплект уплотнителей заварочного блока (O-Ring)', type: 'OUT', condition: 'NEW', quantity: 1, stock_before: 19, stock_after: 18, reason: 'Заказ-наряд #415 (DeLonghi Dinamica - ТО и замена колец заварника)', created_at: now },
+        { id: 5, part_id: 7, part_code: '62999-JUR', part_name: 'Дренажный клапан Jura в сборе', type: 'OUT', condition: 'USED', quantity: 1, stock_before: 5, stock_after: 4, reason: 'Заказ-наряд #418 (Jura E8 - замена дренажного клапана)', created_at: now }
       ]
       this.persistWebStore()
     }

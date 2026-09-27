@@ -31,7 +31,7 @@
           <input
             v-model="partsStore.searchQuery"
             type="text"
-            placeholder="Поиск по артикулу, названию, ячейке..."
+            placeholder="Поиск детали (помпа, жернова, клапан, артикул)..."
             class="w-full h-11 pl-10 pr-10 rounded-xl bg-zinc-900/90 border border-zinc-800 text-zinc-100 placeholder-zinc-500 text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 transition-colors shadow-inner"
           />
           <button

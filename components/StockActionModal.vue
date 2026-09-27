@@ -155,7 +155,7 @@
         <input
           v-model="reason"
           type="text"
-          placeholder="Например: Заказ-наряд #124 или Накладная 45"
+          placeholder="Например: Заказ-наряд #312 (DeLonghi Magnifica)"
           class="w-full h-11 px-3.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 transition-colors shadow-inner"
         />
 
@@ -246,9 +246,9 @@ const isSubmitDisabled = computed(() => {
 
 const quickReasons = computed(() => {
   if (type.value === 'IN') {
-    return ['Приходная накладная', 'Возврат клиента', 'Инвентаризация (+)', 'С другого склада']
+    return ['Поступление от поставщика', 'С разбора (донор)', 'Возврат клиента', 'Инвентаризация (+)']
   }
-  return ['Заказ-наряд', 'Выдача мастеру', 'Брак / Дефект', 'Инвентаризация (-)']
+  return ['Заказ-наряд #', 'Плановое ТО / декальцинация', 'Ремонт по гарантии', 'Брак / износ деталей']
 })
 
 function setPreset(amount: number) {
