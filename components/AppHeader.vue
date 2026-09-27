@@ -3,8 +3,8 @@
     <div class="flex items-center justify-between h-14 px-4 max-w-lg mx-auto">
       <div class="flex items-center gap-2.5 min-w-0">
         <!-- App Icon Badge -->
-        <div class="flex items-center justify-center w-9 h-9 rounded-xl overflow-hidden border border-emerald-500/30 shadow-sm shadow-emerald-950/50 shrink-0 bg-zinc-900">
-          <img src="/icon.jpg" alt="N.ECO" class="w-full h-full object-cover" />
+        <div class="flex items-center justify-center w-9 h-9 rounded-xl overflow-hidden border border-emerald-500/30 shadow-sm shadow-emerald-950/50 shrink-0 bg-zinc-900 p-1">
+          <img src="/icon.png" alt="N.ECO" class="w-full h-full object-contain" />
         </div>
 
         <div class="min-w-0">

@@ -34,8 +34,8 @@
       <div class="p-4 rounded-2xl bg-zinc-900/90 border border-zinc-800 space-y-4 shadow-sm">
         <div class="flex items-start justify-between gap-3">
           <div class="flex items-center gap-3">
-            <div class="flex items-center justify-center w-12 h-12 rounded-xl overflow-hidden border border-emerald-500/30 shadow-md shadow-emerald-950/40 shrink-0 bg-zinc-900">
-              <img src="/icon.jpg" alt="N.ECO" class="w-full h-full object-cover" />
+            <div class="flex items-center justify-center w-12 h-12 rounded-xl overflow-hidden border border-emerald-500/30 shadow-md shadow-emerald-950/40 shrink-0 bg-zinc-900 p-1.5">
+              <img src="/icon.png" alt="N.ECO" class="w-full h-full object-contain" />
             </div>
             <div>
               <h2 class="text-sm font-extrabold text-zinc-100 tracking-tight">
