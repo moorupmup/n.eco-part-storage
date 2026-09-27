@@ -12,7 +12,6 @@
             @click="copyToClipboard(part.code, 'Артикул')"
           >
             <span>{{ part.code }}</span>
-            <UIcon name="i-lucide-copy" class="w-3 h-3 text-zinc-500 opacity-60" />
           </button>
           <h2
             v-if="part?.name"
