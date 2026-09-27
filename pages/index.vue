@@ -101,11 +101,16 @@
       </div>
 
       <!-- Parts List -->
-      <div v-if="partsStore.filteredParts.length > 0" class="space-y-2.5 pt-1">
+      <div
+        v-if="partsStore.filteredParts.length > 0"
+        :key="`${partsStore.selectedCategory}-${partsStore.stockFilter}`"
+        class="space-y-2.5 pt-1"
+      >
         <PartCard
-          v-for="part in partsStore.filteredParts"
+          v-for="(part, index) in partsStore.filteredParts"
           :key="part.id"
-          :part="part"
+          class="card-enter"
+          :style="{ '--enter-delay': `${Math.min(index * 25, 200)}ms` }"
           @action="openStockModal"
           @edit="openEditModal"
           @delete="confirmDeletePart"
@@ -276,3 +281,28 @@ function handleMovementSuccess() {
   // Handled inside component and store
 }
 </script>
+
+<style scoped>
+@keyframes partCardFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card-enter {
+  animation: partCardFadeIn 150ms cubic-bezier(0.16, 1, 0.3, 1) var(--enter-delay, 0ms) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-enter {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+</style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="relative bg-zinc-900/90 border border-zinc-800 rounded-xl p-3.5 shadow-sm transition-all duration-150 hover:border-zinc-700">
+  <div class="relative bg-zinc-900/90 border border-zinc-800 rounded-xl p-3.5 shadow-sm transition-colors duration-150 hover:border-zinc-700">
     <!-- Top row: Code + Category + Dropdown menu -->
     <div class="flex items-center justify-between gap-2 mb-1.5">
       <div class="flex items-center gap-1.5 flex-wrap">
