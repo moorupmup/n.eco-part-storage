@@ -93,7 +93,7 @@
                 class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold font-mono"
                 :class="item.type === 'IN' ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/15 text-rose-300 border border-rose-500/30'"
               >
-                <UIcon :name="item.type === 'IN' ? 'i-lucide-arrow-down-left' : 'i-lucide-arrow-up-right'" class="w-3.5 h-3.5" />
+                <UIcon :name="item.type === 'IN' ? 'i-lucide-arrow-up-right' : 'i-lucide-arrow-down-left'" class="w-3.5 h-3.5" />
                 {{ item.type === 'IN' ? '+' : '-' }}{{ item.quantity }} шт
               </span>
 
