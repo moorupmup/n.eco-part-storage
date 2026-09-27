@@ -60,14 +60,6 @@
             {{ hasUpdate ? 'Есть апдейт' : 'Актуально' }}
           </span>
         </div>
-
-        <div class="mt-3 pt-3 border-t border-zinc-800/80 flex items-center justify-between text-[11px] text-zinc-400">
-          <span class="inline-flex items-center gap-1">
-            <UIcon name="i-lucide-shield-check" class="w-3.5 h-3.5 text-emerald-400" />
-            Цифровой ключ: постоянный (release.keystore)
-          </span>
-          <span class="text-zinc-400">Android APK</span>
-        </div>
       </div>
 
       <!-- Update Status Card -->
@@ -171,17 +163,6 @@
           <span>Репозиторий: moorupmup/n.eco-part-storage</span>
           <span v-if="lastChecked">Проверено: {{ lastChecked }}</span>
         </div>
-      </div>
-
-      <!-- Info Card about Signature & Updates -->
-      <div class="p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800/60 space-y-2 text-xs text-zinc-400">
-        <div class="font-semibold text-zinc-300 flex items-center gap-1.5">
-          <UIcon name="i-lucide-info" class="w-3.5 h-3.5 text-emerald-400" />
-          Как происходит обновление:
-        </div>
-        <p class="text-[11px] leading-relaxed">
-          При выходе релиза на GitHub вы нажимаете кнопку <strong>«Скачать и обновить»</strong>. Android скачивает APK-файл и устанавливает его поверх текущего без потери локальной базы данных SQLite, благодаря постоянному цифровому ключу подписи.
-        </p>
       </div>
     </div>
   </div>
