@@ -91,7 +91,7 @@
             </div>
             <div>
               <label class="block text-[11px] font-medium text-amber-400 mb-1">
-                Б / У (шт)
+                Б/У (шт)
               </label>
               <input
                 v-model.number="form.stock_used"

@@ -81,7 +81,7 @@
           >
             <div class="flex items-center gap-1.5">
               <span class="w-2 h-2 rounded-full bg-amber-500" />
-              <span>Б / У</span>
+              <span>Б/У</span>
             </div>
             <span class="font-mono text-xs text-zinc-400">{{ part?.stock_used || 0 }} шт</span>
           </button>
