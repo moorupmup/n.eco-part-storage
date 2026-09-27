@@ -2,36 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Base Typography: Intro */
+/* Base Typography: Inter */
 @font-face {
-  font-family: 'Intro';
-  src: local('Intro'), local('Intro-Regular'), local('Intro Regular'),
-       url('/fonts/Intro-Regular.woff2') format('woff2'),
-       url('/fonts/Intro-Regular.woff') format('woff'),
-       url('/fonts/Intro-Regular.ttf') format('truetype');
+  font-family: 'Inter';
+  src: local('Inter'), local('Inter-Regular'), local('Inter Regular'),
+       url('/fonts/Inter-Regular.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Intro';
-  src: local('Intro Bold'), local('Intro-Bold'),
-       url('/fonts/Intro-Bold.woff2') format('woff2'),
-       url('/fonts/Intro-Bold.woff') format('woff'),
-       url('/fonts/Intro-Bold.ttf') format('truetype');
+  font-family: 'Inter';
+  src: local('Inter Bold'), local('Inter-Bold'),
+       url('/fonts/Inter-Bold.woff2') format('woff2');
   font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Intro';
-  src: local('Intro Black'), local('Intro-Black'),
-       url('/fonts/Intro-Black.woff2') format('woff2'),
-       url('/fonts/Intro-Black.woff') format('woff'),
-       url('/fonts/Intro-Black.ttf') format('truetype');
-  font-weight: 900;
   font-style: normal;
   font-display: swap;
 }
@@ -53,7 +38,7 @@
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
     touch-action: manipulation;
-    font-family: 'Intro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     background-color: #09090b;
     color: #f4f4f5;
   }
