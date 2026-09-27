@@ -21,8 +21,17 @@
         />
       </div>
 
-      <!-- Action Type Selector (IN / OUT) -->
+      <!-- Action Type Selector (Left = Списание, Right = Приход) -->
       <div class="grid grid-cols-2 gap-2 p-1 bg-zinc-950 rounded-xl border border-zinc-800 mb-4">
+        <button
+          type="button"
+          class="flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-semibold transition-all"
+          :class="type === 'OUT' ? 'bg-zinc-800 text-zinc-100 border border-zinc-700 shadow-sm' : 'text-zinc-400 hover:text-zinc-200'"
+          @click="type = 'OUT'"
+        >
+          <UIcon name="i-lucide-minus" class="w-4 h-4 text-zinc-400" />
+          Списание (-)
+        </button>
         <button
           type="button"
           class="flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-semibold transition-all"
@@ -31,15 +40,6 @@
         >
           <UIcon name="i-lucide-plus" class="w-4 h-4" />
           Приход (+)
-        </button>
-        <button
-          type="button"
-          class="flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-semibold transition-all"
-          :class="type === 'OUT' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-sm' : 'text-zinc-400 hover:text-zinc-200'"
-          @click="type = 'OUT'"
-        >
-          <UIcon name="i-lucide-minus" class="w-4 h-4" />
-          Списание (-)
         </button>
       </div>
 
@@ -177,7 +177,7 @@
         type="button"
         :disabled="isSubmitDisabled || isSubmitting"
         class="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold shadow-lg transition-all active:scale-[0.98] disabled:opacity-30 disabled:pointer-events-none"
-        :class="type === 'IN' ? 'bg-emerald-500 hover:bg-emerald-400 text-zinc-950 shadow-emerald-500/20' : 'bg-rose-500 hover:bg-rose-400 text-white shadow-rose-500/20'"
+        :class="type === 'IN' ? 'bg-emerald-500 hover:bg-emerald-400 text-zinc-950 shadow-emerald-500/20' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700 shadow-zinc-950/40'"
         @click="handleSubmit"
       >
         <UIcon v-if="isSubmitting" name="i-lucide-loader-2" class="w-5 h-5 animate-spin" />

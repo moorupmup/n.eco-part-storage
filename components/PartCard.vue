@@ -83,8 +83,18 @@
       </div>
     </div>
 
-    <!-- Quick action buttons (+ / -) in dark theme with vibrant accents -->
+    <!-- Quick action buttons: Left = Списание (neutral gray), Right = Приход (emerald) -->
     <div class="grid grid-cols-2 gap-2">
+      <button
+        type="button"
+        :disabled="part.stock_new === 0 && part.stock_used === 0"
+        class="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-zinc-800/80 hover:bg-zinc-800 active:scale-[0.98] border border-zinc-700/80 text-zinc-300 hover:text-zinc-100 text-xs font-semibold shadow-sm transition-all disabled:opacity-30 disabled:pointer-events-none"
+        @click="$emit('action', { part, type: 'OUT' })"
+      >
+        <UIcon name="i-lucide-minus" class="w-4 h-4 stroke-[2.5] text-zinc-400" />
+        <span>Списание</span>
+      </button>
+
       <button
         type="button"
         class="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-emerald-950/40 hover:bg-emerald-900/50 active:scale-[0.98] border border-emerald-500/30 text-emerald-400 text-xs font-semibold shadow-sm transition-all"
@@ -92,16 +102,6 @@
       >
         <UIcon name="i-lucide-plus" class="w-4 h-4 stroke-[2.5]" />
         <span>Приход</span>
-      </button>
-
-      <button
-        type="button"
-        :disabled="part.stock_new === 0 && part.stock_used === 0"
-        class="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-rose-950/40 hover:bg-rose-900/50 active:scale-[0.98] border border-rose-500/30 text-rose-400 text-xs font-semibold shadow-sm transition-all disabled:opacity-30 disabled:pointer-events-none"
-        @click="$emit('action', { part, type: 'OUT' })"
-      >
-        <UIcon name="i-lucide-minus" class="w-4 h-4 stroke-[2.5]" />
-        <span>Списание</span>
       </button>
     </div>
   </div>
