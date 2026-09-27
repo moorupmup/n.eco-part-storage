@@ -51,15 +51,15 @@
           v-for="filter in stockFilters"
           :key="filter.id"
           type="button"
-          class="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap border shrink-0 transition-colors active:scale-95"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap border shrink-0 transition-colors active:scale-95"
           :class="partsStore.stockFilter === filter.id ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 font-semibold shadow-sm' : 'bg-zinc-900/80 border-zinc-800/80 text-zinc-400 hover:text-zinc-200'"
           @click="partsStore.stockFilter = filter.id"
         >
           <span>{{ filter.label }}</span>
           <span
             v-if="filter.count !== undefined"
-            class="ml-0.5 px-1.5 py-0.2 rounded-full text-[10px]"
-            :class="partsStore.stockFilter === filter.id ? 'bg-emerald-500/30 text-emerald-300' : 'bg-zinc-800 text-zinc-400'"
+            class="text-[11px] font-mono tabular-nums transition-colors"
+            :class="partsStore.stockFilter === filter.id ? 'text-emerald-300/70' : 'text-zinc-500'"
           >
             {{ filter.count }}
           </span>
@@ -70,25 +70,37 @@
       <div v-if="partsStore.categories.length > 0" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
         <button
           type="button"
-          class="px-2.5 py-1 rounded-lg text-[11px] font-medium whitespace-nowrap border shrink-0 transition-colors"
+          class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium whitespace-nowrap border shrink-0 transition-colors"
           :class="partsStore.selectedCategory === 'all'
             ? 'bg-zinc-800 text-zinc-100 border-zinc-700 shadow-sm'
             : 'border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'"
           @click="partsStore.selectedCategory = 'all'"
         >
-          Все категории
+          <span>Все категории</span>
+          <span
+            class="text-[10px] font-mono tabular-nums transition-colors"
+            :class="partsStore.selectedCategory === 'all' ? 'text-zinc-400' : 'text-zinc-600'"
+          >
+            {{ partsStore.parts.length }}
+          </span>
         </button>
         <button
           v-for="cat in partsStore.categories"
           :key="cat"
           type="button"
-          class="px-2.5 py-1 rounded-lg text-[11px] font-medium whitespace-nowrap border shrink-0 transition-colors"
+          class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium whitespace-nowrap border shrink-0 transition-colors"
           :class="partsStore.selectedCategory === cat
             ? 'bg-zinc-800 text-zinc-100 border-zinc-700 shadow-sm'
             : 'border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'"
           @click="partsStore.selectedCategory = cat"
         >
-          {{ cat }}
+          <span>{{ cat }}</span>
+          <span
+            class="text-[10px] font-mono tabular-nums transition-colors"
+            :class="partsStore.selectedCategory === cat ? 'text-zinc-400' : 'text-zinc-600'"
+          >
+            {{ categoryCountMap[cat] || 0 }}
+          </span>
         </button>
         <NuxtLink
           to="/categories"
@@ -216,11 +228,44 @@ import { usePartsStore } from '~/stores/parts'
 const partsStore = usePartsStore()
 const toast = useToast()
 
-const stockFilters = computed(() => [
-  { id: 'all', label: 'Все' },
-  { id: 'in_stock', label: 'В наличии' },
-  { id: 'out', label: 'Закончились' }
-])
+const categoryCountMap = computed(() => {
+  const map: Record<string, number> = {}
+  for (const p of partsStore.parts) {
+    if (p && p.category) {
+      const cat = p.category.trim()
+      map[cat] = (map[cat] || 0) + 1
+      if (p.category !== cat) {
+        map[p.category] = (map[p.category] || 0) + 1
+      }
+    }
+  }
+  return map
+})
+
+const stockFilters = computed(() => {
+  let pool = partsStore.parts || []
+  if (partsStore.selectedCategory !== 'all') {
+    pool = pool.filter(p => p && p.category === partsStore.selectedCategory)
+  }
+  if (partsStore.searchQuery.trim()) {
+    const q = partsStore.searchQuery.toLowerCase().trim()
+    pool = pool.filter(p =>
+      (p.code && p.code.toLowerCase().includes(q)) ||
+      (p.name && p.name.toLowerCase().includes(q)) ||
+      (p.notes && p.notes.toLowerCase().includes(q))
+    )
+  }
+
+  const allCount = pool.length
+  const inStockCount = pool.filter(p => ((p.stock_new || 0) + (p.stock_used || 0)) > 0).length
+  const outCount = pool.filter(p => ((p.stock_new || 0) + (p.stock_used || 0)) === 0).length
+
+  return [
+    { id: 'all', label: 'Все', count: allCount },
+    { id: 'in_stock', label: 'В наличии', count: inStockCount },
+    { id: 'out', label: 'Закончились', count: outCount }
+  ]
+})
 
 // Modal states
 const isStockModalOpen = ref(false)
