@@ -34,8 +34,14 @@
       <div class="p-4 rounded-2xl bg-zinc-900/90 border border-zinc-800 space-y-4 shadow-sm">
         <div class="flex items-start justify-between gap-3">
           <div class="flex items-center gap-3">
-            <div class="flex items-center justify-center w-12 h-12 rounded-xl overflow-hidden border border-emerald-500/30 shadow-md shadow-emerald-950/40 shrink-0 bg-zinc-900 p-1.5">
-              <img src="/icon.png" alt="N.ECO" class="w-full h-full object-contain" />
+            <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500/20 via-emerald-500/10 to-transparent border border-emerald-500/30 text-emerald-400 shadow-md shadow-emerald-950/40 shrink-0">
+              <svg class="w-6 h-6 text-emerald-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 21V9.5L12 4L21 9.5V21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M8 21V12.5C8 12.22 8.22 12 8.5 12H15.5C15.78 12 16 12.22 16 12.5V21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                <path d="M8 15H16" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+                <path d="M8 18H16" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                <path d="M12 4V8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+              </svg>
             </div>
             <div>
               <h2 class="text-sm font-extrabold text-zinc-100 tracking-tight">
