@@ -111,7 +111,7 @@
           :key="part.id"
           :part="part"
           class="card-enter"
-          :style="{ '--enter-delay': `${Math.min(index * 25, 200)}ms` }"
+          :style="{ '--enter-delay': `${Math.min(index * 45, 320)}ms` }"
           @action="openStockModal"
           @edit="openEditModal"
           @delete="confirmDeletePart"
@@ -294,7 +294,7 @@ function handleMovementSuccess() {
 }
 
 .card-enter {
-  animation: partCardFadeIn 140ms ease-out var(--enter-delay, 0ms) both;
+  animation: partCardFadeIn 240ms ease-out var(--enter-delay, 0ms) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
