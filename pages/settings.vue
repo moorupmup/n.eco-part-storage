@@ -62,7 +62,7 @@
         </div>
 
         <!-- Button to Check for Updates inside this card -->
-        <div class="pt-1 border-t border-zinc-800/80">
+        <div class="pt-0.5">
           <button
             type="button"
             :disabled="isChecking"
