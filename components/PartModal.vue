@@ -23,22 +23,23 @@
             <label class="block text-xs font-semibold text-zinc-300 mb-1">
               Артикул / Код *
             </label>
-            <UInput
+            <input
               v-model="form.code"
+              type="text"
               placeholder="04465-33450"
               required
-              size="md"
-              class="font-mono"
+              class="w-full h-10 px-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm font-mono text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner"
             />
           </div>
           <div>
             <label class="block text-xs font-semibold text-zinc-300 mb-1">
               Ячейка / Место
             </label>
-            <UInput
+            <input
               v-model="form.location"
+              type="text"
               placeholder="Стеллаж A-1"
-              size="md"
+              class="w-full h-10 px-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner"
             />
           </div>
         </div>
@@ -48,11 +49,12 @@
           <label class="block text-xs font-semibold text-zinc-300 mb-1">
             Наименование детали *
           </label>
-          <UInput
+          <input
             v-model="form.name"
+            type="text"
             placeholder="Колодки тормозные передние"
             required
-            size="md"
+            class="w-full h-10 px-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner"
           />
         </div>
 
@@ -61,17 +63,18 @@
           <label class="block text-xs font-semibold text-zinc-300 mb-1">
             Категория / Узел
           </label>
-          <UInput
+          <input
             v-model="form.category"
+            type="text"
             placeholder="Тормозная система, Двигатель..."
-            size="md"
+            class="w-full h-10 px-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner"
           />
           <div class="flex items-center gap-1.5 mt-2 flex-wrap">
             <button
               v-for="cat in commonCategories"
               :key="cat"
               type="button"
-              class="px-2 py-0.5 text-[11px] rounded bg-zinc-800 text-zinc-400 hover:text-zinc-200"
+              class="px-2.5 py-1 text-[11px] rounded-lg bg-zinc-800 border border-zinc-700/60 text-zinc-300 hover:text-zinc-100 hover:bg-zinc-700 transition-all"
               @click="form.category = cat"
             >
               {{ cat }}
@@ -82,7 +85,7 @@
         <!-- Stock and Min Stock -->
         <div class="p-3 bg-zinc-950/80 rounded-xl border border-zinc-800 space-y-3">
           <div class="text-xs font-bold text-zinc-300 flex items-center gap-1.5">
-            <UIcon name="i-lucide-boxes" class="w-4 h-4 text-primary-400" />
+            <UIcon name="i-lucide-boxes" class="w-4 h-4 text-emerald-400" />
             Остатки на складе
           </div>
 
@@ -91,36 +94,33 @@
               <label class="block text-[11px] font-medium text-blue-400 mb-1">
                 Новые (шт)
               </label>
-              <UInput
+              <input
                 v-model.number="form.stock_new"
                 type="number"
                 min="0"
-                size="md"
-                class="font-mono text-center"
+                class="w-full h-10 rounded-xl bg-zinc-900 border border-zinc-800 text-center font-mono text-sm font-bold text-blue-400 focus:outline-none focus:border-blue-500 shadow-inner"
               />
             </div>
             <div>
               <label class="block text-[11px] font-medium text-amber-400 mb-1">
                 Б / У (шт)
               </label>
-              <UInput
+              <input
                 v-model.number="form.stock_used"
                 type="number"
                 min="0"
-                size="md"
-                class="font-mono text-center"
+                class="w-full h-10 rounded-xl bg-zinc-900 border border-zinc-800 text-center font-mono text-sm font-bold text-amber-400 focus:outline-none focus:border-amber-500 shadow-inner"
               />
             </div>
             <div>
               <label class="block text-[11px] font-medium text-rose-400 mb-1">
                 Мин. остаток
               </label>
-              <UInput
+              <input
                 v-model.number="form.min_stock"
                 type="number"
                 min="0"
-                size="md"
-                class="font-mono text-center"
+                class="w-full h-10 rounded-xl bg-zinc-900 border border-zinc-800 text-center font-mono text-sm font-bold text-rose-400 focus:outline-none focus:border-rose-500 shadow-inner"
               />
             </div>
           </div>
@@ -135,24 +135,24 @@
             <label class="block text-xs font-medium text-zinc-400 mb-1">
               Цена новой (₽)
             </label>
-            <UInput
+            <input
               v-model.number="form.price_new"
               type="number"
               min="0"
-              size="md"
               placeholder="0"
+              class="w-full h-10 px-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 shadow-inner"
             />
           </div>
           <div>
             <label class="block text-xs font-medium text-zinc-400 mb-1">
               Цена б/у (₽)
             </label>
-            <UInput
+            <input
               v-model.number="form.price_used"
               type="number"
               min="0"
-              size="md"
               placeholder="0"
+              class="w-full h-10 px-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 shadow-inner"
             />
           </div>
         </div>
@@ -162,33 +162,31 @@
           <label class="block text-xs font-medium text-zinc-400 mb-1">
             Примечание / Совместимость
           </label>
-          <UTextarea
+          <textarea
             v-model="form.notes"
             rows="2"
             placeholder="Модели авто, кросс-номера, дефекты..."
-            size="md"
+            class="w-full p-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 transition-colors shadow-inner resize-none"
           />
         </div>
 
         <!-- Actions -->
         <div class="flex items-center gap-3 pt-2">
-          <UButton
-            color="gray"
-            variant="ghost"
-            label="Отмена"
-            block
-            class="flex-1"
+          <button
+            type="button"
+            class="flex-1 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold text-sm transition-all"
             @click="isOpen = false"
-          />
-          <UButton
+          >
+            Отмена
+          </button>
+          <button
             type="submit"
-            color="primary"
-            variant="solid"
-            :loading="isSaving"
-            label="Сохранить"
-            block
-            class="flex-1 font-bold"
-          />
+            :disabled="isSaving"
+            class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-sm shadow-lg shadow-emerald-500/25 active:scale-95 transition-all disabled:opacity-50"
+          >
+            <UIcon v-if="isSaving" name="i-lucide-loader-2" class="w-4 h-4 animate-spin" />
+            <span>Сохранить</span>
+          </button>
         </div>
       </form>
     </div>

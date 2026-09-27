@@ -83,29 +83,26 @@
       </div>
     </div>
 
-    <!-- Quick action buttons (+ / -) -->
+    <!-- Quick action buttons (+ / -) in dark theme with vibrant accents -->
     <div class="grid grid-cols-2 gap-2">
-      <UButton
-        color="emerald"
-        variant="soft"
-        icon="i-lucide-plus"
-        label="Приход"
-        block
-        size="sm"
-        class="font-medium active:scale-[0.98] transition-transform"
+      <button
+        type="button"
+        class="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-emerald-950/40 hover:bg-emerald-900/50 active:scale-[0.98] border border-emerald-500/30 text-emerald-400 text-xs font-semibold shadow-sm transition-all"
         @click="$emit('action', { part, type: 'IN' })"
-      />
-      <UButton
-        color="rose"
-        variant="soft"
-        icon="i-lucide-minus"
-        label="Списание"
-        block
-        size="sm"
+      >
+        <UIcon name="i-lucide-plus" class="w-4 h-4 stroke-[2.5]" />
+        <span>Приход</span>
+      </button>
+
+      <button
+        type="button"
         :disabled="part.stock_new === 0 && part.stock_used === 0"
-        class="font-medium active:scale-[0.98] transition-transform"
+        class="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-rose-950/40 hover:bg-rose-900/50 active:scale-[0.98] border border-rose-500/30 text-rose-400 text-xs font-semibold shadow-sm transition-all disabled:opacity-30 disabled:pointer-events-none"
         @click="$emit('action', { part, type: 'OUT' })"
-      />
+      >
+        <UIcon name="i-lucide-minus" class="w-4 h-4 stroke-[2.5]" />
+        <span>Списание</span>
+      </button>
     </div>
   </div>
 </template>

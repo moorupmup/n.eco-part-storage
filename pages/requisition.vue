@@ -6,22 +6,25 @@
       :subtitle="`${partsStore.lowStockParts.length} позиций ниже минимального остатка`"
     >
       <template #actions>
-        <UButton
-          color="gray"
-          variant="ghost"
-          icon="i-lucide-share-2"
-          size="sm"
+        <button
+          type="button"
           :disabled="partsStore.lowStockParts.length === 0"
+          class="flex items-center justify-center w-9 h-9 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-zinc-100 active:scale-95 transition-all disabled:opacity-40"
+          title="Поделиться"
           @click="shareRequisition"
-        />
-        <UButton
-          color="primary"
-          variant="soft"
-          icon="i-lucide-download"
-          size="sm"
+        >
+          <UIcon name="i-lucide-share-2" class="w-4 h-4" />
+        </button>
+
+        <button
+          type="button"
           :disabled="partsStore.lowStockParts.length === 0"
+          class="flex items-center justify-center w-9 h-9 rounded-xl bg-zinc-900 border border-zinc-800 text-emerald-400 hover:text-emerald-300 active:scale-95 transition-all disabled:opacity-40"
+          title="Скачать Excel"
           @click="downloadRequisitionExcel"
-        />
+        >
+          <UIcon name="i-lucide-download" class="w-4 h-4" />
+        </button>
       </template>
     </AppHeader>
 
@@ -98,17 +101,15 @@
           </div>
 
           <!-- Quick Actions -->
-          <div class="flex items-center gap-2 pt-1">
-            <UButton
-              color="emerald"
-              variant="soft"
-              icon="i-lucide-plus"
-              label="Оформить приход"
-              size="xs"
-              block
-              class="font-semibold flex-1"
+          <div class="pt-1">
+            <button
+              type="button"
+              class="w-full flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-emerald-950/40 hover:bg-emerald-900/50 active:scale-[0.98] border border-emerald-500/30 text-emerald-400 text-xs font-semibold shadow-sm transition-all"
               @click="openStockModal(item)"
-            />
+            >
+              <UIcon name="i-lucide-plus" class="w-4 h-4 stroke-[2.5]" />
+              <span>Оформить приход</span>
+            </button>
           </div>
         </div>
       </div>

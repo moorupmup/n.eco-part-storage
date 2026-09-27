@@ -89,33 +89,31 @@
         </div>
 
         <div class="flex items-center gap-2">
-          <UButton
-            color="gray"
-            variant="solid"
-            icon="i-lucide-minus"
-            size="lg"
+          <button
+            type="button"
             :disabled="quantity <= 1"
-            class="h-12 w-12 flex items-center justify-center rounded-xl"
+            class="h-12 w-12 flex items-center justify-center rounded-xl bg-zinc-800 hover:bg-zinc-700 active:scale-95 border border-zinc-700/80 text-zinc-200 disabled:opacity-30 disabled:pointer-events-none transition-all shadow-sm"
             @click="quantity > 1 ? quantity-- : null"
-          />
-          <UInput
+          >
+            <UIcon name="i-lucide-minus" class="w-5 h-5 stroke-[2.5]" />
+          </button>
+
+          <input
             v-model.number="quantity"
             type="number"
             min="1"
             :max="type === 'OUT' ? currentAvailableStock : 9999"
-            size="xl"
-            class="flex-1 text-center font-bold text-lg"
-            :ui="{ input: { base: 'text-center font-mono text-lg font-bold' } }"
+            class="flex-1 h-12 rounded-xl bg-zinc-950 border border-zinc-800 text-center font-mono text-xl font-bold text-zinc-100 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner"
           />
-          <UButton
-            color="gray"
-            variant="solid"
-            icon="i-lucide-plus"
-            size="lg"
+
+          <button
+            type="button"
             :disabled="type === 'OUT' && quantity >= currentAvailableStock"
-            class="h-12 w-12 flex items-center justify-center rounded-xl"
+            class="h-12 w-12 flex items-center justify-center rounded-xl bg-zinc-800 hover:bg-zinc-700 active:scale-95 border border-zinc-700/80 text-zinc-200 disabled:opacity-30 disabled:pointer-events-none transition-all shadow-sm"
             @click="quantity++"
-          />
+          >
+            <UIcon name="i-lucide-plus" class="w-5 h-5 stroke-[2.5]" />
+          </button>
         </div>
 
         <!-- Quick Presets -->
@@ -124,7 +122,7 @@
             v-for="preset in [1, 2, 5, 10]"
             :key="preset"
             type="button"
-            class="px-2.5 py-1 text-xs rounded-lg bg-zinc-800 text-zinc-300 hover:bg-zinc-700 active:scale-95 transition-all"
+            class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-zinc-800 border border-zinc-700/60 text-zinc-300 hover:bg-zinc-700 active:scale-95 transition-all"
             @click="setPreset(preset)"
           >
             +{{ preset }}
@@ -132,7 +130,7 @@
           <button
             v-if="type === 'OUT' && currentAvailableStock > 0"
             type="button"
-            class="px-2.5 py-1 text-xs rounded-lg bg-zinc-800 text-amber-400 hover:bg-zinc-700 active:scale-95 transition-all ml-auto"
+            class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-zinc-800 border border-zinc-700/60 text-amber-400 hover:bg-zinc-700 active:scale-95 transition-all ml-auto"
             @click="quantity = currentAvailableStock"
           >
             Списать все ({{ currentAvailableStock }})
@@ -142,7 +140,7 @@
         <!-- Over-stock warning for OUT -->
         <div
           v-if="type === 'OUT' && quantity > currentAvailableStock"
-          class="flex items-center gap-1.5 mt-2.5 p-2 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs"
+          class="flex items-center gap-1.5 mt-2.5 p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs"
         >
           <UIcon name="i-lucide-alert-triangle" class="w-4 h-4 shrink-0 text-rose-400" />
           <span>Нельзя списать {{ quantity }} шт! В наличии всего {{ currentAvailableStock }} шт.</span>
@@ -154,10 +152,11 @@
         <label class="block text-xs font-medium text-zinc-400 mb-1.5">
           Причина / Заказ-наряд
         </label>
-        <UInput
+        <input
           v-model="reason"
+          type="text"
           placeholder="Например: Заказ-наряд #124 или Накладная 45"
-          size="md"
+          class="w-full h-11 px-3.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 transition-colors shadow-inner"
         />
 
         <div class="flex items-center gap-1.5 mt-2 flex-wrap">
@@ -165,7 +164,7 @@
             v-for="chip in quickReasons"
             :key="chip"
             type="button"
-            class="px-2 py-0.5 text-[11px] rounded bg-zinc-800/80 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700"
+            class="px-2 py-0.5 text-[11px] rounded bg-zinc-800/80 border border-zinc-700/40 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700"
             @click="reason = chip"
           >
             {{ chip }}
@@ -174,19 +173,17 @@
       </div>
 
       <!-- Action Button -->
-      <UButton
-        :color="type === 'IN' ? 'emerald' : 'rose'"
-        variant="solid"
-        size="xl"
-        block
-        :disabled="isSubmitDisabled"
-        :loading="isSubmitting"
-        class="font-bold py-3.5 rounded-xl shadow-lg active:scale-[0.98] transition-transform"
+      <button
+        type="button"
+        :disabled="isSubmitDisabled || isSubmitting"
+        class="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold shadow-lg transition-all active:scale-[0.98] disabled:opacity-30 disabled:pointer-events-none"
+        :class="type === 'IN' ? 'bg-emerald-500 hover:bg-emerald-400 text-zinc-950 shadow-emerald-500/20' : 'bg-rose-500 hover:bg-rose-400 text-white shadow-rose-500/20'"
         @click="handleSubmit"
       >
+        <UIcon v-if="isSubmitting" name="i-lucide-loader-2" class="w-5 h-5 animate-spin" />
         <span v-if="type === 'IN'">Подтвердить приход (+{{ quantity }} шт)</span>
         <span v-else>Списать со склада (-{{ quantity }} шт)</span>
-      </UButton>
+      </button>
     </div>
   </UModal>
 </template>

@@ -19,8 +19,20 @@ export default defineNuxtConfig({
     }
   },
 
+  colorMode: {
+    preference: 'dark',
+    fallback: 'dark',
+    classSuffix: ''
+  },
+
   app: {
     head: {
+      htmlAttrs: {
+        class: 'dark'
+      },
+      bodyAttrs: {
+        class: 'dark bg-zinc-950 text-zinc-100'
+      },
       title: 'Склад Запчастей',
       meta: [
         { charset: 'utf-8' },

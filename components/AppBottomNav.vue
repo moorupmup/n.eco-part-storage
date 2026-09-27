@@ -6,7 +6,7 @@
         :key="tab.path"
         :to="tab.path"
         class="relative flex flex-col items-center justify-center flex-1 h-full py-1 text-xs font-medium transition-all duration-150 active:scale-95"
-        :class="route.path === tab.path ? 'text-primary-400 font-semibold' : 'text-zinc-400 hover:text-zinc-200'"
+        :class="route.path === tab.path ? 'text-emerald-400 font-semibold' : 'text-zinc-400 hover:text-zinc-200'"
       >
         <div class="relative">
           <UIcon :name="tab.icon" class="w-6 h-6 mb-0.5" />
@@ -25,7 +25,7 @@
         <!-- Active indicator bar -->
         <span
           v-if="route.path === tab.path"
-          class="absolute bottom-1 w-6 h-0.5 rounded-full bg-primary-400"
+          class="absolute bottom-1 w-6 h-0.5 rounded-full bg-emerald-400"
         />
       </NuxtLink>
     </div>

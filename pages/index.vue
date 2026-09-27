@@ -3,39 +3,38 @@
     <!-- Top Header -->
     <AppHeader title="Склад запчастей" :subtitle="`${partsStore.stats.totalPositions} позиций · Новые: ${partsStore.stats.totalNewQuantity} · Б/У: ${partsStore.stats.totalUsedQuantity}`">
       <template #actions>
-        <UButton
-          color="primary"
-          variant="soft"
-          icon="i-lucide-refresh-cw"
-          size="sm"
-          :loading="partsStore.isLoading"
+        <button
+          type="button"
+          class="flex items-center justify-center w-9 h-9 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-emerald-400 active:scale-95 transition-all shadow-sm"
+          :class="{ 'opacity-50 pointer-events-none': partsStore.isLoading }"
+          title="Обновить"
           @click="refreshData"
-        />
+        >
+          <UIcon name="i-lucide-refresh-cw" class="w-4 h-4" :class="{ 'animate-spin': partsStore.isLoading }" />
+        </button>
       </template>
     </AppHeader>
 
     <div class="px-4 py-3 space-y-3">
-      <!-- Quick Search Bar -->
+      <!-- Quick Search Bar (Dark Theme) -->
       <div class="relative">
-        <UInput
-          v-model="partsStore.searchQuery"
-          icon="i-lucide-search"
-          size="lg"
-          placeholder="Поиск по артикулу, названию, ячейке..."
-          :ui="{ icon: { trailing: { pointer: '' } } }"
-          class="w-full shadow-sm"
-        >
-          <template #trailing>
-            <UButton
-              v-show="partsStore.searchQuery !== ''"
-              color="gray"
-              variant="link"
-              icon="i-lucide-x"
-              :padded="false"
-              @click="partsStore.searchQuery = ''"
-            />
-          </template>
-        </UInput>
+        <div class="relative flex items-center">
+          <UIcon name="i-lucide-search" class="absolute left-3.5 w-4 h-4 text-zinc-400 pointer-events-none" />
+          <input
+            v-model="partsStore.searchQuery"
+            type="text"
+            placeholder="Поиск по артикулу, названию, ячейке..."
+            class="w-full h-11 pl-10 pr-10 rounded-xl bg-zinc-900/90 border border-zinc-800 text-zinc-100 placeholder-zinc-500 text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 transition-colors shadow-inner"
+          />
+          <button
+            v-if="partsStore.searchQuery"
+            type="button"
+            class="absolute right-3 p-1 rounded-full text-zinc-500 hover:text-zinc-300 transition-colors"
+            @click="partsStore.searchQuery = ''"
+          >
+            <UIcon name="i-lucide-x" class="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       <!-- Horizontal Stock Filter Pills -->
@@ -45,14 +44,14 @@
           :key="filter.id"
           type="button"
           class="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all active:scale-95"
-          :class="partsStore.stockFilter === filter.id ? 'bg-primary-500 text-white font-semibold shadow-sm' : 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200'"
+          :class="partsStore.stockFilter === filter.id ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-semibold shadow-sm' : 'bg-zinc-900/80 border border-zinc-800/80 text-zinc-400 hover:text-zinc-200'"
           @click="partsStore.stockFilter = filter.id"
         >
           <span>{{ filter.label }}</span>
           <span
             v-if="filter.count !== undefined"
             class="ml-0.5 px-1.5 py-0.2 rounded-full text-[10px]"
-            :class="partsStore.stockFilter === filter.id ? 'bg-white/20 text-white' : 'bg-zinc-800 text-zinc-400'"
+            :class="partsStore.stockFilter === filter.id ? 'bg-emerald-500/30 text-emerald-300' : 'bg-zinc-800 text-zinc-400'"
           >
             {{ filter.count }}
           </span>
@@ -122,10 +121,10 @@
     <div class="fixed right-4 bottom-20 z-30">
       <button
         type="button"
-        class="flex items-center justify-center w-14 h-14 rounded-full bg-primary-500 text-white shadow-xl shadow-primary-500/25 active:scale-90 transition-transform focus:outline-none"
+        class="flex items-center justify-center w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-400 text-zinc-950 shadow-xl shadow-emerald-500/30 active:scale-90 transition-all focus:outline-none"
         @click="openAddModal"
       >
-        <UIcon name="i-lucide-plus" class="w-7 h-7" />
+        <UIcon name="i-lucide-plus" class="w-7 h-7 stroke-[2.5]" />
       </button>
     </div>
 

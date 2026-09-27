@@ -40,38 +40,32 @@
         </div>
 
         <div class="space-y-2">
-          <UButton
-            color="gray"
-            variant="solid"
-            icon="i-lucide-file-spreadsheet"
-            label="Экспорт каталога в Excel (.xlsx)"
-            block
-            size="md"
-            class="justify-start text-xs font-semibold py-2.5"
+          <button
+            type="button"
+            class="flex items-center gap-2.5 w-full py-2.5 px-3.5 rounded-xl bg-zinc-950 border border-zinc-800 hover:border-zinc-700 text-xs font-semibold text-zinc-200 active:scale-[0.99] transition-all"
             @click="exportPartsExcel"
-          />
+          >
+            <UIcon name="i-lucide-file-spreadsheet" class="w-4 h-4 text-emerald-400" />
+            <span>Экспорт каталога в Excel (.xlsx)</span>
+          </button>
 
-          <UButton
-            color="gray"
-            variant="solid"
-            icon="i-lucide-history"
-            label="Экспорт истории операций в Excel"
-            block
-            size="md"
-            class="justify-start text-xs font-semibold py-2.5"
+          <button
+            type="button"
+            class="flex items-center gap-2.5 w-full py-2.5 px-3.5 rounded-xl bg-zinc-950 border border-zinc-800 hover:border-zinc-700 text-xs font-semibold text-zinc-200 active:scale-[0.99] transition-all"
             @click="exportHistoryExcel"
-          />
+          >
+            <UIcon name="i-lucide-history" class="w-4 h-4 text-blue-400" />
+            <span>Экспорт истории операций в Excel</span>
+          </button>
 
-          <UButton
-            color="gray"
-            variant="solid"
-            icon="i-lucide-file-json"
-            label="Полный JSON бэкап (База целиком)"
-            block
-            size="md"
-            class="justify-start text-xs font-semibold py-2.5"
+          <button
+            type="button"
+            class="flex items-center gap-2.5 w-full py-2.5 px-3.5 rounded-xl bg-zinc-950 border border-zinc-800 hover:border-zinc-700 text-xs font-semibold text-zinc-200 active:scale-[0.99] transition-all"
             @click="exportJSON"
-          />
+          >
+            <UIcon name="i-lucide-file-json" class="w-4 h-4 text-amber-400" />
+            <span>Полный JSON бэкап (База целиком)</span>
+          </button>
         </div>
       </div>
 
@@ -94,17 +88,16 @@
             class="hidden"
             @change="handleFileUpload"
           />
-          <UButton
-            color="primary"
-            variant="soft"
-            icon="i-lucide-folder-up"
-            label="Выбрать файл Excel / CSV / JSON"
-            block
-            size="md"
-            :loading="isImporting"
-            class="font-semibold py-2.5"
+          <button
+            type="button"
+            :disabled="isImporting"
+            class="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-950/40 hover:bg-emerald-900/50 border border-emerald-500/30 text-emerald-400 text-xs font-bold active:scale-[0.99] transition-all disabled:opacity-40"
             @click="triggerFileInput"
-          />
+          >
+            <UIcon v-if="isImporting" name="i-lucide-loader-2" class="w-4 h-4 animate-spin" />
+            <UIcon v-else name="i-lucide-folder-up" class="w-4 h-4" />
+            <span>Выбрать файл Excel / CSV / JSON</span>
+          </button>
         </div>
       </div>
 
@@ -119,16 +112,14 @@
           Полная очистка всех данных каталога запчастей и истории операций.
         </p>
 
-        <UButton
-          color="rose"
-          variant="outline"
-          icon="i-lucide-trash-2"
-          label="Очистить всю базу данных"
-          block
-          size="sm"
-          class="font-semibold"
+        <button
+          type="button"
+          class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-rose-950/30 hover:bg-rose-950/50 border border-rose-500/30 text-rose-400 text-xs font-semibold active:scale-[0.99] transition-all"
           @click="isClearConfirmOpen = true"
-        />
+        >
+          <UIcon name="i-lucide-trash-2" class="w-4 h-4" />
+          <span>Очистить всю базу данных</span>
+        </button>
       </div>
 
       <!-- System info footer -->

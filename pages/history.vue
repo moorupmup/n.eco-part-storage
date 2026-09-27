@@ -6,22 +6,25 @@
       :subtitle="`${transStore.filteredTransactions.length} операций в логе`"
     >
       <template #actions>
-        <UButton
-          color="gray"
-          variant="ghost"
-          icon="i-lucide-download"
-          size="sm"
+        <button
+          type="button"
           :disabled="transStore.filteredTransactions.length === 0"
+          class="flex items-center justify-center w-9 h-9 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-emerald-400 active:scale-95 transition-all disabled:opacity-40"
+          title="Экспорт в Excel"
           @click="exportHistory"
-        />
-        <UButton
-          color="gray"
-          variant="ghost"
-          icon="i-lucide-filter"
-          size="sm"
-          :class="isFilterActive ? 'text-primary-400 bg-primary-500/10' : 'text-zinc-400'"
+        >
+          <UIcon name="i-lucide-download" class="w-4 h-4" />
+        </button>
+
+        <button
+          type="button"
+          class="flex items-center justify-center w-9 h-9 rounded-xl border active:scale-95 transition-all"
+          :class="isFilterActive ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 shadow-sm' : 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:text-zinc-100'"
+          title="Фильтр"
           @click="isFilterDrawerOpen = !isFilterDrawerOpen"
-        />
+        >
+          <UIcon name="i-lucide-filter" class="w-4 h-4" />
+        </button>
       </template>
     </AppHeader>
 
@@ -187,20 +190,20 @@
             <label class="block text-xs font-semibold text-zinc-300 mb-1.5">
               С даты
             </label>
-            <UInput
+            <input
               v-model="tempDateFrom"
               type="date"
-              size="md"
+              class="w-full h-10 px-3 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-zinc-100 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner"
             />
           </div>
           <div>
             <label class="block text-xs font-semibold text-zinc-300 mb-1.5">
               По дату
             </label>
-            <UInput
+            <input
               v-model="tempDateTo"
               type="date"
-              size="md"
+              class="w-full h-10 px-3 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-zinc-100 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner"
             />
           </div>
         </div>
