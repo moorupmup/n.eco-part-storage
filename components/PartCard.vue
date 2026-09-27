@@ -7,10 +7,10 @@
           type="button"
           class="inline-flex items-center gap-1 font-mono text-xs font-semibold px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700/80 active:scale-95 text-primary-400 border border-zinc-700/60 hover:border-emerald-500/40 transition-all cursor-pointer"
           title="Нажмите, чтобы скопировать артикул"
-          @click.stop="copyToClipboard(part.code, 'Артикул')"
+          @click.stop="part?.code && copyToClipboard(part.code, 'Артикул')"
         >
           <UIcon name="i-lucide-barcode" class="w-3.5 h-3.5" />
-          <span>{{ part.code }}</span>
+          <span>{{ part?.code }}</span>
         </button>
         <span v-if="part.category" class="text-[11px] px-2 py-0.5 rounded-full bg-zinc-800/80 text-zinc-400">
           {{ part.category }}
@@ -120,7 +120,7 @@ const emit = defineEmits<{
   (e: 'delete', part: Part): void
 }>()
 
-const totalStock = computed(() => props.part.stock_new + props.part.stock_used)
+const totalStock = computed(() => (props.part?.stock_new || 0) + (props.part?.stock_used || 0))
 const isOut = computed(() => totalStock.value === 0)
 
 const menuItems = computed(() => [

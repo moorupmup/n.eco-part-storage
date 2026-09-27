@@ -62,14 +62,14 @@ export const usePartsStore = defineStore('parts', {
     },
 
     filteredParts: (state): Part[] => {
-      let result = [...state.parts]
+      let result = (state.parts || []).filter(p => !!p)
 
       // Search by code, name
       if (state.searchQuery.trim()) {
         const query = state.searchQuery.toLowerCase().trim()
         result = result.filter(p =>
-          p.code.toLowerCase().includes(query) ||
-          p.name.toLowerCase().includes(query) ||
+          (p.code && p.code.toLowerCase().includes(query)) ||
+          (p.name && p.name.toLowerCase().includes(query)) ||
           (p.notes && p.notes.toLowerCase().includes(query))
         )
       }
@@ -81,9 +81,9 @@ export const usePartsStore = defineStore('parts', {
 
       // Filter by stock level
       if (state.stockFilter === 'out') {
-        result = result.filter(p => (p.stock_new + p.stock_used) === 0)
+        result = result.filter(p => ((p.stock_new || 0) + (p.stock_used || 0)) === 0)
       } else if (state.stockFilter === 'in_stock') {
-        result = result.filter(p => (p.stock_new + p.stock_used) > 0)
+        result = result.filter(p => ((p.stock_new || 0) + (p.stock_used || 0)) > 0)
       }
 
       return result

@@ -208,7 +208,7 @@ class DatabaseService {
     }
 
     // If empty or if contains old automotive demo parts, reset to coffee machine parts
-    const hasOldCarParts = this.webParts.some(p => p.code === '04465-33450' || p.name.includes('Колодки'))
+    const hasOldCarParts = this.webParts.some(p => p && (p.code === '04465-33450' || (p.name && p.name.includes('Колодки'))))
     if (this.webParts.length === 0 || hasOldCarParts) {
       const now = new Date().toISOString()
       this.webParts = [
@@ -232,7 +232,7 @@ class DatabaseService {
       // Clear any leftover warehouse locations from previous demo data
       let cleaned = false
       for (const p of this.webParts) {
-        if (p.location) {
+        if (p && p.location) {
           p.location = ''
           cleaned = true
         }

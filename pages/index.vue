@@ -109,6 +109,7 @@
         <PartCard
           v-for="(part, index) in partsStore.filteredParts"
           :key="part.id"
+          :part="part"
           class="card-enter"
           :style="{ '--enter-delay': `${Math.min(index * 25, 200)}ms` }"
           @action="openStockModal"
