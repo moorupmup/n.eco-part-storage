@@ -1,273 +1,296 @@
 <template>
   <div>
-    <!-- Top Header -->
-    <AppHeader title="Бэкап и управление" subtitle="Резервное копирование и экспорт" />
+    <!-- Top Header with Back button -->
+    <header class="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800/80 pt-safe transition-colors">
+      <div class="flex items-center justify-between h-14 px-4 max-w-lg mx-auto">
+        <div class="flex items-center gap-2">
+          <NuxtLink
+            to="/"
+            class="flex items-center justify-center w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-zinc-100 active:scale-95 transition-all"
+            title="Назад"
+          >
+            <UIcon name="i-lucide-chevron-left" class="w-5 h-5" />
+          </NuxtLink>
+          <div>
+            <h1 class="text-sm font-bold text-zinc-100 leading-none">
+              Обновление системы
+            </h1>
+            <p class="text-[11px] text-zinc-400 mt-0.5 leading-none">
+              Управление версиями и релизы
+            </p>
+          </div>
+        </div>
 
-    <div class="px-4 py-3 space-y-4">
-      <!-- Database Status Card -->
-      <div class="p-4 rounded-xl bg-zinc-900 border border-zinc-800">
-        <div class="flex items-center gap-3 mb-3">
-          <div class="w-10 h-10 rounded-xl bg-primary-500/15 border border-primary-500/30 flex items-center justify-center text-primary-400">
-            <UIcon name="i-lucide-database" class="w-5 h-5" />
+        <div class="flex items-center gap-2">
+          <span class="font-mono text-xs font-semibold px-2 py-0.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400">
+            {{ currentVersion }}
+          </span>
+        </div>
+      </div>
+    </header>
+
+    <div class="px-4 py-4 space-y-4 max-w-lg mx-auto">
+      <!-- App Brand & Version Card -->
+      <div class="p-4 rounded-2xl bg-zinc-900/90 border border-zinc-800 relative overflow-hidden">
+        <div class="flex items-start justify-between gap-3 relative z-10">
+          <div class="flex items-center gap-3">
+            <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500/20 via-emerald-500/10 to-transparent border border-emerald-500/30 text-emerald-400 shadow-md shadow-emerald-950/40">
+              <svg class="w-6 h-6 text-emerald-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 21V9.5L12 4L21 9.5V21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M8 21V12.5C8 12.22 8.22 12 8.5 12H15.5C15.78 12 16 12.22 16 12.5V21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                <path d="M8 15H16" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+                <path d="M8 18H16" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                <path d="M12 4V8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-sm font-extrabold text-zinc-100 tracking-tight">
+                N.ECO PART STORAGE
+              </h2>
+              <p class="text-xs text-zinc-400 mt-0.5">
+                Текущая версия: <span class="text-emerald-400 font-mono font-semibold">{{ currentVersion }}</span>
+              </p>
+            </div>
+          </div>
+
+          <span
+            class="text-[11px] px-2 py-0.5 rounded-full font-semibold border"
+            :class="hasUpdate ? 'bg-amber-500/15 text-amber-300 border-amber-500/30 animate-pulse' : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'"
+          >
+            {{ hasUpdate ? 'Есть апдейт' : 'Актуально' }}
+          </span>
+        </div>
+
+        <div class="mt-3 pt-3 border-t border-zinc-800/80 flex items-center justify-between text-[11px] text-zinc-400">
+          <span class="inline-flex items-center gap-1">
+            <UIcon name="i-lucide-shield-check" class="w-3.5 h-3.5 text-emerald-400" />
+            Цифровой ключ: постоянный (release.keystore)
+          </span>
+          <span class="text-zinc-400">Android APK</span>
+        </div>
+      </div>
+
+      <!-- Update Status Card -->
+      <div class="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-4 shadow-sm">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center text-zinc-300">
+              <UIcon name="i-lucide-cloud-download" class="w-4 h-4 text-emerald-400" />
+            </div>
+            <div>
+              <h3 class="text-xs font-bold text-zinc-200">
+                Обновление приложения
+              </h3>
+              <p class="text-[11px] text-zinc-400">
+                Проверка релизов в GitHub репозитории
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            :disabled="isChecking"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 active:scale-95 border border-zinc-700 text-xs font-semibold text-zinc-200 transition-all disabled:opacity-50"
+            @click="checkForUpdates(true)"
+          >
+            <UIcon name="i-lucide-refresh-cw" class="w-3.5 h-3.5" :class="{ 'animate-spin': isChecking }" />
+            <span>{{ isChecking ? 'Проверка...' : 'Проверить' }}</span>
+          </button>
+        </div>
+
+        <!-- STATE: Update Available -->
+        <div
+          v-if="hasUpdate && latestRelease"
+          class="p-4 rounded-xl bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent border border-emerald-500/30 space-y-3"
+        >
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <span class="inline-block text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono mb-1">
+                Новая версия: {{ latestRelease.tag_name }}
+              </span>
+              <h4 class="text-sm font-bold text-zinc-100">
+                {{ latestRelease.name || 'Официальный релиз' }}
+              </h4>
+              <p class="text-[11px] text-zinc-400 mt-0.5">
+                Опубликовано: {{ formatDate(latestRelease.published_at) }}
+              </p>
+            </div>
+
+            <div v-if="apkAsset" class="text-right">
+              <span class="text-xs font-mono font-semibold text-zinc-300">
+                {{ formatBytes(apkAsset.size) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Release Notes / Changelog -->
+          <div v-if="latestRelease.body" class="p-3 rounded-lg bg-zinc-950/70 border border-zinc-800/80 text-xs text-zinc-300 space-y-1">
+            <div class="font-semibold text-zinc-400 text-[11px]">Что нового:</div>
+            <div class="whitespace-pre-line text-zinc-300 leading-relaxed font-sans text-xs">
+              {{ latestRelease.body }}
+            </div>
+          </div>
+
+          <!-- Direct Download & Install Button -->
+          <a
+            v-if="apkDownloadUrl"
+            :href="apkDownloadUrl"
+            target="_blank"
+            class="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-sm shadow-lg shadow-emerald-500/25 active:scale-[0.98] transition-all"
+          >
+            <UIcon name="i-lucide-download" class="w-4 h-4 stroke-[2.5]" />
+            <span>Скачать и обновить (.apk)</span>
+          </a>
+        </div>
+
+        <!-- STATE: Up to Date -->
+        <div
+          v-else-if="checkCompleted && !hasUpdate"
+          class="flex items-center gap-3 p-3.5 rounded-xl bg-emerald-500/5 border border-emerald-500/20 text-xs text-zinc-300"
+        >
+          <div class="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+            <UIcon name="i-lucide-check" class="w-4 h-4 stroke-[2.5]" />
           </div>
           <div>
-            <h3 class="text-sm font-bold text-zinc-100">База данных SQLite</h3>
-            <p class="text-xs text-zinc-400">Автономное локальное хранилище</p>
+            <div class="font-bold text-zinc-100">У вас установлена последняя версия</div>
+            <div class="text-[11px] text-zinc-400">Обновлений не требуется, приложение готово к работе</div>
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-2 text-xs">
-          <div class="p-2.5 rounded-lg bg-zinc-950 border border-zinc-800/80">
-            <div class="text-zinc-500 text-[11px]">Позиций запчастей</div>
-            <div class="text-base font-bold text-zinc-200 font-mono mt-0.5">
-              {{ partsStore.stats.totalPositions }}
-            </div>
-          </div>
-          <div class="p-2.5 rounded-lg bg-zinc-950 border border-zinc-800/80">
-            <div class="text-zinc-500 text-[11px]">Всего на складе</div>
-            <div class="text-base font-bold text-zinc-200 font-mono mt-0.5">
-              {{ partsStore.stats.totalNewQuantity + partsStore.stats.totalUsedQuantity }} <span class="text-xs font-normal text-zinc-500">шт</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Export Section -->
-      <div class="p-4 rounded-xl bg-zinc-900 border border-zinc-800 space-y-3">
-        <div class="flex items-center gap-2 text-xs font-bold text-zinc-200">
-          <UIcon name="i-lucide-download" class="w-4 h-4 text-emerald-400" />
-          Экспорт и сохранение бэкапа
-        </div>
-
-        <div class="space-y-2">
-          <button
-            type="button"
-            class="flex items-center gap-2.5 w-full py-2.5 px-3.5 rounded-xl bg-zinc-950 border border-zinc-800 hover:border-zinc-700 text-xs font-semibold text-zinc-200 active:scale-[0.99] transition-all"
-            @click="exportPartsExcel"
-          >
-            <UIcon name="i-lucide-file-spreadsheet" class="w-4 h-4 text-emerald-400" />
-            <span>Экспорт каталога в Excel (.xlsx)</span>
-          </button>
-
-          <button
-            type="button"
-            class="flex items-center gap-2.5 w-full py-2.5 px-3.5 rounded-xl bg-zinc-950 border border-zinc-800 hover:border-zinc-700 text-xs font-semibold text-zinc-200 active:scale-[0.99] transition-all"
-            @click="exportHistoryExcel"
-          >
-            <UIcon name="i-lucide-history" class="w-4 h-4 text-blue-400" />
-            <span>Экспорт истории операций в Excel</span>
-          </button>
-
-          <button
-            type="button"
-            class="flex items-center gap-2.5 w-full py-2.5 px-3.5 rounded-xl bg-zinc-950 border border-zinc-800 hover:border-zinc-700 text-xs font-semibold text-zinc-200 active:scale-[0.99] transition-all"
-            @click="exportJSON"
-          >
-            <UIcon name="i-lucide-file-json" class="w-4 h-4 text-amber-400" />
-            <span>Полный JSON бэкап (База целиком)</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Import Section -->
-      <div class="p-4 rounded-xl bg-zinc-900 border border-zinc-800 space-y-3">
-        <div class="flex items-center gap-2 text-xs font-bold text-zinc-200">
-          <UIcon name="i-lucide-upload" class="w-4 h-4 text-blue-400" />
-          Импорт и восстановление
-        </div>
-
-        <p class="text-xs text-zinc-400">
-          Загрузите файл Excel (.xlsx, .xls) или CSV со списком запчастей для автоматического добавления в базу.
-        </p>
-
-        <div>
-          <input
-            ref="fileInputRef"
-            type="file"
-            accept=".xlsx, .xls, .csv, .json"
-            class="hidden"
-            @change="handleFileUpload"
-          />
-          <button
-            type="button"
-            :disabled="isImporting"
-            class="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-950/40 hover:bg-emerald-900/50 border border-emerald-500/30 text-emerald-400 text-xs font-bold active:scale-[0.99] transition-all disabled:opacity-40"
-            @click="triggerFileInput"
-          >
-            <UIcon v-if="isImporting" name="i-lucide-loader-2" class="w-4 h-4 animate-spin" />
-            <UIcon v-else name="i-lucide-folder-up" class="w-4 h-4" />
-            <span>Выбрать файл Excel / CSV / JSON</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Danger Zone -->
-      <div class="p-4 rounded-xl bg-rose-500/5 border border-rose-500/20 space-y-3">
-        <div class="flex items-center gap-2 text-xs font-bold text-rose-400">
-          <UIcon name="i-lucide-alert-octagon" class="w-4 h-4 text-rose-500" />
-          Опасная зона
-        </div>
-
-        <p class="text-xs text-zinc-400">
-          Полная очистка всех данных каталога запчастей и истории операций.
-        </p>
-
-        <button
-          type="button"
-          class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-rose-950/30 hover:bg-rose-950/50 border border-rose-500/30 text-rose-400 text-xs font-semibold active:scale-[0.99] transition-all"
-          @click="isClearConfirmOpen = true"
+        <!-- STATE: Error / Offline -->
+        <div
+          v-if="errorMessage"
+          class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-300 flex items-center gap-2"
         >
-          <UIcon name="i-lucide-trash-2" class="w-4 h-4" />
-          <span>Очистить всю базу данных</span>
-        </button>
+          <UIcon name="i-lucide-alert-circle" class="w-4 h-4 shrink-0 text-rose-400" />
+          <span>{{ errorMessage }}</span>
+        </div>
+
+        <!-- Last Checked Footer -->
+        <div class="flex items-center justify-between text-[11px] text-zinc-400 pt-1">
+          <span>Репозиторий: moorupmup/n.eco-part-storage</span>
+          <span v-if="lastChecked">Проверено: {{ lastChecked }}</span>
+        </div>
       </div>
 
-      <!-- System info footer -->
-      <div class="pt-2 text-center text-[11px] text-zinc-400 space-y-1">
-        <div>Склад Запчастей v1.0.0</div>
-        <div>Стек: Vue 3 · Nuxt 3 · Pinia · Nuxt UI · SQLite · Capacitor</div>
+      <!-- Info Card about Signature & Updates -->
+      <div class="p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800/60 space-y-2 text-xs text-zinc-400">
+        <div class="font-semibold text-zinc-300 flex items-center gap-1.5">
+          <UIcon name="i-lucide-info" class="w-3.5 h-3.5 text-emerald-400" />
+          Как происходит обновление:
+        </div>
+        <p class="text-[11px] leading-relaxed">
+          При выходе релиза на GitHub вы нажимаете кнопку <strong>«Скачать и обновить»</strong>. Android скачивает APK-файл и устанавливает его поверх текущего без потери локальной базы данных SQLite, благодаря постоянному цифровому ключу подписи.
+        </p>
       </div>
     </div>
-
-    <!-- Confirm Clear Modal -->
-    <UModal v-model="isClearConfirmOpen">
-      <div class="p-5 bg-zinc-900 border border-zinc-800 rounded-xl space-y-3">
-        <div class="flex items-center gap-2 text-rose-400 font-bold text-base">
-          <UIcon name="i-lucide-alert-triangle" class="w-5 h-5 text-rose-500" />
-          Подтвердите очистку
-        </div>
-        <p class="text-xs text-zinc-300">
-          Все запчасти и история движений будут безвозвратно удалены. Перед очисткой рекомендуется сделать экспорт в Excel или JSON.
-        </p>
-        <div class="flex items-center gap-2 pt-2">
-          <UButton
-            color="gray"
-            variant="ghost"
-            label="Отмена"
-            block
-            class="flex-1"
-            @click="isClearConfirmOpen = false"
-          />
-          <UButton
-            color="rose"
-            variant="solid"
-            label="Удалить все"
-            block
-            class="flex-1 font-bold"
-            @click="executeClearAll"
-          />
-        </div>
-      </div>
-    </UModal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { usePartsStore } from '~/stores/parts'
-import { useTransactionsStore } from '~/stores/transactions'
-import { dbService } from '~/services/database'
-import {
-  exportPartsToExcel,
-  exportTransactionsToExcel,
-  exportFullBackupJSON,
-  parseExcelOrCSV
-} from '~/utils/exportImport'
+const currentVersion = 'v1.0.0'
+const repoUrl = 'https://api.github.com/repos/moorupmup/n.eco-part-storage/releases/latest'
 
-const partsStore = usePartsStore()
-const transStore = useTransactionsStore()
-const toast = useToast()
-
-const fileInputRef = ref<HTMLInputElement | null>(null)
-const isImporting = ref(false)
-const isClearConfirmOpen = ref(false)
-
-function exportPartsExcel() {
-  exportPartsToExcel(partsStore.parts)
-  toast.add({
-    title: 'Каталог выгружен',
-    description: 'Файл Excel успешно сохранен',
-    color: 'emerald'
-  })
+interface ReleaseAsset {
+  name: string
+  size: number
+  browser_download_url: string
 }
 
-function exportHistoryExcel() {
-  exportTransactionsToExcel(transStore.transactions)
-  toast.add({
-    title: 'История выгружена',
-    description: 'Файл Excel успешно сохранен',
-    color: 'emerald'
-  })
+interface GitHubRelease {
+  tag_name: string
+  name: string
+  body: string
+  published_at: string
+  html_url: string
+  assets: ReleaseAsset[]
 }
 
-async function exportJSON() {
-  const { parts, transactions } = await dbService.exportAllData()
-  exportFullBackupJSON(parts, transactions)
-  toast.add({
-    title: 'JSON бэкап сохранен',
-    description: 'Полная копия базы готова',
-    color: 'emerald'
-  })
-}
+const isChecking = ref(false)
+const checkCompleted = ref(false)
+const latestRelease = ref<GitHubRelease | null>(null)
+const hasUpdate = ref(false)
+const errorMessage = ref('')
+const lastChecked = ref('')
 
-function triggerFileInput() {
-  fileInputRef.value?.click()
-}
+const apkAsset = computed(() => {
+  if (!latestRelease.value?.assets) return null
+  return latestRelease.value.assets.find(a => a.name.endsWith('.apk')) || latestRelease.value.assets[0]
+})
 
-async function handleFileUpload(event: Event) {
-  const file = (event.target as HTMLInputElement).files?.[0]
-  if (!file) return
+const apkDownloadUrl = computed(() => {
+  return apkAsset.value?.browser_download_url || latestRelease.value?.html_url
+})
 
-  isImporting.value = true
+onMounted(() => {
+  checkForUpdates(false)
+})
+
+async function checkForUpdates(manual = true) {
+  isChecking.value = true
+  errorMessage.value = ''
+
   try {
-    if (file.name.endsWith('.json')) {
-      const text = await file.text()
-      const data = JSON.parse(text)
-      const res = await dbService.importData(data)
-      await partsStore.fetchParts()
-      await transStore.fetchTransactions()
-      toast.add({
-        title: 'Бэкап восстановлен',
-        description: `Импортировано запчастей: ${res.importedParts}`,
-        color: 'emerald'
-      })
-    } else {
-      const parts = await parseExcelOrCSV(file)
-      const res = await dbService.importData({ parts })
-      await partsStore.fetchParts()
-      toast.add({
-        title: 'Импорт завершен',
-        description: `Добавлено позиций: ${res.importedParts}`,
-        color: 'emerald'
-      })
+    const res = await fetch(repoUrl, {
+      headers: {
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    })
+
+    if (res.status === 404) {
+      checkCompleted.value = true
+      hasUpdate.value = false
+      lastChecked.value = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+      return
     }
+
+    if (!res.ok) {
+      throw new Error(`Ошибка GitHub API (${res.status})`)
+    }
+
+    const data: GitHubRelease = await res.json()
+    latestRelease.value = data
+
+    // Compare versions (e.g. "v1.0.1" vs "v1.0.0")
+    const cleanCurrent = currentVersion.replace(/^v/, '')
+    const cleanLatest = data.tag_name ? data.tag_name.replace(/^v/, '') : cleanCurrent
+
+    hasUpdate.value = compareVersions(cleanLatest, cleanCurrent) > 0
+    checkCompleted.value = true
+    lastChecked.value = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
   } catch (err: any) {
-    toast.add({
-      title: 'Ошибка импорта',
-      description: err.message || 'Не удалось прочитать файл',
-      color: 'red'
-    })
+    if (manual) {
+      errorMessage.value = err.message || 'Не удалось связаться с сервером обновлений'
+    }
   } finally {
-    isImporting.value = false
-    if (fileInputRef.value) fileInputRef.value.value = ''
+    isChecking.value = false
   }
 }
 
-async function executeClearAll() {
-  try {
-    await dbService.clearAllData()
-    await partsStore.fetchParts()
-    await transStore.fetchTransactions()
-    toast.add({
-      title: 'База данных очищена',
-      color: 'gray'
-    })
-    isClearConfirmOpen.value = false
-  } catch (err: any) {
-    toast.add({
-      title: 'Ошибка',
-      description: err.message,
-      color: 'red'
-    })
+function compareVersions(v1: string, v2: string): number {
+  const parts1 = v1.split('.').map(n => parseInt(n) || 0)
+  const parts2 = v2.split('.').map(n => parseInt(n) || 0)
+  for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
+    const num1 = parts1[i] || 0
+    const num2 = parts2[i] || 0
+    if (num1 > num2) return 1
+    if (num1 < num2) return -1
   }
+  return 0
+}
+
+function formatDate(dateStr: string): string {
+  if (!dateStr) return ''
+  return new Date(dateStr).toLocaleDateString('ru-RU', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  })
+}
+
+function formatBytes(bytes: number): string {
+  if (!bytes) return ''
+  const mb = bytes / (1024 * 1024)
+  return `${mb.toFixed(1)} МБ`
 }
 </script>

@@ -57,7 +57,7 @@ const tabs = computed(() => [
   },
   {
     name: 'Бэкап',
-    path: '/settings',
+    path: '/backup',
     icon: 'i-lucide-database'
   }
 ])

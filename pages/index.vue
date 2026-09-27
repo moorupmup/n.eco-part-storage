@@ -7,11 +7,19 @@
           type="button"
           class="flex items-center justify-center w-9 h-9 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-emerald-400 active:scale-95 transition-all shadow-sm"
           :class="{ 'opacity-50 pointer-events-none': partsStore.isLoading }"
-          title="Обновить"
+          title="Обновить список"
           @click="refreshData"
         >
           <UIcon name="i-lucide-refresh-cw" class="w-4 h-4" :class="{ 'animate-spin': partsStore.isLoading }" />
         </button>
+
+        <NuxtLink
+          to="/settings"
+          class="flex items-center justify-center w-9 h-9 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-emerald-400 active:scale-95 transition-all shadow-sm"
+          title="Обновление приложения"
+        >
+          <UIcon name="i-lucide-settings" class="w-4 h-4" />
+        </NuxtLink>
       </template>
     </AppHeader>
 

@@ -65,18 +65,57 @@ jobs:
       - name: Sync Capacitor Android
         run: npx cap sync android
 
-      - name: Grant Execute Permission to Gradlew
-        run: chmod +x android/gradlew
+      - name: Configure Permanent Signing Keystore
+        run: |
+          mkdir -p android/app/keystore
+          cp keystore/release.keystore android/app/keystore/release.keystore
+          
+          # Inject signingConfigs into android/app/build.gradle
+          python3 -c "
+          with open('android/app/build.gradle', 'r') as f:
+              code = f.read()
+          
+          signing_block = '''
+              signingConfigs {
+                  release {
+                      storeFile file('keystore/release.keystore')
+                      storePassword 'necopart2026'
+                      keyAlias 'necopart'
+                      keyPassword 'necopart2026'
+                      v1SigningEnabled true
+                      v2SigningEnabled true
+                  }
+              }
+          '''
+          if 'signingConfigs {' not in code:
+              code = code.replace('buildTypes {', signing_block + '\n    buildTypes {')
+              # Ensure debug and release both use our permanent release key
+              code = code.replace('signingConfig signingConfigs.debug', 'signingConfig signingConfigs.release')
+              with open('android/app/build.gradle', 'w') as f:
+                  f.write(code)
+          "
 
       - name: Build Android APK
         run: |
           cd android
           ./gradlew assembleDebug --stacktrace
 
-      - name: Find and Rename APK
+      - name: Align and Sign APK with Permanent Key
         run: |
           mkdir -p build-output
-          cp android/app/build/outputs/apk/debug/app-debug.apk build-output/neco-part-storage.apk
+          RAW_APK=$(find android/app/build/outputs/apk -name "*.apk" | head -n 1)
+          APKSIGNER=$(find $ANDROID_HOME/build-tools -name apksigner | sort -V | tail -n 1)
+          
+          echo "Signing $RAW_APK with permanent release.keystore using $APKSIGNER"
+          $APKSIGNER sign --ks keystore/release.keystore \
+            --ks-pass pass:necopart2026 \
+            --ks-key-alias necopart \
+            --key-pass pass:necopart2026 \
+            --out build-output/neco-part-storage.apk \
+            "$RAW_APK"
+
+          echo "Verifying permanent APK signature:"
+          $APKSIGNER verify --verbose build-output/neco-part-storage.apk
 
       - name: Upload APK as Workflow Artifact
         uses: actions/upload-artifact@v4
