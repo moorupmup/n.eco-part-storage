@@ -45,10 +45,9 @@ const tabs = computed(() => [
     icon: 'i-lucide-boxes'
   },
   {
-    name: 'На заказ',
-    path: '/requisition',
-    icon: 'i-lucide-clipboard-list',
-    badge: partsStore.stats.lowStockPositions
+    name: 'Категории',
+    path: '/categories',
+    icon: 'i-lucide-folder-tree'
   },
   {
     name: 'История',

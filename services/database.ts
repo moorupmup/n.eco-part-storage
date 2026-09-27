@@ -1,8 +1,19 @@
 import { Capacitor } from '@capacitor/core'
 import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite'
-import type { Part, Transaction, MovementType, PartCondition } from '~/types'
+import type { Part, Transaction, MovementType, PartCondition, Category } from '~/types'
 
 const DB_NAME = 'neco_parts_db'
+
+export const INITIAL_CATEGORIES = [
+  'Помпы / Насосы',
+  'Заварочный блок',
+  'Кофемолка',
+  'Уплотнители',
+  'Клапаны',
+  'Бойлеры / ТЭНы',
+  'Электроника',
+  'Гидравлика'
+]
 
 class DatabaseService {
   private sqlite: SQLiteConnection | null = null
@@ -13,6 +24,7 @@ class DatabaseService {
   // Fallback in-memory/localStorage store for Web Dev environment if jeep-sqlite is unavailable
   private webParts: Part[] = []
   private webTransactions: Transaction[] = []
+  private webCategories: Category[] = []
 
   async init(): Promise<void> {
     if (this.isInitialized) return
@@ -72,6 +84,14 @@ class DatabaseService {
       CREATE INDEX IF NOT EXISTS idx_parts_code ON parts(code);
       CREATE INDEX IF NOT EXISTS idx_parts_name ON parts(name);
 
+      CREATE TABLE IF NOT EXISTS categories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT UNIQUE NOT NULL,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_categories_name ON categories(name);
+
       CREATE TABLE IF NOT EXISTS transactions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         part_id INTEGER NOT NULL,
@@ -89,6 +109,15 @@ class DatabaseService {
       CREATE INDEX IF NOT EXISTS idx_transactions_created_at ON transactions(created_at);
     `
     await this.db.execute(schema)
+
+    // Seed categories if empty
+    const checkCatCount = await this.db.query('SELECT COUNT(*) as count FROM categories')
+    if (checkCatCount.values && checkCatCount.values[0]?.count === 0) {
+      const now = new Date().toISOString()
+      for (const cat of INITIAL_CATEGORIES) {
+        await this.db.run(`INSERT OR IGNORE INTO categories (name, created_at) VALUES (?, ?)`, [cat, now])
+      }
+    }
 
     // Seed sample data if empty
     const checkCount = await this.db.query('SELECT COUNT(*) as count FROM parts')
@@ -145,6 +174,7 @@ class DatabaseService {
   private async initWebStore() {
     const savedParts = localStorage.getItem('neco_parts')
     const savedTrans = localStorage.getItem('neco_transactions')
+    const savedCategories = localStorage.getItem('neco_categories')
 
     if (savedParts) {
       try {
@@ -159,6 +189,22 @@ class DatabaseService {
       } catch {
         this.webTransactions = []
       }
+    }
+    if (savedCategories) {
+      try {
+        this.webCategories = JSON.parse(savedCategories)
+      } catch {
+        this.webCategories = []
+      }
+    }
+
+    if (this.webCategories.length === 0) {
+      const now = new Date().toISOString()
+      this.webCategories = INITIAL_CATEGORIES.map((name, idx) => ({
+        id: idx + 1,
+        name,
+        created_at: now
+      }))
     }
 
     // If empty or if contains old automotive demo parts, reset to coffee machine parts
@@ -201,6 +247,7 @@ class DatabaseService {
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem('neco_parts', JSON.stringify(this.webParts))
       localStorage.setItem('neco_transactions', JSON.stringify(this.webTransactions))
+      localStorage.setItem('neco_categories', JSON.stringify(this.webCategories))
     }
   }
 
@@ -471,6 +518,122 @@ class DatabaseService {
     return (res.values as Transaction[]) || []
   }
 
+  // --- CATEGORIES ---
+  async getAllCategories(): Promise<Category[]> {
+    await this.init()
+    if (this.isWeb || !this.db) {
+      // Ensure any categories used in webParts exist in webCategories
+      const existingNames = new Set(this.webCategories.map(c => c.name.toLowerCase().trim()))
+      let nextId = (this.webCategories.length > 0 ? Math.max(...this.webCategories.map(c => c.id)) : 0) + 1
+      let added = false
+      for (const p of this.webParts) {
+        if (p.category && p.category.trim() && !existingNames.has(p.category.toLowerCase().trim())) {
+          this.webCategories.push({
+            id: nextId++,
+            name: p.category.trim(),
+            created_at: new Date().toISOString()
+          })
+          existingNames.add(p.category.toLowerCase().trim())
+          added = true
+        }
+      }
+      if (added) this.persistWebStore()
+      return [...this.webCategories].sort((a, b) => a.name.localeCompare(b.name, 'ru'))
+    }
+
+    // SQLite Native: sync categories used in parts
+    await this.db.execute(`
+      INSERT OR IGNORE INTO categories (name)
+      SELECT DISTINCT category FROM parts WHERE category IS NOT NULL AND category != ''
+    `)
+    const res = await this.db.query('SELECT * FROM categories ORDER BY name ASC')
+    return (res.values as Category[]) || []
+  }
+
+  async createCategory(name: string): Promise<Category> {
+    await this.init()
+    const trimmed = name.trim()
+    if (!trimmed) throw new Error('Название категории не может быть пустым')
+
+    const now = new Date().toISOString()
+    if (this.isWeb || !this.db) {
+      const exists = this.webCategories.some(c => c.name.toLowerCase() === trimmed.toLowerCase())
+      if (exists) throw new Error('Категория с таким названием уже существует')
+      const newCat: Category = {
+        id: (this.webCategories.length > 0 ? Math.max(...this.webCategories.map(c => c.id)) : 0) + 1,
+        name: trimmed,
+        created_at: now
+      }
+      this.webCategories.push(newCat)
+      this.persistWebStore()
+      return newCat
+    }
+
+    try {
+      const res = await this.db.run(
+        `INSERT INTO categories (name, created_at) VALUES (?, ?)`,
+        [trimmed, now]
+      )
+      return {
+        id: res.changes?.lastId || Date.now(),
+        name: trimmed,
+        created_at: now
+      }
+    } catch (err: any) {
+      if (err.message && err.message.includes('UNIQUE')) {
+        throw new Error('Категория с таким названием уже существует')
+      }
+      throw err
+    }
+  }
+
+  async renameCategory(oldName: string, newName: string): Promise<void> {
+    await this.init()
+    const trimmedOld = oldName.trim()
+    const trimmedNew = newName.trim()
+    if (!trimmedNew) throw new Error('Новое название не может быть пустым')
+    if (trimmedOld.toLowerCase() === trimmedNew.toLowerCase()) return
+
+    if (this.isWeb || !this.db) {
+      const exists = this.webCategories.some(c => c.name.toLowerCase() === trimmedNew.toLowerCase())
+      if (exists) throw new Error('Категория с таким названием уже существует')
+
+      const cat = this.webCategories.find(c => c.name.toLowerCase() === trimmedOld.toLowerCase())
+      if (cat) {
+        cat.name = trimmedNew
+      }
+      for (const p of this.webParts) {
+        if (p.category && p.category.toLowerCase().trim() === trimmedOld.toLowerCase()) {
+          p.category = trimmedNew
+        }
+      }
+      this.persistWebStore()
+      return
+    }
+
+    await this.db.run(`UPDATE categories SET name = ? WHERE name = ?`, [trimmedNew, trimmedOld])
+    await this.db.run(`UPDATE parts SET category = ? WHERE category = ?`, [trimmedNew, trimmedOld])
+  }
+
+  async deleteCategory(name: string): Promise<void> {
+    await this.init()
+    const trimmed = name.trim()
+
+    if (this.isWeb || !this.db) {
+      this.webCategories = this.webCategories.filter(c => c.name.toLowerCase() !== trimmed.toLowerCase())
+      for (const p of this.webParts) {
+        if (p.category && p.category.toLowerCase().trim() === trimmed.toLowerCase()) {
+          p.category = ''
+        }
+      }
+      this.persistWebStore()
+      return
+    }
+
+    await this.db.run(`DELETE FROM categories WHERE name = ?`, [trimmed])
+    await this.db.run(`UPDATE parts SET category = '' WHERE category = ?`, [trimmed])
+  }
+
   // --- IMPORT / EXPORT & BACKUP ---
   async exportAllData(): Promise<{ parts: Part[]; transactions: Transaction[] }> {
     const parts = await this.getAllParts()
@@ -510,12 +673,22 @@ class DatabaseService {
     if (this.isWeb || !this.db) {
       this.webParts = []
       this.webTransactions = []
+      this.webCategories = INITIAL_CATEGORIES.map((name, idx) => ({
+        id: idx + 1,
+        name,
+        created_at: new Date().toISOString()
+      }))
       this.persistWebStore()
       return
     }
 
     await this.db.run('DELETE FROM transactions')
     await this.db.run('DELETE FROM parts')
+    await this.db.run('DELETE FROM categories')
+    const now = new Date().toISOString()
+    for (const cat of INITIAL_CATEGORIES) {
+      await this.db.run(`INSERT OR IGNORE INTO categories (name, created_at) VALUES (?, ?)`, [cat, now])
+    }
   }
 }
 

@@ -86,6 +86,14 @@
         >
           {{ cat }}
         </button>
+        <NuxtLink
+          to="/categories"
+          class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] whitespace-nowrap bg-zinc-900/90 border border-zinc-800 text-zinc-400 hover:text-emerald-400 transition-all shrink-0"
+          title="Управление категориями"
+        >
+          <UIcon name="i-lucide-folder-cog" class="w-3 h-3 text-emerald-400" />
+          <span>Настроить</span>
+        </NuxtLink>
       </div>
 
       <!-- Parts List -->

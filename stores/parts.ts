@@ -1,9 +1,10 @@
 import { defineStore } from 'pinia'
 import { dbService } from '~/services/database'
-import type { Part, MovementType, PartCondition, InventoryStats } from '~/types'
+import type { Part, MovementType, PartCondition, InventoryStats, Category, CategoryWithStats } from '~/types'
 
 interface PartsState {
   parts: Part[]
+  categoriesList: Category[]
   searchQuery: string
   selectedCategory: string
   stockFilter: 'all' | 'low' | 'out' | 'in_stock'
@@ -14,6 +15,7 @@ interface PartsState {
 export const usePartsStore = defineStore('parts', {
   state: (): PartsState => ({
     parts: [],
+    categoriesList: [],
     searchQuery: '',
     selectedCategory: 'all',
     stockFilter: 'all',
@@ -24,12 +26,39 @@ export const usePartsStore = defineStore('parts', {
   getters: {
     categories: (state): string[] => {
       const set = new Set<string>()
+      state.categoriesList.forEach(c => set.add(c.name))
       state.parts.forEach(p => {
         if (p.category && p.category.trim()) {
           set.add(p.category.trim())
         }
       })
-      return Array.from(set).sort()
+      return Array.from(set).sort((a, b) => a.localeCompare(b, 'ru'))
+    },
+
+    categoriesWithStats: (state): CategoryWithStats[] => {
+      const map = new Map<string, { partsCount: number; totalNew: number; totalUsed: number }>()
+
+      for (const p of state.parts) {
+        const cat = (p.category || '').trim()
+        if (!cat) continue
+        const cur = map.get(cat.toLowerCase()) || { partsCount: 0, totalNew: 0, totalUsed: 0 }
+        cur.partsCount += 1
+        cur.totalNew += p.stock_new
+        cur.totalUsed += p.stock_used
+        map.set(cat.toLowerCase(), cur)
+      }
+
+      return state.categoriesList.map(c => {
+        const stats = map.get(c.name.toLowerCase()) || { partsCount: 0, totalNew: 0, totalUsed: 0 }
+        return {
+          id: c.id,
+          name: c.name,
+          created_at: c.created_at,
+          partsCount: stats.partsCount,
+          totalNew: stats.totalNew,
+          totalUsed: stats.totalUsed
+        }
+      }).sort((a, b) => a.name.localeCompare(b.name, 'ru'))
     },
 
     filteredParts: (state): Part[] => {
@@ -106,9 +135,80 @@ export const usePartsStore = defineStore('parts', {
       this.isLoading = true
       this.error = null
       try {
-        this.parts = await dbService.getAllParts()
+        const [parts, categories] = await Promise.all([
+          dbService.getAllParts(),
+          dbService.getAllCategories()
+        ])
+        this.parts = parts
+        this.categoriesList = categories
       } catch (err: any) {
         this.error = err.message || 'Ошибка загрузки запчастей'
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    async fetchCategories() {
+      try {
+        this.categoriesList = await dbService.getAllCategories()
+      } catch (err: any) {
+        console.error('Failed to load categories:', err)
+      }
+    },
+
+    async addCategory(name: string) {
+      this.isLoading = true
+      try {
+        const newCat = await dbService.createCategory(name)
+        this.categoriesList.push(newCat)
+        return newCat
+      } catch (err: any) {
+        this.error = err.message
+        throw err
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    async renameCategory(oldName: string, newName: string) {
+      this.isLoading = true
+      try {
+        await dbService.renameCategory(oldName, newName)
+        const cat = this.categoriesList.find(c => c.name.toLowerCase() === oldName.toLowerCase())
+        if (cat) cat.name = newName.trim()
+
+        for (const p of this.parts) {
+          if (p.category && p.category.toLowerCase().trim() === oldName.toLowerCase().trim()) {
+            p.category = newName.trim()
+          }
+        }
+        if (this.selectedCategory.toLowerCase() === oldName.toLowerCase()) {
+          this.selectedCategory = newName.trim()
+        }
+      } catch (err: any) {
+        this.error = err.message
+        throw err
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    async deleteCategory(name: string) {
+      this.isLoading = true
+      try {
+        await dbService.deleteCategory(name)
+        this.categoriesList = this.categoriesList.filter(c => c.name.toLowerCase() !== name.toLowerCase())
+        for (const p of this.parts) {
+          if (p.category && p.category.toLowerCase().trim() === name.toLowerCase().trim()) {
+            p.category = ''
+          }
+        }
+        if (this.selectedCategory.toLowerCase() === name.toLowerCase()) {
+          this.selectedCategory = 'all'
+        }
+      } catch (err: any) {
+        this.error = err.message
+        throw err
       } finally {
         this.isLoading = false
       }

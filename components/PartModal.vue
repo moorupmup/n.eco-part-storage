@@ -58,10 +58,11 @@
           />
           <div class="flex items-center gap-1.5 mt-2 flex-wrap">
             <button
-              v-for="cat in commonCategories"
+              v-for="cat in availableCategories"
               :key="cat"
               type="button"
-              class="px-2.5 py-1 text-[11px] rounded-lg bg-zinc-800 border border-zinc-700/60 text-zinc-300 hover:text-zinc-100 hover:bg-zinc-700 transition-all"
+              class="px-2.5 py-1 text-[11px] rounded-lg border transition-all"
+              :class="form.category === cat ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 font-semibold' : 'bg-zinc-800 border-zinc-700/60 text-zinc-300 hover:text-zinc-100 hover:bg-zinc-700'"
               @click="form.category = cat"
             >
               {{ cat }}
@@ -205,7 +206,7 @@ const isOpen = computed({
 const isEdit = computed(() => !!props.partToEdit)
 const isSaving = ref(false)
 
-const commonCategories = ['Помпы / Насосы', 'Заварочный блок', 'Кофемолка', 'Уплотнители', 'Клапаны', 'Бойлеры / ТЭНы', 'Электроника', 'Гидравлика']
+const availableCategories = computed(() => partsStore.categories)
 
 const form = reactive({
   code: '',

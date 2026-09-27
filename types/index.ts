@@ -37,3 +37,15 @@ export interface InventoryStats {
   totalUsedQuantity: number
   lowStockPositions: number
 }
+
+export interface Category {
+  id: number
+  name: string
+  created_at?: string
+}
+
+export interface CategoryWithStats extends Category {
+  partsCount: number
+  totalNew: number
+  totalUsed: number
+}
