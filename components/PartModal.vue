@@ -163,16 +163,27 @@
                   v-for="(sug, idx) in autocompleteSuggestions"
                   :key="sug"
                   type="button"
-                  class="w-full px-3 py-2 text-left text-xs flex items-center justify-between transition-colors border-b border-zinc-800/40 last:border-b-0 cursor-pointer"
-                  :class="idx === activeSuggestionIndex ? 'bg-emerald-500/20 text-emerald-300 font-semibold' : 'text-zinc-300 hover:bg-zinc-800 hover:text-emerald-300'"
+                  :disabled="isTagAlreadyAdded(sug)"
+                  class="w-full px-3 py-2 text-left text-xs flex items-center justify-between transition-colors border-b border-zinc-800/40 last:border-b-0"
+                  :class="[
+                    isTagAlreadyAdded(sug)
+                      ? 'opacity-60 bg-zinc-950/40 text-zinc-400 cursor-default'
+                      : idx === activeSuggestionIndex
+                        ? 'bg-emerald-500/20 text-emerald-300 font-semibold cursor-pointer'
+                        : 'text-zinc-300 hover:bg-zinc-800 hover:text-emerald-300 cursor-pointer'
+                  ]"
                   @pointerdown.prevent
-                  @click="selectSuggestion(sug)"
+                  @click="!isTagAlreadyAdded(sug) && selectSuggestion(sug)"
                 >
                   <span class="flex items-center gap-1.5 truncate">
                     <span class="text-emerald-500/70 font-mono text-[11px]">#</span>
                     <span class="truncate">{{ sug }}</span>
                   </span>
-                  <UIcon name="i-lucide-plus" class="w-3.5 h-3.5 text-zinc-500 shrink-0 ml-2" />
+                  <span v-if="isTagAlreadyAdded(sug)" class="text-[10px] text-emerald-400/90 flex items-center gap-1 shrink-0 ml-2">
+                    <UIcon name="i-lucide-check" class="w-3.5 h-3.5 text-emerald-400" />
+                    <span>добавлен</span>
+                  </span>
+                  <UIcon v-else name="i-lucide-plus" class="w-3.5 h-3.5 text-zinc-500 shrink-0 ml-2" />
                 </button>
               </div>
             </div>
@@ -215,7 +226,7 @@
 <script setup lang="ts">
 import type { Part } from '~/types'
 import { usePartsStore } from '~/stores/parts'
-import { parseTags, serializeTags, COMMON_TAG_SUGGESTIONS } from '~/utils/tags'
+import { parseTags, serializeTags } from '~/utils/tags'
 
 const props = defineProps<{
   modelValue: boolean
@@ -259,23 +270,30 @@ const newTagInput = ref('')
 const isAutocompleteOpen = ref(false)
 const activeSuggestionIndex = ref(-1)
 
+function isTagAlreadyAdded(tag: string): boolean {
+  const lower = tag.trim().toLowerCase()
+  return tags.value.some(t => t.toLowerCase() === lower)
+}
+
+const allExistingTags = computed(() => {
+  const set = new Set<string>()
+  for (const t of partsStore.allTags || []) {
+    if (t && typeof t === 'string' && t.trim()) set.add(t.trim())
+  }
+  for (const t of tags.value || []) {
+    if (t && typeof t === 'string' && t.trim()) set.add(t.trim())
+  }
+  return Array.from(set).sort((a, b) => a.localeCompare(b, 'ru'))
+})
+
 const autocompleteSuggestions = computed(() => {
   const query = newTagInput.value.trim().replace(/^#+/, '').toLowerCase()
   if (!query) return []
-  const existingInPart = new Set(tags.value.map(t => t.toLowerCase()))
-  const catalogTags = partsStore.allTags || []
-  
-  // Combine all catalog tags + common models, brands and series
-  const combined = Array.from(new Set([...catalogTags, ...COMMON_TAG_SUGGESTIONS]))
 
-  return combined
-    .filter(tag => {
-      const lower = tag.toLowerCase()
-      if (existingInPart.has(lower)) return false
-      return lower.includes(query)
-    })
+  return allExistingTags.value
+    .filter(tag => tag.toLowerCase().includes(query))
     .sort((a, b) => {
-      // Prioritize tags starting with the query (e.g. ECAM for 'ec')
+      // Prioritize tags starting with the query
       const aStarts = a.toLowerCase().startsWith(query)
       const bStarts = b.toLowerCase().startsWith(query)
       if (aStarts && !bStarts) return -1
@@ -286,7 +304,9 @@ const autocompleteSuggestions = computed(() => {
 })
 
 function selectSuggestion(tag: string) {
-  addTag(tag)
+  if (!isTagAlreadyAdded(tag)) {
+    addTag(tag)
+  }
   newTagInput.value = ''
   isAutocompleteOpen.value = false
   activeSuggestionIndex.value = -1

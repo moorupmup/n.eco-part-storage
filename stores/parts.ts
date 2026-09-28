@@ -65,10 +65,18 @@ export const usePartsStore = defineStore('parts', {
     allTags: (state): string[] => {
       const set = new Set<string>()
       for (const p of state.parts) {
-        if (p?.tags && Array.isArray(p.tags)) {
-          p.tags.forEach(t => t && set.add(t.trim()))
-        } else if (p?.notes) {
-          parseTags(p.notes).forEach(t => t && set.add(t.trim()))
+        if (!p) continue
+        if (Array.isArray(p.tags) && p.tags.length > 0) {
+          p.tags.forEach(t => {
+            const clean = typeof t === 'string' ? t.trim() : ''
+            if (clean) set.add(clean)
+          })
+        }
+        if (p.notes) {
+          parseTags(p.notes).forEach(t => {
+            const clean = typeof t === 'string' ? t.trim() : ''
+            if (clean) set.add(clean)
+          })
         }
       }
       return Array.from(set).sort((a, b) => a.localeCompare(b, 'ru'))
