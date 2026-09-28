@@ -120,125 +120,82 @@
           </div>
         </div>
 
-        <!-- Direct Download & Install Button -->
-        <a
-          v-if="apkDownloadUrl"
-          :href="apkDownloadUrl"
-          target="_blank"
-          class="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs shadow-lg shadow-emerald-500/25 active:scale-[0.98] transition-all"
-        >
-          <UIcon name="i-lucide-download" class="w-4 h-4 stroke-[2.5]" />
-          <span>Скачать и установить обновление (.apk)</span>
-        </a>
+        <!-- Seamless In-App Install Button & Progress -->
+        <div v-if="apkDownloadUrl" class="space-y-2 pt-1">
+          <button
+            v-if="!isDownloading"
+            type="button"
+            class="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-zinc-950 font-bold text-xs shadow-lg shadow-emerald-500/25 transition-all cursor-pointer"
+            @click="downloadAndInstall"
+          >
+            <UIcon name="i-lucide-download" class="w-4 h-4 stroke-[2.5]" />
+            <span>Установить обновление прямо сейчас</span>
+          </button>
+
+          <!-- Active In-App Download Progress -->
+          <div
+            v-else
+            class="p-3.5 rounded-xl bg-zinc-950/90 border border-emerald-500/40 space-y-2.5 shadow-inner"
+          >
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-medium text-emerald-300 flex items-center gap-2">
+                <UIcon name="i-lucide-loader-2" class="w-4 h-4 animate-spin text-emerald-400" />
+                <span>{{ downloadStatus || 'Загрузка обновления...' }}</span>
+              </span>
+              <span class="font-mono font-bold text-emerald-400">{{ downloadProgress }}%</span>
+            </div>
+
+            <!-- Progress Track -->
+            <div class="w-full h-2 rounded-full bg-zinc-800 overflow-hidden">
+              <div
+                class="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-300 ease-out rounded-full"
+                :style="{ width: `${downloadProgress}%` }"
+              />
+            </div>
+
+            <p class="text-[11px] text-zinc-400 text-center leading-tight">
+              Файл скачивается напрямую внутри приложения. По завершении сразу откроется системное окно установки.
+            </p>
+          </div>
+
+          <!-- Error message if install fails -->
+          <div
+            v-if="installError"
+            class="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-300 flex items-center gap-2"
+          >
+            <UIcon name="i-lucide-alert-circle" class="w-4 h-4 shrink-0 text-rose-400" />
+            <span>{{ installError }}</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-const currentVersion = 'v1.0.0'
-const repoUrl = 'https://api.github.com/repos/moorupmup/n.eco-part-storage/releases/latest'
+import { useAppUpdater } from '~/composables/useAppUpdater'
 
-interface ReleaseAsset {
-  name: string
-  size: number
-  browser_download_url: string
-}
-
-interface GitHubRelease {
-  tag_name: string
-  name: string
-  body: string
-  published_at: string
-  html_url: string
-  assets: ReleaseAsset[]
-}
-
-const isChecking = ref(false)
-const checkCompleted = ref(false)
-const latestRelease = ref<GitHubRelease | null>(null)
-const hasUpdate = ref(false)
-const errorMessage = ref('')
-const lastChecked = ref('')
-
-const apkAsset = computed(() => {
-  if (!latestRelease.value?.assets) return null
-  return latestRelease.value.assets.find(a => a.name.endsWith('.apk')) || latestRelease.value.assets[0]
-})
-
-const apkDownloadUrl = computed(() => {
-  return apkAsset.value?.browser_download_url || latestRelease.value?.html_url
-})
+const {
+  currentVersion,
+  isChecking,
+  checkCompleted,
+  latestRelease,
+  hasUpdate,
+  errorMessage,
+  lastChecked,
+  apkAsset,
+  apkDownloadUrl,
+  isDownloading,
+  downloadProgress,
+  downloadStatus,
+  installError,
+  checkForUpdates,
+  downloadAndInstall,
+  formatDate,
+  formatBytes
+} = useAppUpdater()
 
 onMounted(() => {
   checkForUpdates(false)
 })
-
-async function checkForUpdates(manual = true) {
-  isChecking.value = true
-  errorMessage.value = ''
-
-  try {
-    const res = await fetch(repoUrl, {
-      headers: {
-        'Accept': 'application/vnd.github.v3+json'
-      }
-    })
-
-    if (res.status === 404) {
-      checkCompleted.value = true
-      hasUpdate.value = false
-      lastChecked.value = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
-      return
-    }
-
-    if (!res.ok) {
-      throw new Error(`Ошибка GitHub API (${res.status})`)
-    }
-
-    const data: GitHubRelease = await res.json()
-    latestRelease.value = data
-
-    // Compare versions (e.g. "v1.0.1" vs "v1.0.0")
-    const cleanCurrent = currentVersion.replace(/^v/, '')
-    const cleanLatest = data.tag_name ? data.tag_name.replace(/^v/, '') : cleanCurrent
-
-    hasUpdate.value = compareVersions(cleanLatest, cleanCurrent) > 0
-    checkCompleted.value = true
-    lastChecked.value = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
-  } catch (err: any) {
-    if (manual) {
-      errorMessage.value = err.message || 'Не удалось связаться с сервером обновлений'
-    }
-  } finally {
-    isChecking.value = false
-  }
-}
-
-function compareVersions(v1: string, v2: string): number {
-  const parts1 = v1.split('.').map(n => parseInt(n) || 0)
-  const parts2 = v2.split('.').map(n => parseInt(n) || 0)
-  for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
-    const num1 = parts1[i] || 0
-    const num2 = parts2[i] || 0
-    if (num1 > num2) return 1
-    if (num1 < num2) return -1
-  }
-  return 0
-}
-
-function formatDate(dateStr: string): string {
-  if (!dateStr) return ''
-  return new Date(dateStr).toLocaleDateString('ru-RU', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  })
-}
-
-function formatBytes(bytes: number): string {
-  if (!bytes) return ''
-  const mb = bytes / (1024 * 1024)
-  return `${mb.toFixed(1)} МБ`
-}
 </script>

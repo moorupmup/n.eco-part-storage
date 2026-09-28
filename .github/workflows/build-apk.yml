@@ -69,6 +69,20 @@ jobs:
         run: |
           cp -r android-res/* android/app/src/main/res/
 
+      - name: Configure Android Permissions for In-App Updates
+        run: |
+          python3 -c "
+          manifest_path = 'android/app/src/main/AndroidManifest.xml'
+          with open(manifest_path, 'r') as f:
+              code = f.read()
+          
+          perm = '<uses-permission android:name=\"android.permission.REQUEST_INSTALL_PACKAGES\" />'
+          if 'REQUEST_INSTALL_PACKAGES' not in code:
+              code = code.replace('</manifest>', f'    {perm}\n</manifest>')
+              with open(manifest_path, 'w') as f:
+                  f.write(code)
+          "
+
       - name: Configure Permanent Signing Keystore
         run: |
           mkdir -p android/app/keystore
