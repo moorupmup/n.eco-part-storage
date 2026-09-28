@@ -65,6 +65,10 @@ jobs:
       - name: Sync Capacitor Android
         run: npx cap sync android
 
+      - name: Apply Custom Portafilter App Icons
+        run: |
+          cp -r android-res/* android/app/src/main/res/
+
       - name: Configure Permanent Signing Keystore
         run: |
           mkdir -p android/app/keystore
