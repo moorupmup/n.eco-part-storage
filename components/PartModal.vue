@@ -261,6 +261,7 @@ const activeSuggestionIndex = ref(-1)
 
 const autocompleteSuggestions = computed(() => {
   const query = newTagInput.value.trim().replace(/^#+/, '').toLowerCase()
+  if (!query) return []
   const existingInPart = new Set(tags.value.map(t => t.toLowerCase()))
   const allExisting = partsStore.allTags || []
 
@@ -268,7 +269,6 @@ const autocompleteSuggestions = computed(() => {
     .filter(tag => {
       const lower = tag.toLowerCase()
       if (existingInPart.has(lower)) return false
-      if (!query) return true
       return lower.includes(query)
     })
     .slice(0, 10)
