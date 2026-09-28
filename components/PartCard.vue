@@ -63,51 +63,54 @@
       </template>
     </div>
 
-    <!-- Stock counters (New vs Used) -->
-    <div class="grid grid-cols-2 gap-2 mb-3">
-      <!-- NEW PARTS -->
-      <div class="flex items-center justify-between p-2 rounded-lg bg-zinc-950/60 border border-zinc-800/80">
-        <div class="flex items-center gap-1.5">
-          <span class="w-2 h-2 rounded-full bg-blue-500" />
-          <span class="text-xs text-zinc-300 font-medium">Новые:</span>
+    <!-- Stock counters & Quick actions in one row -->
+    <div class="flex items-center gap-2">
+      <!-- Stock counters (New vs Used) -->
+      <div class="flex-1 min-w-0 grid grid-cols-2 gap-1.5">
+        <!-- NEW PARTS -->
+        <div class="h-9 flex items-center justify-between px-2.5 rounded-lg bg-zinc-950/60 border border-zinc-800/80">
+          <div class="flex items-center gap-1.5 min-w-0">
+            <span class="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
+            <span class="text-xs text-zinc-300 font-medium truncate">Новые:</span>
+          </div>
+          <span class="text-xs font-bold text-blue-400 font-mono ml-1 shrink-0">
+            {{ part.stock_new }} <span class="text-[10px] font-normal text-zinc-500">шт</span>
+          </span>
         </div>
-        <span class="text-sm font-bold text-blue-400 font-mono">
-          {{ part.stock_new }} <span class="text-[10px] font-normal text-zinc-500">шт</span>
-        </span>
+
+        <!-- USED PARTS -->
+        <div class="h-9 flex items-center justify-between px-2.5 rounded-lg bg-zinc-950/60 border border-zinc-800/80">
+          <div class="flex items-center gap-1.5 min-w-0">
+            <span class="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+            <span class="text-xs text-zinc-300 font-medium truncate">Б/У:</span>
+          </div>
+          <span class="text-xs font-bold text-amber-400 font-mono ml-1 shrink-0">
+            {{ part.stock_used }} <span class="text-[10px] font-normal text-zinc-500">шт</span>
+          </span>
+        </div>
       </div>
 
-      <!-- USED PARTS -->
-      <div class="flex items-center justify-between p-2 rounded-lg bg-zinc-950/60 border border-zinc-800/80">
-        <div class="flex items-center gap-1.5">
-          <span class="w-2 h-2 rounded-full bg-amber-500" />
-          <span class="text-xs text-zinc-300 font-medium">Б/У:</span>
-        </div>
-        <span class="text-sm font-bold text-amber-400 font-mono">
-          {{ part.stock_used }} <span class="text-[10px] font-normal text-zinc-500">шт</span>
-        </span>
+      <!-- Quick action round buttons: Left = Списание (neutral gray), Right = Приход (emerald) -->
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button
+          type="button"
+          :disabled="part.stock_new === 0 && part.stock_used === 0"
+          title="Списание"
+          class="w-9 h-9 flex items-center justify-center rounded-full bg-zinc-800/80 hover:bg-zinc-700 active:scale-90 border border-zinc-700/80 text-zinc-300 hover:text-zinc-100 shadow-sm transition-all disabled:opacity-30 disabled:pointer-events-none"
+          @click="$emit('action', { part, type: 'OUT' })"
+        >
+          <UIcon name="i-lucide-minus" class="w-4 h-4 stroke-[2.5] text-zinc-400" />
+        </button>
+
+        <button
+          type="button"
+          title="Приход"
+          class="w-9 h-9 flex items-center justify-center rounded-full bg-emerald-950/40 hover:bg-emerald-900/50 active:scale-90 border border-emerald-500/30 text-emerald-400 shadow-sm transition-all"
+          @click="$emit('action', { part, type: 'IN' })"
+        >
+          <UIcon name="i-lucide-plus" class="w-4 h-4 stroke-[2.5]" />
+        </button>
       </div>
-    </div>
-
-    <!-- Quick action buttons: Left = Списание (neutral gray), Right = Приход (emerald) -->
-    <div class="grid grid-cols-2 gap-2">
-      <button
-        type="button"
-        :disabled="part.stock_new === 0 && part.stock_used === 0"
-        class="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-zinc-800/80 hover:bg-zinc-800 active:scale-[0.98] border border-zinc-700/80 text-zinc-300 hover:text-zinc-100 text-xs font-semibold shadow-sm transition-all disabled:opacity-30 disabled:pointer-events-none"
-        @click="$emit('action', { part, type: 'OUT' })"
-      >
-        <UIcon name="i-lucide-minus" class="w-4 h-4 stroke-[2.5] text-zinc-400" />
-        <span>Списание</span>
-      </button>
-
-      <button
-        type="button"
-        class="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-emerald-950/40 hover:bg-emerald-900/50 active:scale-[0.98] border border-emerald-500/30 text-emerald-400 text-xs font-semibold shadow-sm transition-all"
-        @click="$emit('action', { part, type: 'IN' })"
-      >
-        <UIcon name="i-lucide-plus" class="w-4 h-4 stroke-[2.5]" />
-        <span>Приход</span>
-      </button>
     </div>
   </div>
 </template>
