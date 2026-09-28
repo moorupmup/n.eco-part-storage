@@ -19,23 +19,23 @@
 
     <div class="px-4 py-3 space-y-4">
       <!-- Add New Category Card -->
-      <div class="p-3.5 rounded-2xl bg-zinc-900 border border-zinc-800 shadow-sm">
+      <div class="p-3.5 rounded-2xl bg-zinc-900 border border-zinc-800 shadow-sm overflow-hidden">
         <label class="block text-xs font-bold text-zinc-300 mb-2 flex items-center gap-1.5">
           <UIcon name="i-lucide-plus-circle" class="w-4 h-4 text-emerald-400" />
           Добавить новую категорию / узел
         </label>
-        <form @submit.prevent="handleAddCategory" class="flex items-center gap-2">
+        <form @submit.prevent="handleAddCategory" class="flex items-center gap-2 w-full">
           <input
             v-model="newCategoryName"
             type="text"
             placeholder="Например: Капучинаторы, Редукторы..."
             maxlength="50"
-            class="flex-1 h-11 px-3.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner"
+            class="flex-1 min-w-0 h-11 px-3.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner"
           />
           <button
             type="submit"
             :disabled="!newCategoryName.trim() || isSubmitting"
-            class="h-11 px-4 flex items-center justify-center gap-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs shadow-md shadow-emerald-500/20 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none shrink-0"
+            class="h-11 px-3.5 sm:px-4 flex items-center justify-center gap-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs shadow-md shadow-emerald-500/20 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none shrink-0"
           >
             <UIcon v-if="isSubmitting" name="i-lucide-loader-2" class="w-4 h-4 animate-spin" />
             <UIcon v-else name="i-lucide-plus" class="w-4 h-4 stroke-[2.5]" />

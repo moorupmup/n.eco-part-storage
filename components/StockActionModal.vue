@@ -114,7 +114,7 @@
             type="number"
             min="1"
             :max="type === 'OUT' ? currentAvailableStock : 9999"
-            class="flex-1 h-12 rounded-xl bg-zinc-950 border border-zinc-800 text-center font-mono text-xl font-bold text-zinc-100 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner"
+            class="flex-1 min-w-0 h-12 rounded-xl bg-zinc-950 border border-zinc-800 text-center font-mono text-xl font-bold text-zinc-100 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner"
           />
 
           <button
