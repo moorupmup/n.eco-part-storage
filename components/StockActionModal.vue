@@ -164,18 +164,6 @@
           placeholder="Например: Заказ-наряд #312 (DeLonghi Magnifica)"
           class="w-full h-11 px-3.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 transition-colors shadow-inner"
         />
-
-        <div class="flex items-center gap-1.5 mt-2 flex-wrap">
-          <button
-            v-for="chip in quickReasons"
-            :key="chip"
-            type="button"
-            class="px-2 py-0.5 text-[11px] rounded bg-zinc-800/80 border border-zinc-700/40 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700"
-            @click="reason = chip"
-          >
-            {{ chip }}
-          </button>
-        </div>
       </div>
 
       <!-- Action Button -->
@@ -257,12 +245,6 @@ const isSubmitDisabled = computed(() => {
   return false
 })
 
-const quickReasons = computed(() => {
-  if (type.value === 'IN') {
-    return ['Закупка деталей', 'С разбора (донор)', 'Возврат клиента', 'Инвентаризация (+)']
-  }
-  return ['Ремонт DeLonghi', 'Ремонт Jura', 'Ремонт Saeco/Philips', 'Плановое ТО', 'Брак / дефект']
-})
 
 function setPreset(amount: number) {
   quantity.value += amount
