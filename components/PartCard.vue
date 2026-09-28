@@ -49,11 +49,19 @@
       {{ part.name }}
     </h3>
 
-    <!-- Notes if any -->
-    <div v-if="part.notes" class="flex items-center gap-3 text-xs text-zinc-400 mb-3 flex-wrap">
-      <span class="inline-flex items-center gap-1 text-zinc-500 truncate max-w-[260px]">
-        {{ part.notes }}
-      </span>
+    <!-- Tags list -->
+    <div v-if="displayTags.length > 0" class="flex items-center gap-1.5 mb-3 flex-wrap">
+      <button
+        v-for="tag in displayTags"
+        :key="tag"
+        type="button"
+        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-zinc-800/80 hover:bg-zinc-800 text-zinc-400 hover:text-emerald-400 border border-zinc-700/50 hover:border-emerald-500/40 active:scale-95 transition-all cursor-pointer"
+        :title="`Фильтровать по #${tag}`"
+        @click.stop="filterByTag(tag)"
+      >
+        <span class="text-emerald-500/70 font-mono text-[10px]">#</span>
+        <span>{{ tag }}</span>
+      </button>
     </div>
 
     <!-- Stock counters (New vs Used) -->
@@ -107,12 +115,26 @@
 
 <script setup lang="ts">
 import type { Part, MovementType } from '~/types'
+import { parseTags } from '~/utils/tags'
+import { usePartsStore } from '~/stores/parts'
 
 const props = defineProps<{
   part: Part
 }>()
 
+const partsStore = usePartsStore()
 const { copyToClipboard } = useClipboardCopy()
+
+const displayTags = computed(() => {
+  if (props.part?.tags && props.part.tags.length > 0) {
+    return props.part.tags
+  }
+  return parseTags(props.part?.notes)
+})
+
+function filterByTag(tag: string) {
+  partsStore.searchQuery = tag
+}
 
 const emit = defineEmits<{
   (e: 'action', payload: { part: Part; type: MovementType }): void

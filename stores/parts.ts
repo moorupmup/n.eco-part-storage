@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { dbService } from '~/services/database'
 import type { Part, MovementType, PartCondition, InventoryStats, Category, CategoryWithStats } from '~/types'
+import { parseTags } from '~/utils/tags'
 
 interface PartsState {
   parts: Part[]
@@ -61,16 +62,29 @@ export const usePartsStore = defineStore('parts', {
       }).sort((a, b) => a.name.localeCompare(b.name, 'ru'))
     },
 
+    allTags: (state): string[] => {
+      const set = new Set<string>()
+      for (const p of state.parts) {
+        if (p?.tags && Array.isArray(p.tags)) {
+          p.tags.forEach(t => t && set.add(t.trim()))
+        } else if (p?.notes) {
+          parseTags(p.notes).forEach(t => t && set.add(t.trim()))
+        }
+      }
+      return Array.from(set).sort((a, b) => a.localeCompare(b, 'ru'))
+    },
+
     filteredParts: (state): Part[] => {
       let result = (state.parts || []).filter(p => !!p)
 
-      // Search by code, name
+      // Search by code, name, tags, notes
       if (state.searchQuery.trim()) {
         const query = state.searchQuery.toLowerCase().trim()
         result = result.filter(p =>
           (p.code && p.code.toLowerCase().includes(query)) ||
           (p.name && p.name.toLowerCase().includes(query)) ||
-          (p.notes && p.notes.toLowerCase().includes(query))
+          (p.notes && p.notes.toLowerCase().includes(query)) ||
+          (p.tags && p.tags.some(t => t.toLowerCase().includes(query)))
         )
       }
 

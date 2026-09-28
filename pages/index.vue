@@ -252,7 +252,8 @@ const stockFilters = computed(() => {
     pool = pool.filter(p =>
       (p.code && p.code.toLowerCase().includes(q)) ||
       (p.name && p.name.toLowerCase().includes(q)) ||
-      (p.notes && p.notes.toLowerCase().includes(q))
+      (p.notes && p.notes.toLowerCase().includes(q)) ||
+      (p.tags && p.tags.some(t => t.toLowerCase().includes(q)))
     )
   }
 

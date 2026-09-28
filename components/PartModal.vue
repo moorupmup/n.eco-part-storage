@@ -104,17 +104,79 @@
         </div>
 
 
-        <!-- Notes -->
+        <!-- Tags / Compatibility System -->
         <div>
-          <label class="block text-xs font-medium text-zinc-400 mb-1">
-            Примечание / Совместимость
+          <label class="block text-xs font-semibold text-zinc-300 mb-2 flex items-center justify-between">
+            <span class="flex items-center gap-1.5">
+              <UIcon name="i-lucide-tags" class="w-4 h-4 text-emerald-400" />
+              Теги / Совместимость
+            </span>
+            <span class="text-[10px] text-zinc-500 font-normal">Бренды, модели, вольтаж</span>
           </label>
-          <textarea
-            v-model="form.notes"
-            rows="2"
-            placeholder="Модели кофемашин, дефекты, нюансы..."
-            class="w-full p-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 transition-colors shadow-inner resize-none"
-          />
+
+          <!-- Current Selected Tags Chips -->
+          <div v-if="tags.length > 0" class="flex flex-wrap gap-1.5 mb-2.5">
+            <span
+              v-for="(tag, idx) in tags"
+              :key="tag"
+              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
+            >
+              <span class="text-emerald-500/70 text-[11px] font-mono">#</span>
+              <span>{{ tag }}</span>
+              <button
+                type="button"
+                class="w-3.5 h-3.5 flex items-center justify-center rounded-full hover:bg-emerald-500/30 text-emerald-400/80 hover:text-emerald-200 transition-colors"
+                title="Удалить тег"
+                @click="removeTag(idx)"
+              >
+                <UIcon name="i-lucide-x" class="w-3 h-3" />
+              </button>
+            </span>
+          </div>
+
+          <!-- Add Tag Input Row -->
+          <div class="flex items-center gap-2">
+            <div class="relative flex-1 min-w-0">
+              <span class="absolute left-3 top-2.5 text-zinc-500 font-mono text-sm pointer-events-none">#</span>
+              <input
+                v-model="newTagInput"
+                type="text"
+                placeholder="Добавить тег (DeLonghi, 230V, ECAM)..."
+                maxlength="30"
+                class="w-full h-10 pl-7 pr-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner"
+                @keydown="handleTagKeydown"
+              />
+            </div>
+            <button
+              type="button"
+              :disabled="!newTagInput.trim()"
+              class="h-10 px-3 flex items-center justify-center gap-1 rounded-xl bg-zinc-800 hover:bg-zinc-700 active:scale-95 text-xs font-semibold text-zinc-200 disabled:opacity-30 disabled:pointer-events-none border border-zinc-700/60 transition-all shrink-0"
+              @click="addTagFromInput"
+            >
+              <UIcon name="i-lucide-plus" class="w-4 h-4 text-emerald-400" />
+              <span>Тег</span>
+            </button>
+          </div>
+
+          <!-- Quick Suggested Chips -->
+          <div v-if="suggestedTags.length > 0" class="mt-2.5">
+            <div class="text-[11px] text-zinc-500 mb-1.5 flex items-center gap-1">
+              <UIcon name="i-lucide-sparkles" class="w-3 h-3 text-amber-400/80" />
+              <span>Быстрые теги (нажмите, чтобы добавить):</span>
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              <button
+                v-for="sug in suggestedTags"
+                :key="sug"
+                type="button"
+                class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[11px] font-medium bg-zinc-950/80 hover:bg-zinc-900 border border-zinc-800 hover:border-emerald-500/40 text-zinc-400 hover:text-emerald-300 active:scale-95 transition-all"
+                @click="addTag(sug)"
+              >
+                <UIcon name="i-lucide-plus" class="w-3 h-3 text-emerald-500/70" />
+                <span>{{ sug }}</span>
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- Actions -->
@@ -143,6 +205,7 @@
 <script setup lang="ts">
 import type { Part } from '~/types'
 import { usePartsStore } from '~/stores/parts'
+import { parseTags, serializeTags, COMMON_TAG_SUGGESTIONS } from '~/utils/tags'
 
 const props = defineProps<{
   modelValue: boolean
@@ -180,6 +243,48 @@ const form = reactive({
   notes: ''
 })
 
+// Tags management
+const tags = ref<string[]>([])
+const newTagInput = ref('')
+
+const suggestedTags = computed(() => {
+  const catalogTags = partsStore.allTags || []
+  const combined = Array.from(new Set([...COMMON_TAG_SUGGESTIONS, ...catalogTags]))
+  const currentSet = new Set(tags.value.map(t => t.toLowerCase()))
+  return combined
+    .filter(t => !currentSet.has(t.toLowerCase()))
+    .slice(0, 10)
+})
+
+function handleTagKeydown(e: KeyboardEvent) {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault()
+    addTagFromInput()
+  }
+}
+
+function addTagFromInput() {
+  const val = newTagInput.value.trim().replace(/^#+/, '')
+  if (!val) return
+  const parts = val.split(/[,;\n]/).map(t => t.trim().replace(/^#+/, '')).filter(Boolean)
+  for (const p of parts) {
+    addTag(p)
+  }
+  newTagInput.value = ''
+}
+
+function addTag(tag: string) {
+  const clean = tag.trim().replace(/^#+/, '')
+  if (!clean) return
+  if (!tags.value.some(t => t.toLowerCase() === clean.toLowerCase())) {
+    tags.value.push(clean)
+  }
+}
+
+function removeTag(index: number) {
+  tags.value.splice(index, 1)
+}
+
 watch(() => props.modelValue, (open) => {
   if (open) {
     if (props.partToEdit) {
@@ -193,6 +298,7 @@ watch(() => props.modelValue, (open) => {
       form.price_new = props.partToEdit.price_new || 0
       form.price_used = props.partToEdit.price_used || 0
       form.notes = props.partToEdit.notes || ''
+      tags.value = parseTags(props.partToEdit.tags || props.partToEdit.notes)
     } else {
       form.code = ''
       form.name = ''
@@ -204,7 +310,9 @@ watch(() => props.modelValue, (open) => {
       form.price_new = 0
       form.price_used = 0
       form.notes = ''
+      tags.value = []
     }
+    newTagInput.value = ''
   }
 })
 
@@ -213,15 +321,22 @@ async function handleSave() {
 
   isSaving.value = true
   try {
+    const serialized = serializeTags(tags.value)
+    const payload = {
+      ...form,
+      notes: serialized,
+      tags: [...tags.value]
+    }
+
     if (isEdit.value && props.partToEdit) {
-      await partsStore.updatePart(props.partToEdit.id, { ...form })
+      await partsStore.updatePart(props.partToEdit.id, payload)
       toast.add({
         title: 'Запчасть обновлена',
         description: form.name,
         color: 'emerald'
       })
     } else {
-      await partsStore.addPart({ ...form })
+      await partsStore.addPart(payload)
       toast.add({
         title: 'Запчасть добавлена',
         description: form.name,

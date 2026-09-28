@@ -1,6 +1,15 @@
 import { Capacitor } from '@capacitor/core'
 import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite'
 import type { Part, Transaction, MovementType, PartCondition, Category } from '~/types'
+import { parseTags, serializeTags } from '~/utils/tags'
+
+export function enrichPart(p: any): Part {
+  if (!p) return p
+  return {
+    ...p,
+    tags: parseTags(p.tags || p.notes)
+  }
+}
 
 const DB_NAME = 'neco_parts_db'
 
@@ -130,13 +139,13 @@ class DatabaseService {
     if (!this.db) return
     const now = new Date().toISOString()
     const sampleParts = [
-      { code: 'ULKA-EX5', name: 'Помпа вибрационная Ulka EX5 (48W, 230V)', category: 'Помпы / Насосы', location: '', stock_new: 6, stock_used: 2, min_stock: 3, price_new: 1850, price_used: 700, notes: 'Универсальная 230V 50Hz (DeLonghi, Saeco, Jura, Nivona)' },
-      { code: '5513214821', name: 'Жернова конические (пара) DeLonghi', category: 'Кофемолка', location: '', stock_new: 4, stock_used: 1, min_stock: 2, price_new: 2400, price_used: 900, notes: 'Для кофемолок ECAM, ETAM, ESAM. Закаленная сталь.' },
-      { code: 'OR-KIT-DEL', name: 'Ремкомплект уплотнителей заварочного блока (O-Ring)', category: 'Уплотнители', location: '', stock_new: 18, stock_used: 0, min_stock: 6, price_new: 450, price_used: 0, notes: 'Пищевой силикон VMQ / EPDM. Манжеты верхнего и нижнего поршня.' },
-      { code: '70163-JUR', name: 'Заварочный блок в сборе Jura Claris / E-серия', category: 'Заварочный блок', location: '', stock_new: 1, stock_used: 3, min_stock: 2, price_new: 9800, price_used: 3800, notes: 'Б/у перебран: новые манжеты, смазан пищевой силиконовой смазкой OKS 1110' },
-      { code: '5213218421', name: 'Электромагнитный клапан 3-ходовой Ceme (230V)', category: 'Клапаны', location: '', stock_new: 0, stock_used: 1, min_stock: 2, price_new: 3100, price_used: 1200, notes: 'Клапан пар/вода DeLonghi. Закончились новые, срочно дозаказать!' },
-      { code: '5232104600', name: 'Датчик температуры бойлера NTC (термистор)', category: 'Электроника', location: '', stock_new: 7, stock_used: 2, min_stock: 3, price_new: 650, price_used: 250, notes: 'Датчик температуры бойлера с кабелем и разъемом DeLonghi Magnifica' },
-      { code: '62999-JUR', name: 'Дренажный клапан Jura в сборе', category: 'Гидравлика', location: '', stock_new: 2, stock_used: 4, min_stock: 3, price_new: 2200, price_used: 800, notes: 'Частая неисправность: сброс кофе/воды в поддон при заваривании' }
+      { code: 'ULKA-EX5', name: 'Помпа вибрационная Ulka EX5 (48W, 230V)', category: 'Помпы / Насосы', location: '', stock_new: 6, stock_used: 2, min_stock: 3, price_new: 1850, price_used: 700, notes: serializeTags(['230V', '48W', 'Ulka', 'DeLonghi', 'Saeco', 'Jura', 'Nivona', 'Универсальная']) },
+      { code: '5513214821', name: 'Жернова конические (пара) DeLonghi', category: 'Кофемолка', location: '', stock_new: 4, stock_used: 1, min_stock: 2, price_new: 2400, price_used: 900, notes: serializeTags(['DeLonghi', 'ECAM', 'ETAM', 'ESAM', 'Закаленная сталь']) },
+      { code: 'OR-KIT-DEL', name: 'Ремкомплект уплотнителей заварочного блока (O-Ring)', category: 'Уплотнители', location: '', stock_new: 18, stock_used: 0, min_stock: 6, price_new: 450, price_used: 0, notes: serializeTags(['DeLonghi', 'O-Ring', 'Силикон', 'VMQ', 'EPDM']) },
+      { code: '70163-JUR', name: 'Заварочный блок в сборе Jura Claris / E-серия', category: 'Заварочный блок', location: '', stock_new: 1, stock_used: 3, min_stock: 2, price_new: 9800, price_used: 3800, notes: serializeTags(['Jura', 'Claris', 'E-серия', 'OKS 1110']) },
+      { code: '5213218421', name: 'Электромагнитный клапан 3-ходовой Ceme (230V)', category: 'Клапаны', location: '', stock_new: 0, stock_used: 1, min_stock: 2, price_new: 3100, price_used: 1200, notes: serializeTags(['DeLonghi', 'Ceme', '230V', 'Пар/вода']) },
+      { code: '5232104600', name: 'Датчик температуры бойлера NTC (термистор)', category: 'Электроника', location: '', stock_new: 7, stock_used: 2, min_stock: 3, price_new: 650, price_used: 250, notes: serializeTags(['DeLonghi', 'Magnifica', 'NTC', 'Термистор']) },
+      { code: '62999-JUR', name: 'Дренажный клапан Jura в сборе', category: 'Гидравлика', location: '', stock_new: 2, stock_used: 4, min_stock: 3, price_new: 2200, price_used: 800, notes: serializeTags(['Jura', 'Дренаж', 'Клапан']) }
     ]
 
     for (const p of sampleParts) {
@@ -212,13 +221,13 @@ class DatabaseService {
     if (this.webParts.length === 0 || hasOldCarParts) {
       const now = new Date().toISOString()
       this.webParts = [
-        { id: 1, code: 'ULKA-EX5', name: 'Помпа вибрационная Ulka EX5 (48W, 230V)', category: 'Помпы / Насосы', location: '', stock_new: 6, stock_used: 2, min_stock: 3, price_new: 1850, price_used: 700, notes: 'Универсальная 230V 50Hz (DeLonghi, Saeco, Jura, Nivona)', created_at: now, updated_at: now },
-        { id: 2, code: '5513214821', name: 'Жернова конические (пара) DeLonghi', category: 'Кофемолка', location: '', stock_new: 4, stock_used: 1, min_stock: 2, price_new: 2400, price_used: 900, notes: 'Для кофемолок ECAM, ETAM, ESAM. Закаленная сталь.', created_at: now, updated_at: now },
-        { id: 3, code: 'OR-KIT-DEL', name: 'Ремкомплект уплотнителей заварочного блока (O-Ring)', category: 'Уплотнители', location: '', stock_new: 18, stock_used: 0, min_stock: 6, price_new: 450, price_used: 0, notes: 'Пищевой силикон VMQ / EPDM. Манжеты верхнего и нижнего поршня.', created_at: now, updated_at: now },
-        { id: 4, code: '70163-JUR', name: 'Заварочный блок в сборе Jura Claris / E-серия', category: 'Заварочный блок', location: '', stock_new: 1, stock_used: 3, min_stock: 2, price_new: 9800, price_used: 3800, notes: 'Б/у перебран: новые манжеты, смазан пищевой силиконовой смазкой OKS 1110', created_at: now, updated_at: now },
-        { id: 5, code: '5213218421', name: 'Электромагнитный клапан 3-ходовой Ceme (230V)', category: 'Клапаны', location: '', stock_new: 0, stock_used: 1, min_stock: 2, price_new: 3100, price_used: 1200, notes: 'Клапан пар/вода DeLonghi. Закончились новые, срочно дозаказать!', created_at: now, updated_at: now },
-        { id: 6, code: '5232104600', name: 'Датчик температуры бойлера NTC (термистор)', category: 'Электроника', location: '', stock_new: 7, stock_used: 2, min_stock: 3, price_new: 650, price_used: 250, notes: 'Датчик температуры бойлера с кабелем и разъемом DeLonghi Magnifica', created_at: now, updated_at: now },
-        { id: 7, code: '62999-JUR', name: 'Дренажный клапан Jura в сборе', category: 'Гидравлика', location: '', stock_new: 2, stock_used: 4, min_stock: 3, price_new: 2200, price_used: 800, notes: 'Частая неисправность: сброс кофе/воды в поддон при заваривании', created_at: now, updated_at: now }
+        { id: 1, code: 'ULKA-EX5', name: 'Помпа вибрационная Ulka EX5 (48W, 230V)', category: 'Помпы / Насосы', location: '', stock_new: 6, stock_used: 2, min_stock: 3, price_new: 1850, price_used: 700, notes: serializeTags(['230V', '48W', 'Ulka', 'DeLonghi', 'Saeco', 'Jura', 'Nivona', 'Универсальная']), created_at: now, updated_at: now },
+        { id: 2, code: '5513214821', name: 'Жернова конические (пара) DeLonghi', category: 'Кофемолка', location: '', stock_new: 4, stock_used: 1, min_stock: 2, price_new: 2400, price_used: 900, notes: serializeTags(['DeLonghi', 'ECAM', 'ETAM', 'ESAM', 'Закаленная сталь']), created_at: now, updated_at: now },
+        { id: 3, code: 'OR-KIT-DEL', name: 'Ремкомплект уплотнителей заварочного блока (O-Ring)', category: 'Уплотнители', location: '', stock_new: 18, stock_used: 0, min_stock: 6, price_new: 450, price_used: 0, notes: serializeTags(['DeLonghi', 'O-Ring', 'Силикон', 'VMQ', 'EPDM']), created_at: now, updated_at: now },
+        { id: 4, code: '70163-JUR', name: 'Заварочный блок в сборе Jura Claris / E-серия', category: 'Заварочный блок', location: '', stock_new: 1, stock_used: 3, min_stock: 2, price_new: 9800, price_used: 3800, notes: serializeTags(['Jura', 'Claris', 'E-серия', 'OKS 1110']), created_at: now, updated_at: now },
+        { id: 5, code: '5213218421', name: 'Электромагнитный клапан 3-ходовой Ceme (230V)', category: 'Клапаны', location: '', stock_new: 0, stock_used: 1, min_stock: 2, price_new: 3100, price_used: 1200, notes: serializeTags(['DeLonghi', 'Ceme', '230V', 'Пар/вода']), created_at: now, updated_at: now },
+        { id: 6, code: '5232104600', name: 'Датчик температуры бойлера NTC (термистор)', category: 'Электроника', location: '', stock_new: 7, stock_used: 2, min_stock: 3, price_new: 650, price_used: 250, notes: serializeTags(['DeLonghi', 'Magnifica', 'NTC', 'Термистор']), created_at: now, updated_at: now },
+        { id: 7, code: '62999-JUR', name: 'Дренажный клапан Jura в сборе', category: 'Гидравлика', location: '', stock_new: 2, stock_used: 4, min_stock: 3, price_new: 2200, price_used: 800, notes: serializeTags(['Jura', 'Дренаж', 'Клапан']), created_at: now, updated_at: now }
       ]
       this.webTransactions = [
         { id: 1, part_id: 1, part_code: 'ULKA-EX5', part_name: 'Помпа вибрационная Ulka EX5 (48W, 230V)', type: 'IN', condition: 'NEW', quantity: 10, stock_before: 0, stock_after: 10, reason: 'Поступление партии помп Ulka от ООО "КофеСнаб"', created_at: now },
@@ -255,35 +264,39 @@ class DatabaseService {
   async getAllParts(): Promise<Part[]> {
     await this.init()
     if (this.isWeb || !this.db) {
-      return [...this.webParts].sort((a, b) => a.name.localeCompare(b.name))
+      return [...this.webParts].map(enrichPart).sort((a, b) => a.name.localeCompare(b.name))
     }
 
     const res = await this.db.query('SELECT * FROM parts ORDER BY name ASC')
-    return (res.values as Part[]) || []
+    return ((res.values as Part[]) || []).map(enrichPart)
   }
 
   async getPartById(id: number): Promise<Part | null> {
     await this.init()
     if (this.isWeb || !this.db) {
-      return this.webParts.find(p => p.id === id) || null
+      const p = this.webParts.find(p => p.id === id) || null
+      return p ? enrichPart(p) : null
     }
 
     const res = await this.db.query('SELECT * FROM parts WHERE id = ?', [id])
-    return (res.values?.[0] as Part) || null
+    const p = (res.values?.[0] as Part) || null
+    return p ? enrichPart(p) : null
   }
 
   async createPart(data: Omit<Part, 'id' | 'created_at' | 'updated_at'>): Promise<Part> {
     await this.init()
     const now = new Date().toISOString()
+    const notesValue = data.tags !== undefined ? serializeTags(data.tags) : (data.notes || '')
 
     if (this.isWeb || !this.db) {
       const nextId = this.webParts.length > 0 ? Math.max(...this.webParts.map(p => p.id)) + 1 : 1
-      const newPart: Part = {
+      const newPart: Part = enrichPart({
         ...data,
         id: nextId,
+        notes: notesValue,
         created_at: now,
         updated_at: now
-      }
+      })
       this.webParts.push(newPart)
       this.persistWebStore()
       return newPart
@@ -302,7 +315,7 @@ class DatabaseService {
         Number(data.min_stock) || 0,
         Number(data.price_new) || 0,
         Number(data.price_used) || 0,
-        data.notes || '',
+        notesValue,
         now,
         now
       ]
@@ -319,7 +332,8 @@ class DatabaseService {
     if (this.isWeb || !this.db) {
       const idx = this.webParts.findIndex(p => p.id === id)
       if (idx !== -1) {
-        this.webParts[idx] = { ...this.webParts[idx], ...data, updated_at: now }
+        const notesValue = data.tags !== undefined ? serializeTags(data.tags) : (data.notes !== undefined ? data.notes : this.webParts[idx].notes)
+        this.webParts[idx] = enrichPart({ ...this.webParts[idx], ...data, notes: notesValue, updated_at: now })
         this.persistWebStore()
       }
       return
@@ -328,7 +342,8 @@ class DatabaseService {
     const current = await this.getPartById(id)
     if (!current) throw new Error('Запчасть не найдена')
 
-    const merged = { ...current, ...data, updated_at: now }
+    const notesValue = data.tags !== undefined ? serializeTags(data.tags) : (data.notes !== undefined ? data.notes : current.notes)
+    const merged = enrichPart({ ...current, ...data, notes: notesValue, updated_at: now })
     await this.db.run(
       `UPDATE parts SET code = ?, name = ?, category = ?, location = ?, stock_new = ?, stock_used = ?, min_stock = ?, price_new = ?, price_used = ?, notes = ?, updated_at = ?
        WHERE id = ?`,
@@ -342,7 +357,7 @@ class DatabaseService {
         merged.min_stock,
         merged.price_new,
         merged.price_used,
-        merged.notes,
+        notesValue,
         now,
         id
       ]

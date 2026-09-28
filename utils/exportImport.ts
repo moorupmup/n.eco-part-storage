@@ -1,20 +1,22 @@
 import * as XLSX from 'xlsx'
 import type { Part, Transaction } from '~/types'
+import { parseTags, serializeTags } from '~/utils/tags'
 
 export function exportPartsToExcel(parts: Part[], filename = 'neco_parts_backpack.xlsx') {
-  const data = parts.map(p => ({
-    'ID': p.id,
-    'Артикул / Код': p.code,
-    'Наименование': p.name,
-    'Категория': p.category,
-    'Новые (шт)': p.stock_new,
-    'Б/У (шт)': p.stock_used,
-    'Всего (шт)': p.stock_new + p.stock_used,
-    'Цена новая (руб)': p.price_new,
-    'Цена б/у (руб)': p.price_used,
-    'Примечание': p.notes,
-    'Обновлено': p.updated_at
-  }))
+  const data = parts.map(p => {
+    const tagList = p.tags && p.tags.length > 0 ? p.tags : parseTags(p.notes)
+    return {
+      'ID': p.id,
+      'Артикул / Код': p.code,
+      'Наименование': p.name,
+      'Категория': p.category,
+      'Новые (шт)': p.stock_new,
+      'Б/У (шт)': p.stock_used,
+      'Всего (шт)': p.stock_new + p.stock_used,
+      'Теги': tagList.join(', '),
+      'Обновлено': p.updated_at
+    }
+  })
 
   const worksheet = XLSX.utils.json_to_sheet(data)
   const workbook = XLSX.utils.book_new()
@@ -77,6 +79,8 @@ export async function parseExcelOrCSV(file: File): Promise<Partial<Part>[]> {
         const rows: any[] = XLSX.utils.sheet_to_json(sheet)
 
         const parts: Partial<Part>[] = rows.map(r => {
+          const rawTags = r['Теги'] || r['tags'] || r['Примечание'] || r['notes'] || ''
+          const tagList = parseTags(rawTags)
           return {
             code: String(r['Артикул / Код'] || r['Артикул'] || r['code'] || r['Код'] || '').trim(),
             name: String(r['Наименование'] || r['Название'] || r['name'] || '').trim(),
@@ -87,7 +91,8 @@ export async function parseExcelOrCSV(file: File): Promise<Partial<Part>[]> {
             min_stock: Number(r['Мин. остаток (шт)'] || r['Мин. остаток'] || r['min_stock'] || 0),
             price_new: Number(r['Цена новая (руб)'] || r['price_new'] || 0),
             price_used: Number(r['Цена б/у (руб)'] || r['price_used'] || 0),
-            notes: String(r['Примечание'] || r['notes'] || '')
+            notes: serializeTags(tagList),
+            tags: tagList
           }
         }).filter(p => p.code && p.name)
 

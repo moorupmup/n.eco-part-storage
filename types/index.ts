@@ -9,7 +9,8 @@ export interface Part {
   min_stock: number      // Минимальный остаток в рюкзаке
   price_new: number      // Цена новой детали (руб)
   price_used: number     // Цена б/у детали (руб)
-  notes: string          // Примечания, совместимость с моделями
+  notes: string          // Примечания / сохраненные теги
+  tags?: string[]        // Список тегов совместимости (DeLonghi, Jura, 230V...)
   created_at: string
   updated_at: string
 }
