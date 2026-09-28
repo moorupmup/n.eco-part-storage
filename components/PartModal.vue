@@ -106,12 +106,9 @@
 
         <!-- Tags System -->
         <div>
-          <label class="block text-xs font-semibold text-zinc-300 mb-2 flex items-center justify-between">
-            <span class="flex items-center gap-1.5">
-              <UIcon name="i-lucide-tags" class="w-4 h-4 text-emerald-400" />
-              Теги
-            </span>
-            <span class="text-[10px] text-zinc-500 font-normal">Бренды, модели, свойства</span>
+          <label class="block text-xs font-semibold text-zinc-300 mb-2 flex items-center gap-1.5">
+            <UIcon name="i-lucide-tags" class="w-4 h-4 text-emerald-400" />
+            <span>Теги</span>
           </label>
 
           <!-- Current Selected Tags Chips -->
