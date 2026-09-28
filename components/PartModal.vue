@@ -153,12 +153,8 @@
               <!-- Autocomplete Dropdown from existing catalog tags -->
               <div
                 v-if="isAutocompleteOpen && autocompleteSuggestions.length > 0"
-                class="absolute left-0 right-0 top-full mt-1.5 bg-zinc-900 border border-zinc-700/80 rounded-xl shadow-2xl z-50 overflow-hidden max-h-52 overflow-y-auto no-scrollbar"
+                class="absolute left-0 right-0 top-full mt-1.5 bg-zinc-900 border border-zinc-700/80 rounded-xl shadow-2xl z-50 overflow-hidden max-h-52 overflow-y-auto no-scrollbar py-1"
               >
-                <div class="px-2.5 py-1.5 text-[10px] uppercase font-semibold tracking-wider text-zinc-400 bg-zinc-950/80 border-b border-zinc-800 flex items-center justify-between">
-                  <span>Существующие теги</span>
-                  <span class="text-[9px] lowercase text-zinc-500">нажмите для выбора</span>
-                </div>
                 <button
                   v-for="(sug, idx) in autocompleteSuggestions"
                   :key="sug"
