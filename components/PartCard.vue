@@ -49,17 +49,17 @@
       {{ part.name }}
     </h3>
 
-    <!-- Tags list (clean inline text with commas) -->
-    <div v-if="displayTags.length > 0" class="flex items-center flex-wrap gap-y-0.5 mb-2.5 text-xs leading-normal">
+    <!-- Tags list (clean inline text with commas, single line no-wrap) -->
+    <div v-if="displayTags.length > 0" class="flex items-center overflow-x-auto no-scrollbar whitespace-nowrap py-0.5 mb-2.5 text-xs leading-normal">
       <template v-for="(tag, idx) in displayTags" :key="tag">
         <button
           type="button"
-          class="inline-flex items-center text-zinc-500 hover:text-emerald-400 active:opacity-75 transition-colors cursor-pointer"
+          class="inline-flex items-center text-zinc-500 hover:text-emerald-400 active:opacity-75 transition-colors cursor-pointer shrink-0"
           :title="`Фильтровать по #${tag}`"
           @click.stop="filterByTag(tag)"
         >
           <span class="text-emerald-500/70 mr-0.5">#</span><span>{{ tag }}</span>
-        </button><span v-if="idx < displayTags.length - 1" class="text-zinc-600 mr-1.5">,</span>
+        </button><span v-if="idx < displayTags.length - 1" class="text-zinc-600 mr-1.5 shrink-0">,</span>
       </template>
     </div>
 
