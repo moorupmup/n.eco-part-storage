@@ -49,19 +49,18 @@
       {{ part.name }}
     </h3>
 
-    <!-- Tags list -->
-    <div v-if="displayTags.length > 0" class="flex items-center gap-1.5 mb-3 flex-wrap">
-      <button
-        v-for="tag in displayTags"
-        :key="tag"
-        type="button"
-        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-zinc-800/80 hover:bg-zinc-800 text-zinc-400 hover:text-emerald-400 border border-zinc-700/50 hover:border-emerald-500/40 active:scale-95 transition-all cursor-pointer"
-        :title="`Фильтровать по #${tag}`"
-        @click.stop="filterByTag(tag)"
-      >
-        <span class="text-emerald-500/70 font-mono text-[10px]">#</span>
-        <span>{{ tag }}</span>
-      </button>
+    <!-- Tags list (clean inline text with commas) -->
+    <div v-if="displayTags.length > 0" class="flex items-center flex-wrap gap-y-0.5 mb-2.5 text-xs leading-normal">
+      <template v-for="(tag, idx) in displayTags" :key="tag">
+        <button
+          type="button"
+          class="inline-flex items-center text-zinc-500 hover:text-emerald-400 active:opacity-75 transition-colors cursor-pointer"
+          :title="`Фильтровать по #${tag}`"
+          @click.stop="filterByTag(tag)"
+        >
+          <span class="text-emerald-500/70 mr-0.5">#</span><span>{{ tag }}</span>
+        </button><span v-if="idx < displayTags.length - 1" class="text-zinc-600 mr-1.5">,</span>
+      </template>
     </div>
 
     <!-- Stock counters (New vs Used) -->

@@ -49,7 +49,7 @@ export function parseTags(raw?: string | null | string[]): string[] {
     new Set(
       str
         .split(/[,;\n]/)
-        .map(t => t.trim())
+        .map(t => t.trim().replace(/^[\s(\["]+|[\s)\]"]+$/g, '').trim())
         .filter(Boolean)
     )
   )
