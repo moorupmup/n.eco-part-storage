@@ -4,15 +4,32 @@
       <!-- Modal Header -->
       <div class="flex items-start justify-between gap-3 mb-4">
         <div>
-          <button
-            v-if="part?.code"
-            type="button"
-            class="inline-flex items-center gap-1 font-mono text-xs font-semibold px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700/80 active:scale-95 text-primary-400 mb-1 cursor-pointer transition-all border border-zinc-700/60"
-            title="Нажмите, чтобы скопировать артикул"
-            @click="copyToClipboard(part.code, 'Артикул')"
-          >
-            <span>{{ part.code }}</span>
-          </button>
+          <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+            <span
+              v-if="type === 'IN'"
+              class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+            >
+              <UIcon name="i-lucide-plus" class="w-3.5 h-3.5 stroke-[2.5]" />
+              Приход
+            </span>
+            <span
+              v-else
+              class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md bg-rose-500/15 text-rose-400 border border-rose-500/30"
+            >
+              <UIcon name="i-lucide-minus" class="w-3.5 h-3.5 stroke-[2.5]" />
+              Списание
+            </span>
+
+            <button
+              v-if="part?.code"
+              type="button"
+              class="inline-flex items-center gap-1 font-mono text-xs font-semibold px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700/80 active:scale-95 text-primary-400 cursor-pointer transition-all border border-zinc-700/60"
+              title="Нажмите, чтобы скопировать артикул"
+              @click="copyToClipboard(part.code, 'Артикул')"
+            >
+              <span>{{ part.code }}</span>
+            </button>
+          </div>
           <h2
             v-if="part?.name"
             class="text-base font-bold text-zinc-100 hover:text-emerald-300 transition-colors cursor-pointer"
@@ -30,28 +47,6 @@
           class="text-zinc-400"
           @click="isOpen = false"
         />
-      </div>
-
-      <!-- Action Type Selector (Left = Списание, Right = Приход) -->
-      <div class="grid grid-cols-2 gap-2 p-1 bg-zinc-950 rounded-xl border border-zinc-800 mb-4">
-        <button
-          type="button"
-          class="flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-semibold transition-all"
-          :class="type === 'OUT' ? 'bg-zinc-800 text-zinc-100 border border-zinc-700 shadow-sm' : 'text-zinc-400 hover:text-zinc-200'"
-          @click="type = 'OUT'"
-        >
-          <UIcon name="i-lucide-minus" class="w-4 h-4 text-zinc-400" />
-          Списание (-)
-        </button>
-        <button
-          type="button"
-          class="flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-semibold transition-all"
-          :class="type === 'IN' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm' : 'text-zinc-400 hover:text-zinc-200'"
-          @click="type = 'IN'"
-        >
-          <UIcon name="i-lucide-plus" class="w-4 h-4" />
-          Приход (+)
-        </button>
       </div>
 
       <!-- Condition Selector (NEW / USED) -->
@@ -242,6 +237,12 @@ watch(() => props.modelValue, (open) => {
     } else {
       condition.value = 'NEW'
     }
+  }
+})
+
+watch(() => props.initialType, (newType) => {
+  if (newType) {
+    type.value = newType
   }
 })
 
