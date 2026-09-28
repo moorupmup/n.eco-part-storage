@@ -103,33 +103,6 @@
           </div>
         </div>
 
-        <!-- Prices (Optional) -->
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-medium text-zinc-400 mb-1">
-              Цена новой (₽)
-            </label>
-            <input
-              v-model.number="form.price_new"
-              type="number"
-              min="0"
-              placeholder="0"
-              class="w-full h-10 px-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 shadow-inner"
-            />
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-zinc-400 mb-1">
-              Цена б/у (₽)
-            </label>
-            <input
-              v-model.number="form.price_used"
-              type="number"
-              min="0"
-              placeholder="0"
-              class="w-full h-10 px-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 shadow-inner"
-            />
-          </div>
-        </div>
 
         <!-- Notes -->
         <div>
