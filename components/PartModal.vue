@@ -104,14 +104,14 @@
         </div>
 
 
-        <!-- Tags / Compatibility System -->
+        <!-- Tags System -->
         <div>
           <label class="block text-xs font-semibold text-zinc-300 mb-2 flex items-center justify-between">
             <span class="flex items-center gap-1.5">
               <UIcon name="i-lucide-tags" class="w-4 h-4 text-emerald-400" />
-              Теги / Совместимость
+              Теги
             </span>
-            <span class="text-[10px] text-zinc-500 font-normal">Бренды, модели, вольтаж</span>
+            <span class="text-[10px] text-zinc-500 font-normal">Бренды, модели, свойства</span>
           </label>
 
           <!-- Current Selected Tags Chips -->
@@ -134,19 +134,49 @@
             </span>
           </div>
 
-          <!-- Add Tag Input Row -->
-          <div class="flex items-center gap-2">
+          <!-- Add Tag Input Row with Autocomplete -->
+          <div class="relative flex items-center gap-2">
             <div class="relative flex-1 min-w-0">
               <span class="absolute left-3 top-2.5 text-zinc-500 font-mono text-sm pointer-events-none">#</span>
               <input
                 v-model="newTagInput"
                 type="text"
-                placeholder="Добавить тег (DeLonghi, 230V, ECAM)..."
+                placeholder="Добавить тег..."
                 maxlength="30"
                 class="w-full h-10 pl-7 pr-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner"
+                @focus="isAutocompleteOpen = true"
+                @blur="onInputBlur"
+                @input="isAutocompleteOpen = true; activeSuggestionIndex = -1"
                 @keydown="handleTagKeydown"
               />
+
+              <!-- Autocomplete Dropdown from existing catalog tags -->
+              <div
+                v-if="isAutocompleteOpen && autocompleteSuggestions.length > 0"
+                class="absolute left-0 right-0 top-full mt-1.5 bg-zinc-900 border border-zinc-700/80 rounded-xl shadow-2xl z-50 overflow-hidden max-h-52 overflow-y-auto no-scrollbar"
+              >
+                <div class="px-2.5 py-1.5 text-[10px] uppercase font-semibold tracking-wider text-zinc-400 bg-zinc-950/80 border-b border-zinc-800 flex items-center justify-between">
+                  <span>Существующие теги</span>
+                  <span class="text-[9px] lowercase text-zinc-500">нажмите для выбора</span>
+                </div>
+                <button
+                  v-for="(sug, idx) in autocompleteSuggestions"
+                  :key="sug"
+                  type="button"
+                  class="w-full px-3 py-2 text-left text-xs flex items-center justify-between transition-colors border-b border-zinc-800/40 last:border-b-0 cursor-pointer"
+                  :class="idx === activeSuggestionIndex ? 'bg-emerald-500/20 text-emerald-300 font-semibold' : 'text-zinc-300 hover:bg-zinc-800 hover:text-emerald-300'"
+                  @pointerdown.prevent
+                  @click="selectSuggestion(sug)"
+                >
+                  <span class="flex items-center gap-1.5 truncate">
+                    <span class="text-emerald-500/70 font-mono text-[11px]">#</span>
+                    <span class="truncate">{{ sug }}</span>
+                  </span>
+                  <UIcon name="i-lucide-plus" class="w-3.5 h-3.5 text-zinc-500 shrink-0 ml-2" />
+                </button>
+              </div>
             </div>
+
             <button
               type="button"
               :disabled="!newTagInput.trim()"
@@ -156,26 +186,6 @@
               <UIcon name="i-lucide-plus" class="w-4 h-4 text-emerald-400" />
               <span>Тег</span>
             </button>
-          </div>
-
-          <!-- Quick Suggested Chips -->
-          <div v-if="suggestedTags.length > 0" class="mt-2.5">
-            <div class="text-[11px] text-zinc-500 mb-1.5 flex items-center gap-1">
-              <UIcon name="i-lucide-sparkles" class="w-3 h-3 text-amber-400/80" />
-              <span>Быстрые теги (нажмите, чтобы добавить):</span>
-            </div>
-            <div class="flex flex-wrap gap-1.5">
-              <button
-                v-for="sug in suggestedTags"
-                :key="sug"
-                type="button"
-                class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[11px] font-medium bg-zinc-950/80 hover:bg-zinc-900 border border-zinc-800 hover:border-emerald-500/40 text-zinc-400 hover:text-emerald-300 active:scale-95 transition-all"
-                @click="addTag(sug)"
-              >
-                <UIcon name="i-lucide-plus" class="w-3 h-3 text-emerald-500/70" />
-                <span>{{ sug }}</span>
-              </button>
-            </div>
           </div>
         </div>
 
@@ -205,7 +215,7 @@
 <script setup lang="ts">
 import type { Part } from '~/types'
 import { usePartsStore } from '~/stores/parts'
-import { parseTags, serializeTags, COMMON_TAG_SUGGESTIONS } from '~/utils/tags'
+import { parseTags, serializeTags } from '~/utils/tags'
 
 const props = defineProps<{
   modelValue: boolean
@@ -243,20 +253,69 @@ const form = reactive({
   notes: ''
 })
 
-// Tags management
+// Tags management & Autocomplete
 const tags = ref<string[]>([])
 const newTagInput = ref('')
+const isAutocompleteOpen = ref(false)
+const activeSuggestionIndex = ref(-1)
 
-const suggestedTags = computed(() => {
-  const catalogTags = partsStore.allTags || []
-  const combined = Array.from(new Set([...COMMON_TAG_SUGGESTIONS, ...catalogTags]))
-  const currentSet = new Set(tags.value.map(t => t.toLowerCase()))
-  return combined
-    .filter(t => !currentSet.has(t.toLowerCase()))
+const autocompleteSuggestions = computed(() => {
+  const query = newTagInput.value.trim().replace(/^#+/, '').toLowerCase()
+  const existingInPart = new Set(tags.value.map(t => t.toLowerCase()))
+  const allExisting = partsStore.allTags || []
+
+  return allExisting
+    .filter(tag => {
+      const lower = tag.toLowerCase()
+      if (existingInPart.has(lower)) return false
+      if (!query) return true
+      return lower.includes(query)
+    })
     .slice(0, 10)
 })
 
+function selectSuggestion(tag: string) {
+  addTag(tag)
+  newTagInput.value = ''
+  isAutocompleteOpen.value = false
+  activeSuggestionIndex.value = -1
+}
+
+function onInputBlur() {
+  setTimeout(() => {
+    isAutocompleteOpen.value = false
+    activeSuggestionIndex.value = -1
+  }, 250)
+}
+
 function handleTagKeydown(e: KeyboardEvent) {
+  if (isAutocompleteOpen.value && autocompleteSuggestions.value.length > 0) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      activeSuggestionIndex.value = (activeSuggestionIndex.value + 1) % autocompleteSuggestions.value.length
+      return
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      activeSuggestionIndex.value = (activeSuggestionIndex.value - 1 + autocompleteSuggestions.value.length) % autocompleteSuggestions.value.length
+      return
+    }
+    if (e.key === 'Escape') {
+      e.preventDefault()
+      isAutocompleteOpen.value = false
+      activeSuggestionIndex.value = -1
+      return
+    }
+    if ((e.key === 'Enter' || e.key === 'Tab') && activeSuggestionIndex.value >= 0) {
+      const selected = autocompleteSuggestions.value[activeSuggestionIndex.value]
+      if (selected) {
+        e.preventDefault()
+        selectSuggestion(selected)
+        return
+      }
+    }
+  }
+
   if (e.key === 'Enter' || e.key === ',') {
     e.preventDefault()
     addTagFromInput()
@@ -271,6 +330,8 @@ function addTagFromInput() {
     addTag(p)
   }
   newTagInput.value = ''
+  isAutocompleteOpen.value = false
+  activeSuggestionIndex.value = -1
 }
 
 function addTag(tag: string) {
@@ -313,6 +374,8 @@ watch(() => props.modelValue, (open) => {
       tags.value = []
     }
     newTagInput.value = ''
+    isAutocompleteOpen.value = false
+    activeSuggestionIndex.value = -1
   }
 })
 
