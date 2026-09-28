@@ -215,7 +215,7 @@
 <script setup lang="ts">
 import type { Part } from '~/types'
 import { usePartsStore } from '~/stores/parts'
-import { parseTags, serializeTags } from '~/utils/tags'
+import { parseTags, serializeTags, COMMON_TAG_SUGGESTIONS } from '~/utils/tags'
 
 const props = defineProps<{
   modelValue: boolean
@@ -263,13 +263,24 @@ const autocompleteSuggestions = computed(() => {
   const query = newTagInput.value.trim().replace(/^#+/, '').toLowerCase()
   if (!query) return []
   const existingInPart = new Set(tags.value.map(t => t.toLowerCase()))
-  const allExisting = partsStore.allTags || []
+  const catalogTags = partsStore.allTags || []
+  
+  // Combine all catalog tags + common models, brands and series
+  const combined = Array.from(new Set([...catalogTags, ...COMMON_TAG_SUGGESTIONS]))
 
-  return allExisting
+  return combined
     .filter(tag => {
       const lower = tag.toLowerCase()
       if (existingInPart.has(lower)) return false
       return lower.includes(query)
+    })
+    .sort((a, b) => {
+      // Prioritize tags starting with the query (e.g. ECAM for 'ec')
+      const aStarts = a.toLowerCase().startsWith(query)
+      const bStarts = b.toLowerCase().startsWith(query)
+      if (aStarts && !bStarts) return -1
+      if (!aStarts && bStarts) return 1
+      return a.localeCompare(b, 'ru')
     })
     .slice(0, 10)
 })
