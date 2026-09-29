@@ -17,20 +17,6 @@
       </div>
 
       <form @submit.prevent="handleSave" class="space-y-4">
-        <!-- Article / Code -->
-        <div>
-          <label class="block text-xs font-semibold text-zinc-300 mb-1">
-            Артикул / Каталожный код *
-          </label>
-          <input
-            v-model="form.code"
-            type="text"
-            placeholder="ULKA-EX5, 5513214821..."
-            required
-            class="w-full h-10 px-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm font-mono text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner"
-          />
-        </div>
-
         <!-- Name -->
         <div>
           <label class="block text-xs font-semibold text-zinc-300 mb-1">
@@ -56,53 +42,19 @@
             placeholder="Помпы / Насосы, Заварочный блок..."
             class="w-full h-10 px-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner"
           />
-          <div class="flex items-center gap-1.5 mt-2 flex-wrap">
+          <div class="flex items-center gap-1.5 mt-2 overflow-x-auto no-scrollbar pb-1">
             <button
               v-for="cat in availableCategories"
               :key="cat"
               type="button"
-              class="px-2.5 py-1 text-[11px] rounded-lg border transition-all"
-              :class="form.category === cat ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 font-semibold' : 'bg-zinc-800 border-zinc-700/60 text-zinc-300 hover:text-zinc-100 hover:bg-zinc-700'"
-              @click="form.category = cat"
+              class="px-2.5 py-1 text-[11px] rounded-lg border transition-all shrink-0 whitespace-nowrap active:scale-95 cursor-pointer"
+              :class="form.category === cat ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 font-semibold shadow-sm' : 'bg-zinc-800 border-zinc-700/60 text-zinc-300 hover:text-zinc-100 hover:bg-zinc-700'"
+              @click="form.category = form.category === cat ? '' : cat"
             >
               {{ cat }}
             </button>
           </div>
         </div>
-
-        <!-- Stock in backpack -->
-        <div class="p-3 bg-zinc-950/80 rounded-xl border border-zinc-800 space-y-3">
-          <div class="text-xs font-bold text-zinc-300 flex items-center gap-1.5">
-            <UIcon name="i-lucide-backpack" class="w-4 h-4 text-emerald-400" />
-            Наличие в рюкзаке
-          </div>
-
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-[11px] font-medium text-blue-400 mb-1">
-                Новые (шт)
-              </label>
-              <input
-                v-model.number="form.stock_new"
-                type="number"
-                min="0"
-                class="w-full h-10 rounded-xl bg-zinc-900 border border-zinc-800 text-center font-mono text-sm font-bold text-blue-400 focus:outline-none focus:border-blue-500 shadow-inner"
-              />
-            </div>
-            <div>
-              <label class="block text-[11px] font-medium text-amber-400 mb-1">
-                Б/У (шт)
-              </label>
-              <input
-                v-model.number="form.stock_used"
-                type="number"
-                min="0"
-                class="w-full h-10 rounded-xl bg-zinc-900 border border-zinc-800 text-center font-mono text-sm font-bold text-amber-400 focus:outline-none focus:border-amber-500 shadow-inner"
-              />
-            </div>
-          </div>
-        </div>
-
 
         <!-- Tags System -->
         <div>
@@ -228,7 +180,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void
-  (e: 'saved'): void
+  (e: 'saved', part?: Part): void
 }>()
 
 const partsStore = usePartsStore()
@@ -387,7 +339,7 @@ watch(() => props.modelValue, (open) => {
     } else {
       form.code = ''
       form.name = ''
-      form.category = ''
+      form.category = (partsStore.selectedCategory && partsStore.selectedCategory !== 'all') ? partsStore.selectedCategory : ''
       form.location = ''
       form.stock_new = 0
       form.stock_used = 0
@@ -404,26 +356,38 @@ watch(() => props.modelValue, (open) => {
 })
 
 async function handleSave() {
-  if (!form.code.trim() || !form.name.trim()) return
+  if (!form.name.trim()) return
 
   isSaving.value = true
   try {
     const serialized = serializeTags(tags.value)
     const payload = {
       ...form,
+      name: form.name.trim(),
+      category: form.category.trim(),
       notes: serialized,
       tags: [...tags.value]
     }
 
+    let savedPart: Part | undefined
+
     if (isEdit.value && props.partToEdit) {
-      await partsStore.updatePart(props.partToEdit.id, payload)
+      await partsStore.updatePart(props.partToEdit.id, {
+        ...payload,
+        articles: props.partToEdit.articles,
+        image: props.partToEdit.image
+      })
+      savedPart = {
+        ...props.partToEdit,
+        ...payload
+      }
       toast.add({
         title: 'Запчасть обновлена',
         description: form.name,
         color: 'emerald'
       })
     } else {
-      await partsStore.addPart(payload)
+      savedPart = await partsStore.addPart(payload)
       toast.add({
         title: 'Запчасть добавлена',
         description: form.name,
@@ -432,7 +396,7 @@ async function handleSave() {
     }
 
     isOpen.value = false
-    emit('saved')
+    emit('saved', savedPart)
   } catch (err: any) {
     toast.add({
       title: 'Ошибка',

@@ -178,7 +178,7 @@
     <PartModal
       v-model="isPartModalOpen"
       :part-to-edit="partToEdit"
-      @saved="refreshData"
+      @saved="handlePartSaved"
     />
 
     <!-- Delete Confirmation Modal -->
@@ -195,7 +195,7 @@
         </div>
 
         <p class="text-sm text-zinc-300 mb-4 bg-zinc-950 p-3 rounded-lg border border-zinc-800">
-          Вы действительно хотите удалить <strong>{{ partToDelete?.code }} — {{ partToDelete?.name }}</strong> и всю связанную историю операций?
+          Вы действительно хотите удалить <strong>{{ partToDelete?.name }}</strong> и всю связанную историю операций?
         </p>
 
         <div class="flex items-center gap-2">
@@ -322,6 +322,14 @@ async function executeDelete() {
 
 async function refreshData() {
   await partsStore.fetchParts()
+}
+
+async function handlePartSaved(savedPart?: Part) {
+  const isCreating = !partToEdit.value
+  await partsStore.fetchParts()
+  if (isCreating && savedPart?.id) {
+    navigateTo(`/part/${savedPart.id}`)
+  }
 }
 
 function handleMovementSuccess() {

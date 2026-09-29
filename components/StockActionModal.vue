@@ -21,13 +21,13 @@
             </span>
 
             <button
-              v-if="part?.code"
+              v-if="activeCode"
               type="button"
               class="inline-flex items-center gap-1 font-mono text-xs font-semibold px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700/80 active:scale-95 text-primary-400 cursor-pointer transition-all border border-zinc-700/60"
               title="Нажмите, чтобы скопировать артикул"
-              @click="copyToClipboard(part.code, 'Артикул')"
+              @click="copyToClipboard(activeCode, 'Артикул')"
             >
-              <span>{{ part.code }}</span>
+              <span>{{ activeCode }}</span>
             </button>
           </div>
           <h2
@@ -65,7 +65,7 @@
               <span class="w-2 h-2 rounded-full bg-blue-500" />
               <span>Новая</span>
             </div>
-            <span class="font-mono text-xs text-zinc-400">{{ part?.stock_new || 0 }} шт</span>
+            <span class="font-mono text-xs text-zinc-400">{{ activeStockNew }} шт</span>
           </button>
 
           <button
@@ -78,7 +78,7 @@
               <span class="w-2 h-2 rounded-full bg-amber-500" />
               <span>Б/У</span>
             </div>
-            <span class="font-mono text-xs text-zinc-400">{{ part?.stock_used || 0 }} шт</span>
+            <span class="font-mono text-xs text-zinc-400">{{ activeStockUsed }} шт</span>
           </button>
         </div>
       </div>
@@ -183,13 +183,14 @@
 </template>
 
 <script setup lang="ts">
-import type { Part, MovementType, PartCondition } from '~/types'
+import type { Part, PartArticle, MovementType, PartCondition } from '~/types'
 import { usePartsStore } from '~/stores/parts'
 import { useTransactionsStore } from '~/stores/transactions'
 
 const props = defineProps<{
   modelValue: boolean
   part: Part | null
+  article?: PartArticle | null
   initialType?: MovementType
 }>()
 
@@ -208,6 +209,24 @@ const isOpen = computed({
   set: (val) => emit('update:modelValue', val)
 })
 
+const activeArticle = computed<PartArticle | null>(() => {
+  if (props.article) return props.article
+  if (props.part?.articles && props.part.articles.length > 0) return props.part.articles[0]
+  return null
+})
+
+const activeCode = computed(() => activeArticle.value?.code || props.part?.code || '')
+
+const activeStockNew = computed(() => {
+  if (activeArticle.value) return activeArticle.value.stock_new
+  return props.part?.stock_new || 0
+})
+
+const activeStockUsed = computed(() => {
+  if (activeArticle.value) return activeArticle.value.stock_used
+  return props.part?.stock_used || 0
+})
+
 const type = ref<MovementType>('IN')
 const condition = ref<PartCondition>('NEW')
 const quantity = ref(1)
@@ -220,7 +239,7 @@ watch(() => props.modelValue, (open) => {
     quantity.value = 1
     reason.value = ''
     // If new stock is 0 and used stock > 0 on OUT, default to USED
-    if (type.value === 'OUT' && (props.part?.stock_new || 0) === 0 && (props.part?.stock_used || 0) > 0) {
+    if (type.value === 'OUT' && activeStockNew.value === 0 && activeStockUsed.value > 0) {
       condition.value = 'USED'
     } else {
       condition.value = 'NEW'
@@ -236,7 +255,7 @@ watch(() => props.initialType, (newType) => {
 
 const currentAvailableStock = computed(() => {
   if (!props.part) return 0
-  return condition.value === 'NEW' ? props.part.stock_new : props.part.stock_used
+  return condition.value === 'NEW' ? activeStockNew.value : activeStockUsed.value
 })
 
 const isSubmitDisabled = computed(() => {
@@ -244,7 +263,6 @@ const isSubmitDisabled = computed(() => {
   if (type.value === 'OUT' && quantity.value > currentAvailableStock.value) return true
   return false
 })
-
 
 function setPreset(amount: number) {
   quantity.value += amount
@@ -259,6 +277,7 @@ async function handleSubmit() {
 
     await partsStore.recordMovement({
       partId: props.part.id,
+      articleId: activeArticle.value?.id,
       type: type.value,
       condition: condition.value,
       quantity: quantity.value,
@@ -269,7 +288,7 @@ async function handleSubmit() {
 
     toast.add({
       title: type.value === 'IN' ? 'Приход оформлен' : 'Списание оформлено',
-      description: `${props.part.code}: ${type.value === 'IN' ? '+' : '-'}${quantity.value} шт (${condition.value === 'NEW' ? 'новые' : 'б/у'})`,
+      description: `${activeCode.value || props.part.name}: ${type.value === 'IN' ? '+' : '-'}${quantity.value} шт (${condition.value === 'NEW' ? 'новые' : 'б/у'})`,
       color: type.value === 'IN' ? 'emerald' : 'rose'
     })
 

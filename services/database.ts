@@ -1,12 +1,66 @@
 import { Capacitor } from '@capacitor/core'
 import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite'
-import type { Part, Transaction, MovementType, PartCondition, Category } from '~/types'
+import type { Part, PartArticle, Transaction, MovementType, PartCondition, Category } from '~/types'
 import { parseTags, serializeTags } from '~/utils/tags'
 
 export function enrichPart(p: any): Part {
   if (!p) return p
+
+  let articles: PartArticle[] = []
+  if (typeof p.articles === 'string') {
+    try {
+      articles = JSON.parse(p.articles)
+    } catch {
+      articles = []
+    }
+  } else if (Array.isArray(p.articles)) {
+    articles = [...p.articles]
+  }
+
+  if (!Array.isArray(articles) || articles.length === 0) {
+    const defaultCode = (p.code || 'АРТИКУЛ').trim()
+    articles = [
+      {
+        id: `art-${p.id || Date.now()}-1`,
+        code: defaultCode,
+        name: '',
+        stock_new: Number(p.stock_new) || 0,
+        stock_used: Number(p.stock_used) || 0,
+        min_stock: Number(p.min_stock) || 0,
+        price_new: Number(p.price_new) || 0,
+        price_used: Number(p.price_used) || 0,
+        created_at: p.created_at || new Date().toISOString()
+      }
+    ]
+  } else {
+    articles = articles.map((a: any, idx: number) => ({
+      id: a.id || `art-${p.id || Date.now()}-${idx + 1}`,
+      code: (a.code || p.code || 'АРТИКУЛ').trim(),
+      name: a.name || '',
+      stock_new: Number(a.stock_new) || 0,
+      stock_used: Number(a.stock_used) || 0,
+      min_stock: Number(a.min_stock) || 0,
+      price_new: Number(a.price_new) || 0,
+      price_used: Number(a.price_used) || 0,
+      created_at: a.created_at || p.created_at || new Date().toISOString()
+    }))
+  }
+
+  const stock_new = articles.reduce((sum, a) => sum + (Number(a.stock_new) || 0), 0)
+  const stock_used = articles.reduce((sum, a) => sum + (Number(a.stock_used) || 0), 0)
+  const min_stock = articles.some(a => a.min_stock !== undefined && a.min_stock > 0)
+    ? articles.reduce((sum, a) => sum + (Number(a.min_stock) || 0), 0)
+    : (Number(p.min_stock) || 0)
+  const code = articles[0]?.code || p.code || ''
+
   return {
     ...p,
+    code,
+    articles,
+    stock_new,
+    stock_used,
+    min_stock,
+    image: p.image || '',
     tags: parseTags(p.tags || p.notes)
   }
 }
@@ -80,6 +134,8 @@ class DatabaseService {
         name TEXT NOT NULL,
         category TEXT DEFAULT '',
         location TEXT DEFAULT '',
+        image TEXT DEFAULT '',
+        articles TEXT DEFAULT '[]',
         stock_new INTEGER NOT NULL DEFAULT 0,
         stock_used INTEGER NOT NULL DEFAULT 0,
         min_stock INTEGER NOT NULL DEFAULT 0,
@@ -104,6 +160,8 @@ class DatabaseService {
       CREATE TABLE IF NOT EXISTS transactions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         part_id INTEGER NOT NULL,
+        article_id TEXT DEFAULT '',
+        article_code TEXT DEFAULT '',
         type TEXT NOT NULL,
         condition TEXT NOT NULL,
         quantity INTEGER NOT NULL,
@@ -118,6 +176,12 @@ class DatabaseService {
       CREATE INDEX IF NOT EXISTS idx_transactions_created_at ON transactions(created_at);
     `
     await this.db.execute(schema)
+
+    // Run safe migrations for existing tables
+    try { await this.db.execute(`ALTER TABLE parts ADD COLUMN image TEXT DEFAULT ''`) } catch {}
+    try { await this.db.execute(`ALTER TABLE parts ADD COLUMN articles TEXT DEFAULT '[]'`) } catch {}
+    try { await this.db.execute(`ALTER TABLE transactions ADD COLUMN article_id TEXT DEFAULT ''`) } catch {}
+    try { await this.db.execute(`ALTER TABLE transactions ADD COLUMN article_code TEXT DEFAULT ''`) } catch {}
 
     // Seed categories if empty
     const checkCatCount = await this.db.query('SELECT COUNT(*) as count FROM categories')
@@ -287,12 +351,43 @@ class DatabaseService {
     await this.init()
     const now = new Date().toISOString()
     const notesValue = data.tags !== undefined ? serializeTags(data.tags) : (data.notes || '')
+    const articles = data.articles && data.articles.length > 0
+      ? data.articles.map((a, idx) => ({
+          ...a,
+          id: a.id || `art-${Date.now()}-${idx + 1}`,
+          stock_new: Number(a.stock_new) || 0,
+          stock_used: Number(a.stock_used) || 0,
+          min_stock: Number(a.min_stock) || 0,
+          price_new: Number(a.price_new) || 0,
+          price_used: Number(a.price_used) || 0,
+          created_at: a.created_at || now
+        }))
+      : (data.code?.trim() ? [{
+          id: `art-${Date.now()}-1`,
+          code: data.code.trim(),
+          name: '',
+          stock_new: Number(data.stock_new) || 0,
+          stock_used: Number(data.stock_used) || 0,
+          min_stock: Number(data.min_stock) || 0,
+          price_new: Number(data.price_new) || 0,
+          price_used: Number(data.price_used) || 0,
+          created_at: now
+        }] : [])
+    const stock_new = articles.reduce((sum, a) => sum + (Number(a.stock_new) || 0), 0)
+    const stock_used = articles.reduce((sum, a) => sum + (Number(a.stock_used) || 0), 0)
+    const primaryCode = articles[0]?.code || data.code || ''
+    const image = data.image || ''
 
     if (this.isWeb || !this.db) {
       const nextId = this.webParts.length > 0 ? Math.max(...this.webParts.map(p => p.id)) + 1 : 1
       const newPart: Part = enrichPart({
         ...data,
         id: nextId,
+        code: primaryCode,
+        image,
+        articles,
+        stock_new,
+        stock_used,
         notes: notesValue,
         created_at: now,
         updated_at: now
@@ -303,15 +398,17 @@ class DatabaseService {
     }
 
     const res = await this.db.run(
-      `INSERT INTO parts (code, name, category, location, stock_new, stock_used, min_stock, price_new, price_used, notes, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO parts (code, name, category, location, image, articles, stock_new, stock_used, min_stock, price_new, price_used, notes, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        data.code.trim(),
+        primaryCode.trim(),
         data.name.trim(),
         data.category || '',
         data.location || '',
-        Number(data.stock_new) || 0,
-        Number(data.stock_used) || 0,
+        image,
+        JSON.stringify(articles),
+        stock_new,
+        stock_used,
         Number(data.min_stock) || 0,
         Number(data.price_new) || 0,
         Number(data.price_used) || 0,
@@ -329,29 +426,57 @@ class DatabaseService {
     await this.init()
     const now = new Date().toISOString()
 
+    const current = await this.getPartById(id)
+    if (!current) throw new Error('Запчасть не найдена')
+
+    const mergedArticles = data.articles ? [...data.articles] : [...current.articles]
+    const stock_new = mergedArticles.reduce((sum, a) => sum + (Number(a.stock_new) || 0), 0)
+    const stock_used = mergedArticles.reduce((sum, a) => sum + (Number(a.stock_used) || 0), 0)
+    const primaryCode = mergedArticles[0]?.code || data.code || current.code || ''
+    const notesValue = data.tags !== undefined ? serializeTags(data.tags) : (data.notes !== undefined ? data.notes : current.notes)
+    const image = data.image !== undefined ? data.image : (current.image || '')
+
     if (this.isWeb || !this.db) {
       const idx = this.webParts.findIndex(p => p.id === id)
       if (idx !== -1) {
-        const notesValue = data.tags !== undefined ? serializeTags(data.tags) : (data.notes !== undefined ? data.notes : this.webParts[idx].notes)
-        this.webParts[idx] = enrichPart({ ...this.webParts[idx], ...data, notes: notesValue, updated_at: now })
+        this.webParts[idx] = enrichPart({
+          ...this.webParts[idx],
+          ...data,
+          code: primaryCode,
+          image,
+          articles: mergedArticles,
+          stock_new,
+          stock_used,
+          notes: notesValue,
+          updated_at: now
+        })
         this.persistWebStore()
       }
       return
     }
 
-    const current = await this.getPartById(id)
-    if (!current) throw new Error('Запчасть не найдена')
+    const merged = enrichPart({
+      ...current,
+      ...data,
+      code: primaryCode,
+      image,
+      articles: mergedArticles,
+      stock_new,
+      stock_used,
+      notes: notesValue,
+      updated_at: now
+    })
 
-    const notesValue = data.tags !== undefined ? serializeTags(data.tags) : (data.notes !== undefined ? data.notes : current.notes)
-    const merged = enrichPart({ ...current, ...data, notes: notesValue, updated_at: now })
     await this.db.run(
-      `UPDATE parts SET code = ?, name = ?, category = ?, location = ?, stock_new = ?, stock_used = ?, min_stock = ?, price_new = ?, price_used = ?, notes = ?, updated_at = ?
+      `UPDATE parts SET code = ?, name = ?, category = ?, location = ?, image = ?, articles = ?, stock_new = ?, stock_used = ?, min_stock = ?, price_new = ?, price_used = ?, notes = ?, updated_at = ?
        WHERE id = ?`,
       [
         merged.code.trim(),
         merged.name.trim(),
         merged.category,
         merged.location,
+        merged.image || '',
+        JSON.stringify(merged.articles),
         merged.stock_new,
         merged.stock_used,
         merged.min_stock,
@@ -362,6 +487,69 @@ class DatabaseService {
         id
       ]
     )
+  }
+
+  async addArticle(partId: number, articleData: Omit<PartArticle, 'id'>): Promise<Part> {
+    const part = await this.getPartById(partId)
+    if (!part) throw new Error('Запчасть не найдена')
+
+    const newArticle: PartArticle = {
+      ...articleData,
+      id: `art-${partId}-${Date.now()}`,
+      code: articleData.code.trim(),
+      name: (articleData.name || '').trim(),
+      stock_new: Number(articleData.stock_new) || 0,
+      stock_used: Number(articleData.stock_used) || 0,
+      min_stock: Number(articleData.min_stock) || 0,
+      price_new: Number(articleData.price_new) || 0,
+      price_used: Number(articleData.price_used) || 0,
+      created_at: new Date().toISOString()
+    }
+
+    const articles = [...(part.articles || []), newArticle]
+    await this.updatePart(partId, { articles })
+    return (await this.getPartById(partId))!
+  }
+
+  async updateArticle(partId: number, articleId: string, updates: Partial<PartArticle>): Promise<Part> {
+    const part = await this.getPartById(partId)
+    if (!part) throw new Error('Запчасть не найдена')
+
+    const articles = (part.articles || []).map(a => {
+      if (a.id === articleId) {
+        return {
+          ...a,
+          ...updates,
+          code: updates.code !== undefined ? updates.code.trim() : a.code,
+          name: updates.name !== undefined ? updates.name.trim() : a.name,
+          stock_new: updates.stock_new !== undefined ? Number(updates.stock_new) : a.stock_new,
+          stock_used: updates.stock_used !== undefined ? Number(updates.stock_used) : a.stock_used,
+          min_stock: updates.min_stock !== undefined ? Number(updates.min_stock) : (a.min_stock || 0)
+        }
+      }
+      return a
+    })
+
+    await this.updatePart(partId, { articles })
+    return (await this.getPartById(partId))!
+  }
+
+  async deleteArticle(partId: number, articleId: string): Promise<Part> {
+    const part = await this.getPartById(partId)
+    if (!part) throw new Error('Запчасть не найдена')
+
+    if (part.articles.length <= 1) {
+      throw new Error('У детали должен оставаться хотя бы один артикул')
+    }
+
+    const articles = part.articles.filter(a => a.id !== articleId)
+    await this.updatePart(partId, { articles })
+    return (await this.getPartById(partId))!
+  }
+
+  async updatePartImage(partId: number, image: string): Promise<Part> {
+    await this.updatePart(partId, { image })
+    return (await this.getPartById(partId))!
   }
 
   async deletePart(id: number): Promise<void> {
@@ -380,13 +568,14 @@ class DatabaseService {
   // --- STOCK MOVEMENT (+ / -) ---
   async recordMovement(params: {
     partId: number
+    articleId?: string
     type: MovementType
     condition: PartCondition
     quantity: number
     reason: string
   }): Promise<{ part: Part; transaction: Transaction }> {
     await this.init()
-    const { partId, type, condition, quantity, reason } = params
+    const { partId, articleId, type, condition, quantity, reason } = params
 
     if (quantity <= 0) {
       throw new Error('Количество должно быть больше 0')
@@ -395,8 +584,23 @@ class DatabaseService {
     const part = await this.getPartById(partId)
     if (!part) throw new Error('Запчасть не найдена')
 
+    // Find specific article or fallback to first
+    let article = part.articles.find(a => a.id === articleId)
+    if (!article && part.articles.length > 0) {
+      article = part.articles[0]
+    }
+    if (!article) {
+      article = {
+        id: `art-${partId}-1`,
+        code: part.code || 'АРТИКУЛ',
+        stock_new: part.stock_new || 0,
+        stock_used: part.stock_used || 0
+      }
+      part.articles.push(article)
+    }
+
     const isNew = condition === 'NEW'
-    const currentStock = isNew ? part.stock_new : part.stock_used
+    const currentStock = isNew ? article.stock_new : article.stock_used
     let newStock = currentStock
 
     if (type === 'IN') {
@@ -404,29 +608,43 @@ class DatabaseService {
     } else if (type === 'OUT') {
       if (quantity > currentStock) {
         const condLabel = isNew ? 'новых' : 'б/у'
-        throw new Error(`Нельзя списать ${quantity} шт. В наличии всего ${currentStock} шт (${condLabel}).`)
+        throw new Error(`Нельзя списать ${quantity} шт по артикулу ${article.code}. В наличии всего ${currentStock} шт (${condLabel}).`)
       }
       newStock = currentStock - quantity
     } else if (type === 'ADJUST') {
       newStock = quantity
     }
 
-    const now = new Date().toISOString()
-
-    // Update part stock
+    // Update article stock
     if (isNew) {
-      part.stock_new = newStock
+      article.stock_new = newStock
     } else {
-      part.stock_used = newStock
+      article.stock_used = newStock
     }
+
+    // Recalculate part totals
+    part.stock_new = part.articles.reduce((sum, a) => sum + (Number(a.stock_new) || 0), 0)
+    part.stock_used = part.articles.reduce((sum, a) => sum + (Number(a.stock_used) || 0), 0)
+    const now = new Date().toISOString()
     part.updated_at = now
+
+    // Persist part
+    await this.updatePart(partId, {
+      articles: part.articles,
+      stock_new: part.stock_new,
+      stock_used: part.stock_used
+    })
+
+    const updatedPart = (await this.getPartById(partId))!
 
     if (this.isWeb || !this.db) {
       const transId = this.webTransactions.length > 0 ? Math.max(...this.webTransactions.map(t => t.id)) + 1 : 1
       const transaction: Transaction = {
         id: transId,
         part_id: partId,
-        part_code: part.code,
+        article_id: article.id,
+        article_code: article.code,
+        part_code: article.code,
         part_name: part.name,
         type,
         condition,
@@ -437,30 +655,24 @@ class DatabaseService {
         created_at: now
       }
 
-      const pIndex = this.webParts.findIndex(p => p.id === partId)
-      if (pIndex !== -1) {
-        this.webParts[pIndex] = part
-      }
       this.webTransactions.unshift(transaction)
       this.persistWebStore()
 
-      return { part, transaction }
+      return { part: updatedPart, transaction }
     }
 
-    // Native DB transaction
-    const updateCol = isNew ? 'stock_new' : 'stock_used'
-    await this.db.run(`UPDATE parts SET ${updateCol} = ?, updated_at = ? WHERE id = ?`, [newStock, now, partId])
-
     const transRes = await this.db.run(
-      `INSERT INTO transactions (part_id, type, condition, quantity, stock_before, stock_after, reason, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [partId, type, condition, quantity, currentStock, newStock, reason || (type === 'IN' ? 'Приход' : 'Списание'), now]
+      `INSERT INTO transactions (part_id, article_id, article_code, type, condition, quantity, stock_before, stock_after, reason, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [partId, article.id, article.code, type, condition, quantity, currentStock, newStock, reason || (type === 'IN' ? 'Приход' : 'Списание'), now]
     )
 
     const transaction: Transaction = {
       id: transRes.changes?.lastId || 0,
       part_id: partId,
-      part_code: part.code,
+      article_id: article.id,
+      article_code: article.code,
+      part_code: article.code,
       part_name: part.name,
       type,
       condition,
@@ -471,7 +683,7 @@ class DatabaseService {
       created_at: now
     }
 
-    return { part, transaction }
+    return { part: updatedPart, transaction }
   }
 
   // --- TRANSACTIONS / HISTORY ---

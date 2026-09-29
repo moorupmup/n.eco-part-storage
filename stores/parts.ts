@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { dbService } from '~/services/database'
-import type { Part, MovementType, PartCondition, InventoryStats, Category, CategoryWithStats } from '~/types'
+import type { Part, PartArticle, MovementType, PartCondition, InventoryStats, Category, CategoryWithStats } from '~/types'
 import { parseTags } from '~/utils/tags'
 
 interface PartsState {
@@ -85,14 +85,15 @@ export const usePartsStore = defineStore('parts', {
     filteredParts: (state): Part[] => {
       let result = (state.parts || []).filter(p => !!p)
 
-      // Search by code, name, tags, notes
+      // Search by code, name, tags, notes, articles
       if (state.searchQuery.trim()) {
         const query = state.searchQuery.toLowerCase().trim()
         result = result.filter(p =>
           (p.code && p.code.toLowerCase().includes(query)) ||
           (p.name && p.name.toLowerCase().includes(query)) ||
           (p.notes && p.notes.toLowerCase().includes(query)) ||
-          (p.tags && p.tags.some(t => t.toLowerCase().includes(query)))
+          (p.tags && p.tags.some(t => t.toLowerCase().includes(query))) ||
+          (Array.isArray(p.articles) && p.articles.some(a => a.code.toLowerCase().includes(query) || (a.name && a.name.toLowerCase().includes(query))))
         )
       }
 
@@ -276,8 +277,77 @@ export const usePartsStore = defineStore('parts', {
       }
     },
 
+    async addArticle(partId: number, articleData: Omit<PartArticle, 'id'>) {
+      this.isLoading = true
+      try {
+        const updatedPart = await dbService.addArticle(partId, articleData)
+        const index = this.parts.findIndex(p => p.id === partId)
+        if (index !== -1) {
+          this.parts[index] = updatedPart
+        }
+        return updatedPart
+      } catch (err: any) {
+        this.error = err.message
+        throw err
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    async updateArticle(partId: number, articleId: string, updates: Partial<PartArticle>) {
+      this.isLoading = true
+      try {
+        const updatedPart = await dbService.updateArticle(partId, articleId, updates)
+        const index = this.parts.findIndex(p => p.id === partId)
+        if (index !== -1) {
+          this.parts[index] = updatedPart
+        }
+        return updatedPart
+      } catch (err: any) {
+        this.error = err.message
+        throw err
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    async deleteArticle(partId: number, articleId: string) {
+      this.isLoading = true
+      try {
+        const updatedPart = await dbService.deleteArticle(partId, articleId)
+        const index = this.parts.findIndex(p => p.id === partId)
+        if (index !== -1) {
+          this.parts[index] = updatedPart
+        }
+        return updatedPart
+      } catch (err: any) {
+        this.error = err.message
+        throw err
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    async updatePartImage(partId: number, image: string) {
+      this.isLoading = true
+      try {
+        const updatedPart = await dbService.updatePartImage(partId, image)
+        const index = this.parts.findIndex(p => p.id === partId)
+        if (index !== -1) {
+          this.parts[index] = updatedPart
+        }
+        return updatedPart
+      } catch (err: any) {
+        this.error = err.message
+        throw err
+      } finally {
+        this.isLoading = false
+      }
+    },
+
     async recordMovement(params: {
       partId: number
+      articleId?: string
       type: MovementType
       condition: PartCondition
       quantity: number
