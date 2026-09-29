@@ -3,6 +3,7 @@ import { Capacitor } from '@capacitor/core'
 import { Filesystem, Directory } from '@capacitor/filesystem'
 import { FileOpener } from '@capacitor-community/file-opener'
 import { App } from '@capacitor/app'
+import pkg from '~/package.json'
 
 export interface ReleaseAsset {
   name: string
@@ -20,7 +21,7 @@ export interface GitHubRelease {
 }
 
 // Module-scoped singleton state shared across the whole app
-const currentVersion = ref('v1.0.0')
+const currentVersion = ref(pkg.version ? (pkg.version.startsWith('v') ? pkg.version : `v${pkg.version}`) : 'v1.0.2')
 const repoUrl = 'https://api.github.com/repos/moorupmup/n.eco-part-storage/releases/latest'
 
 const isChecking = ref(false)
@@ -48,11 +49,29 @@ export function useAppUpdater() {
   })
 
   async function initVersion() {
+    // 1. Check if user already installed an update through the in-app updater
+    if (typeof localStorage !== 'undefined') {
+      const lastInstalled = localStorage.getItem('neco_installed_update_tag')
+      if (lastInstalled) {
+        const cleanInstalled = lastInstalled.replace(/^v/, '')
+        const cleanCurrent = currentVersion.value.replace(/^v/, '')
+        if (compareVersions(cleanInstalled, cleanCurrent) > 0) {
+          currentVersion.value = lastInstalled.startsWith('v') ? lastInstalled : `v${lastInstalled}`
+        }
+      }
+    }
+
+    // 2. If running on native Capacitor Android, query package info
     if (Capacitor.isNativePlatform()) {
       try {
         const info = await App.getInfo()
-        if (info?.version) {
-          currentVersion.value = info.version.startsWith('v') ? info.version : `v${info.version}`
+        // If native info returns a specific version (other than the generic template '1.0')
+        if (info?.version && info.version !== '1.0') {
+          const cleanInfo = info.version.replace(/^v/, '')
+          const cleanCurrent = currentVersion.value.replace(/^v/, '')
+          if (compareVersions(cleanInfo, cleanCurrent) > 0) {
+            currentVersion.value = info.version.startsWith('v') ? info.version : `v${info.version}`
+          }
         }
       } catch {
         // fallback to default
@@ -91,15 +110,43 @@ export function useAppUpdater() {
       const cleanCurrent = currentVersion.value.replace(/^v/, '')
       const cleanLatest = data.tag_name ? data.tag_name.replace(/^v/, '') : cleanCurrent
 
-      hasUpdate.value = compareVersions(cleanLatest, cleanCurrent) > 0
+      const isNewer = compareVersions(cleanLatest, cleanCurrent) > 0
+
+      // Check if this version was already dismissed recently (within 24h)
+      let isDismissedRecently = false
+      if (typeof localStorage !== 'undefined') {
+        const dismissedTag = localStorage.getItem('neco_dismissed_update_tag')
+        const dismissedTime = Number(localStorage.getItem('neco_dismissed_update_time') || 0)
+        const ONE_DAY = 24 * 60 * 60 * 1000
+        if (dismissedTag === data.tag_name && Date.now() - dismissedTime < ONE_DAY) {
+          isDismissedRecently = true
+        }
+      }
+
+      hasUpdate.value = isNewer
       checkCompleted.value = true
       lastChecked.value = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+
+      // Automatically show modal on automatic check ONLY if:
+      // 1. There is actually a newer version
+      // 2. User hasn't dismissed it in the last 24h
+      if (hasUpdate.value && !manual && !isDismissedRecently) {
+        isUpdateModalOpen.value = true
+      }
     } catch (err: any) {
       if (manual) {
         errorMessage.value = err.message || 'Не удалось связаться с сервером обновлений'
       }
     } finally {
       isChecking.value = false
+    }
+  }
+
+  function dismissUpdate() {
+    isUpdateModalOpen.value = false
+    if (typeof localStorage !== 'undefined' && latestRelease.value?.tag_name) {
+      localStorage.setItem('neco_dismissed_update_tag', latestRelease.value.tag_name)
+      localStorage.setItem('neco_dismissed_update_time', String(Date.now()))
     }
   }
 
@@ -151,6 +198,13 @@ export function useAppUpdater() {
         downloadProgress.value = 100
         downloadStatus.value = 'Запуск установщика...'
 
+        // Save to localStorage that this release was installed
+        if (typeof localStorage !== 'undefined' && latestRelease.value?.tag_name) {
+          localStorage.setItem('neco_installed_update_tag', latestRelease.value.tag_name)
+        }
+        currentVersion.value = latestRelease.value?.tag_name || currentVersion.value
+        hasUpdate.value = false
+
         // Trigger native Android installer
         await FileOpener.open({
           filePath: res.path,
@@ -185,6 +239,12 @@ export function useAppUpdater() {
         document.body.removeChild(a)
         downloadProgress.value = 100
         downloadStatus.value = 'Файл передан на скачивание'
+
+        if (typeof localStorage !== 'undefined' && latestRelease.value?.tag_name) {
+          localStorage.setItem('neco_installed_update_tag', latestRelease.value.tag_name)
+        }
+        currentVersion.value = latestRelease.value?.tag_name || currentVersion.value
+        hasUpdate.value = false
       } catch (err: any) {
         installError.value = err.message || 'Ошибка загрузки'
       } finally {
@@ -237,6 +297,7 @@ export function useAppUpdater() {
     installError,
     initVersion,
     checkForUpdates,
+    dismissUpdate,
     downloadAndInstall,
     formatDate,
     formatBytes

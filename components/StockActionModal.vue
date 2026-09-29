@@ -5,7 +5,7 @@
       :style="sheetStyle"
     >
       <!-- Mobile Bottom Sheet Drag Handle -->
-      <ModalDragHandle class="-mt-3 -mx-5 mb-2" @pointerdown="onPointerDown" />
+      <ModalDragHandle class="-mt-2 mb-1" @pointerdown="onPointerDown" />
 
       <!-- Modal Header -->
       <div

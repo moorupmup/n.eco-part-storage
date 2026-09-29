@@ -42,8 +42,12 @@ export function useSwipeDismiss(options: SwipeDismissOptions) {
   let activeTarget: HTMLElement | null = null
 
   if (isOpen) {
-    watch(isOpen, () => {
-      resetState()
+    watch(isOpen, (newVal) => {
+      // ONLY reset state when opening the modal!
+      // Do not reset when closing, otherwise the card jumps back into view during exit animation!
+      if (newVal) {
+        resetState()
+      }
     })
   }
 
@@ -66,9 +70,9 @@ export function useSwipeDismiss(options: SwipeDismissOptions) {
       transition: isDragging.value
         ? 'none'
         : isDismissing.value
-          ? 'transform 180ms cubic-bezier(0.4, 0, 0.2, 1), opacity 180ms ease-out'
+          ? 'transform 240ms cubic-bezier(0.32, 0.72, 0, 1), opacity 200ms ease-out'
           : 'transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1)',
-      willChange: isDragging.value ? 'transform' : 'auto'
+      willChange: isDragging.value || isDismissing.value ? 'transform, opacity' : 'auto'
     }
   })
 
@@ -139,12 +143,18 @@ export function useSwipeDismiss(options: SwipeDismissOptions) {
       if (shouldDismiss) {
         isDismissing.value = true
         haptics.lightTap()
-        // Slide smoothly downwards
-        offsetY.value = Math.max(offsetY.value + 200, 360)
+        
+        // Translate completely off the bottom of the viewport
+        const targetY = typeof window !== 'undefined' ? Math.max(window.innerHeight, 750) : 750
+        offsetY.value = targetY
+
+        // Trigger onDismiss after card slides off screen, then clean up after unmounting
         setTimeout(() => {
           onDismiss()
-          resetState()
-        }, 180)
+          setTimeout(() => {
+            resetState()
+          }, 350)
+        }, 220)
       } else {
         // Spring back smoothly
         offsetY.value = 0
@@ -154,7 +164,9 @@ export function useSwipeDismiss(options: SwipeDismissOptions) {
     function onPointerCancel(ev: PointerEvent) {
       if (ev.pointerId !== activePointerId) return
       cleanup()
-      resetState()
+      if (!isDismissing.value) {
+        resetState()
+      }
     }
 
     function cleanup() {

@@ -170,7 +170,7 @@
         :style="filterSheetStyle"
       >
         <!-- Mobile Bottom Sheet Drag Handle -->
-        <ModalDragHandle class="-mt-3 -mx-5 -mb-2" @pointerdown="onFilterPointerDown" />
+        <ModalDragHandle class="-mt-2 mb-1" @pointerdown="onFilterPointerDown" />
 
         <div
           class="flex items-center pb-3 border-b border-zinc-800 cursor-grab active:cursor-grabbing touch-none select-none"

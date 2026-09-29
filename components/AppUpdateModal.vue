@@ -7,7 +7,7 @@
       <!-- Drag handle (disabled during active download) -->
       <ModalDragHandle
         v-if="!isDownloading"
-        class="-mt-3 -mx-5 mb-2"
+        class="-mt-2 mb-1"
         @pointerdown="onPointerDown"
       />
       <div v-else class="h-2" />
@@ -99,7 +99,7 @@
           v-if="!isDownloading"
           type="button"
           class="flex-1 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 active:scale-95 text-zinc-300 font-semibold text-sm transition-all"
-          @click="isUpdateModalOpen = false"
+          @click="dismissUpdate"
         >
           Позже
         </button>
@@ -133,6 +133,7 @@ const {
   downloadStatus,
   installError,
   downloadAndInstall,
+  dismissUpdate,
   formatDate,
   formatBytes,
   isUpdateModalOpen
@@ -143,7 +144,7 @@ const haptics = useHaptics()
 const { sheetStyle, onPointerDown } = useSwipeDismiss({
   onDismiss: () => {
     if (!isDownloading.value) {
-      isUpdateModalOpen.value = false
+      dismissUpdate()
     }
   },
   isOpen: isUpdateModalOpen

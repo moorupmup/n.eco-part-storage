@@ -22,7 +22,7 @@ import { usePartsStore } from '~/stores/parts'
 import { useAppUpdater } from '~/composables/useAppUpdater'
 
 const partsStore = usePartsStore()
-const { checkForUpdates, hasUpdate, isUpdateModalOpen } = useAppUpdater()
+const { checkForUpdates } = useAppUpdater()
 
 // Initialize store and database on app start
 onMounted(async () => {
@@ -33,9 +33,6 @@ onMounted(async () => {
   if (isMobile) {
     setTimeout(async () => {
       await checkForUpdates(false)
-      if (hasUpdate.value) {
-        isUpdateModalOpen.value = true
-      }
     }, 1500)
   }
 })
