@@ -1,25 +1,24 @@
 <template>
   <UModal v-model="isOpen" :ui="{ width: 'sm:max-w-lg' }">
-    <div class="p-5 bg-zinc-900 border border-zinc-800 rounded-xl max-h-[85vh] overflow-y-auto">
+    <div
+      class="bg-zinc-900 border border-zinc-800 rounded-2xl flex flex-col max-h-[88vh] overflow-hidden"
+      :style="sheetStyle"
+    >
       <!-- Mobile Bottom Sheet Drag Handle -->
-      <div class="w-10 h-1 rounded-full bg-zinc-700/80 mx-auto -mt-1 mb-3.5" />
+      <ModalDragHandle @pointerdown="onPointerDown" />
 
-      <div class="flex items-center justify-between pb-3 mb-4 border-b border-zinc-800">
+      <div
+        class="flex items-center px-5 pb-3 border-b border-zinc-800 shrink-0 cursor-grab active:cursor-grabbing touch-none select-none"
+        @pointerdown="onPointerDown"
+      >
         <h2 class="text-base font-bold text-zinc-100 flex items-center gap-2">
           <UIcon :name="isEdit ? 'i-lucide-pencil' : 'i-lucide-plus-circle'" class="w-5 h-5 text-primary-400" />
           {{ isEdit ? 'Редактировать запчасть' : 'Новая запчасть' }}
         </h2>
-        <UButton
-          color="gray"
-          variant="ghost"
-          icon="i-lucide-x"
-          size="sm"
-          class="text-zinc-400"
-          @click="isOpen = false"
-        />
       </div>
 
-      <form @submit.prevent="handleSave" class="space-y-4">
+      <div class="p-5 overflow-y-auto overscroll-contain flex-1">
+        <form @submit.prevent="handleSave" class="space-y-4">
         <!-- Name -->
         <div>
           <label class="block text-xs font-semibold text-zinc-300 mb-1">
@@ -171,6 +170,7 @@
           </button>
         </div>
       </form>
+      </div>
     </div>
   </UModal>
 </template>
@@ -202,6 +202,13 @@ function toggleCategory(cat: string) {
 const isOpen = computed({
   get: () => props.modelValue,
   set: (val) => emit('update:modelValue', val)
+})
+
+const { sheetStyle, onPointerDown } = useSwipeDismiss({
+  onDismiss: () => {
+    isOpen.value = false
+  },
+  isOpen
 })
 
 const isEdit = computed(() => !!props.partToEdit)

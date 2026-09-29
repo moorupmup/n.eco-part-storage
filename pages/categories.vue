@@ -151,19 +151,21 @@
 
     <!-- Rename Category Modal -->
     <UModal v-model="isEditModalOpen">
-      <div class="p-5 bg-zinc-900 border border-zinc-800 rounded-xl space-y-4">
-        <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
+      <div
+        class="p-5 bg-zinc-900 border border-zinc-800 rounded-2xl space-y-4"
+        :style="editSheetStyle"
+      >
+        <!-- Mobile Bottom Sheet Drag Handle -->
+        <ModalDragHandle class="-mt-3 -mx-5 -mb-2" @pointerdown="onEditPointerDown" />
+
+        <div
+          class="flex items-center pb-3 border-b border-zinc-800 cursor-grab active:cursor-grabbing touch-none select-none"
+          @pointerdown="onEditPointerDown"
+        >
           <h3 class="text-base font-bold text-zinc-100 flex items-center gap-2">
             <UIcon name="i-lucide-pencil" class="w-4 h-4 text-emerald-400" />
             Переименовать категорию
           </h3>
-          <UButton
-            color="gray"
-            variant="ghost"
-            icon="i-lucide-x"
-            size="sm"
-            @click="isEditModalOpen = false"
-          />
         </div>
 
         <div>
@@ -265,6 +267,14 @@ const isRefreshing = ref(false)
 
 // Edit state
 const isEditModalOpen = ref(false)
+
+const { sheetStyle: editSheetStyle, onPointerDown: onEditPointerDown } = useSwipeDismiss({
+  onDismiss: () => {
+    isEditModalOpen.value = false
+  },
+  isOpen: isEditModalOpen
+})
+
 const editingCategory = ref<CategoryWithStats | null>(null)
 const editCategoryName = ref('')
 

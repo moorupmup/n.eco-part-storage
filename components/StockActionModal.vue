@@ -1,12 +1,18 @@
 <template>
   <UModal v-model="isOpen" :ui="{ width: 'sm:max-w-md' }">
-    <div class="p-5 bg-zinc-900 border border-zinc-800 rounded-xl">
+    <div
+      class="p-5 bg-zinc-900 border border-zinc-800 rounded-2xl"
+      :style="sheetStyle"
+    >
       <!-- Mobile Bottom Sheet Drag Handle -->
-      <div class="w-10 h-1 rounded-full bg-zinc-700/80 mx-auto -mt-1 mb-3.5" />
+      <ModalDragHandle class="-mt-3 -mx-5 mb-2" @pointerdown="onPointerDown" />
 
       <!-- Modal Header -->
-      <div class="flex items-start justify-between gap-3 mb-4">
-        <div>
+      <div
+        class="flex items-start justify-between gap-3 mb-4 cursor-grab active:cursor-grabbing touch-none select-none"
+        @pointerdown="onPointerDown"
+      >
+        <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2 mb-1.5 flex-wrap">
             <span
               v-if="type === 'IN'"
@@ -42,14 +48,6 @@
             {{ part.name }}
           </h2>
         </div>
-        <UButton
-          color="gray"
-          variant="ghost"
-          icon="i-lucide-x"
-          size="sm"
-          class="text-zinc-400"
-          @click="isOpen = false"
-        />
       </div>
 
       <!-- Condition Selector (NEW / USED) -->
@@ -246,6 +244,13 @@ function applyAllStock() {
 const isOpen = computed({
   get: () => props.modelValue,
   set: (val) => emit('update:modelValue', val)
+})
+
+const { sheetStyle, onPointerDown } = useSwipeDismiss({
+  onDismiss: () => {
+    isOpen.value = false
+  },
+  isOpen
 })
 
 const activeArticle = computed<PartArticle | null>(() => {

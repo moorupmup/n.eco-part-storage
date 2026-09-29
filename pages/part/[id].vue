@@ -19,7 +19,7 @@
           {{ part.category }}
         </span>
 
-        <UDropdown :items="partMenuItems" :popper="{ placement: 'bottom-end' }">
+        <UDropdown :items="partMenuItems" :popper="{ placement: 'bottom-end', strategy: 'absolute' }">
           <UButton
             color="gray"
             variant="ghost"
@@ -295,23 +295,21 @@
 
     <!-- Add / Edit Article Modal -->
     <UModal v-model="isArticleModalOpen">
-      <div class="p-5 bg-zinc-900 border border-zinc-800 rounded-xl">
+      <div
+        class="p-5 bg-zinc-900 border border-zinc-800 rounded-2xl"
+        :style="articleSheetStyle"
+      >
         <!-- Mobile Bottom Sheet Drag Handle -->
-        <div class="w-10 h-1 rounded-full bg-zinc-700/80 mx-auto -mt-1 mb-3.5" />
+        <ModalDragHandle class="-mt-3 -mx-5 mb-2" @pointerdown="onArticlePointerDown" />
 
-        <div class="flex items-center justify-between pb-3 mb-4 border-b border-zinc-800">
+        <div
+          class="flex items-center pb-3 mb-4 border-b border-zinc-800 cursor-grab active:cursor-grabbing touch-none select-none"
+          @pointerdown="onArticlePointerDown"
+        >
           <h3 class="text-sm font-bold text-zinc-100 flex items-center gap-2">
             <UIcon :name="isEditingArticle ? 'i-lucide-pencil' : 'i-lucide-plus'" class="w-4 h-4 text-emerald-400" />
             <span>{{ isEditingArticle ? 'Редактировать артикул' : 'Новый артикул' }}</span>
           </h3>
-          <UButton
-            color="gray"
-            variant="ghost"
-            icon="i-lucide-x"
-            size="xs"
-            class="text-zinc-400"
-            @click="isArticleModalOpen = false"
-          />
         </div>
 
         <form @submit.prevent="saveArticle" class="space-y-4">
@@ -632,6 +630,14 @@ function isArticleLowStock(article: PartArticle): boolean {
 
 // Add / Edit Article Logic
 const isArticleModalOpen = ref(false)
+
+const { sheetStyle: articleSheetStyle, onPointerDown: onArticlePointerDown } = useSwipeDismiss({
+  onDismiss: () => {
+    isArticleModalOpen.value = false
+  },
+  isOpen: isArticleModalOpen
+})
+
 const isEditingArticle = ref(false)
 const editingArticleId = ref<string | null>(null)
 const articleForm = reactive({

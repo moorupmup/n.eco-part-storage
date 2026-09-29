@@ -2,6 +2,7 @@ import { ref, computed } from 'vue'
 import { Capacitor } from '@capacitor/core'
 import { Filesystem, Directory } from '@capacitor/filesystem'
 import { FileOpener } from '@capacitor-community/file-opener'
+import { App } from '@capacitor/app'
 
 export interface ReleaseAsset {
   name: string
@@ -18,23 +19,25 @@ export interface GitHubRelease {
   assets: ReleaseAsset[]
 }
 
+// Module-scoped singleton state shared across the whole app
+const currentVersion = ref('v1.0.0')
+const repoUrl = 'https://api.github.com/repos/moorupmup/n.eco-part-storage/releases/latest'
+
+const isChecking = ref(false)
+const checkCompleted = ref(false)
+const latestRelease = ref<GitHubRelease | null>(null)
+const hasUpdate = ref(false)
+const isUpdateModalOpen = ref(false)
+const errorMessage = ref('')
+const lastChecked = ref('')
+
+// In-app download & install state
+const isDownloading = ref(false)
+const downloadProgress = ref(0)
+const downloadStatus = ref('')
+const installError = ref('')
+
 export function useAppUpdater() {
-  const currentVersion = 'v1.0.0'
-  const repoUrl = 'https://api.github.com/repos/moorupmup/n.eco-part-storage/releases/latest'
-
-  const isChecking = ref(false)
-  const checkCompleted = ref(false)
-  const latestRelease = ref<GitHubRelease | null>(null)
-  const hasUpdate = ref(false)
-  const errorMessage = ref('')
-  const lastChecked = ref('')
-
-  // In-app download & install state
-  const isDownloading = ref(false)
-  const downloadProgress = ref(0)
-  const downloadStatus = ref('')
-  const installError = ref('')
-
   const apkAsset = computed(() => {
     if (!latestRelease.value?.assets) return null
     return latestRelease.value.assets.find(a => a.name.endsWith('.apk')) || latestRelease.value.assets[0]
@@ -44,11 +47,26 @@ export function useAppUpdater() {
     return apkAsset.value?.browser_download_url || latestRelease.value?.html_url || ''
   })
 
+  async function initVersion() {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const info = await App.getInfo()
+        if (info?.version) {
+          currentVersion.value = info.version.startsWith('v') ? info.version : `v${info.version}`
+        }
+      } catch {
+        // fallback to default
+      }
+    }
+  }
+
   async function checkForUpdates(manual = true) {
     isChecking.value = true
     errorMessage.value = ''
 
     try {
+      await initVersion()
+
       const res = await fetch(repoUrl, {
         headers: {
           'Accept': 'application/vnd.github.v3+json'
@@ -70,7 +88,7 @@ export function useAppUpdater() {
       latestRelease.value = data
 
       // Compare versions
-      const cleanCurrent = currentVersion.replace(/^v/, '')
+      const cleanCurrent = currentVersion.value.replace(/^v/, '')
       const cleanLatest = data.tag_name ? data.tag_name.replace(/^v/, '') : cleanCurrent
 
       hasUpdate.value = compareVersions(cleanLatest, cleanCurrent) > 0
@@ -208,6 +226,7 @@ export function useAppUpdater() {
     checkCompleted,
     latestRelease,
     hasUpdate,
+    isUpdateModalOpen,
     errorMessage,
     lastChecked,
     apkAsset,
@@ -216,6 +235,7 @@ export function useAppUpdater() {
     downloadProgress,
     downloadStatus,
     installError,
+    initVersion,
     checkForUpdates,
     downloadAndInstall,
     formatDate,

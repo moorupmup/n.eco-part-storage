@@ -165,19 +165,21 @@
 
     <!-- Filter Modal / Bottom Sheet -->
     <UModal v-model="isFilterDrawerOpen">
-      <div class="p-5 bg-zinc-900 border border-zinc-800 rounded-xl space-y-4">
-        <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
+      <div
+        class="p-5 bg-zinc-900 border border-zinc-800 rounded-2xl space-y-4"
+        :style="filterSheetStyle"
+      >
+        <!-- Mobile Bottom Sheet Drag Handle -->
+        <ModalDragHandle class="-mt-3 -mx-5 -mb-2" @pointerdown="onFilterPointerDown" />
+
+        <div
+          class="flex items-center pb-3 border-b border-zinc-800 cursor-grab active:cursor-grabbing touch-none select-none"
+          @pointerdown="onFilterPointerDown"
+        >
           <h3 class="text-base font-bold text-zinc-100 flex items-center gap-2">
             <UIcon name="i-lucide-filter" class="w-4 h-4 text-primary-400" />
             Фильтр истории
           </h3>
-          <UButton
-            color="gray"
-            variant="ghost"
-            icon="i-lucide-x"
-            size="sm"
-            @click="isFilterDrawerOpen = false"
-          />
         </div>
 
         <!-- Filter by Part -->
@@ -280,6 +282,14 @@ const toast = useToast()
 const { copyToClipboard } = useClipboardCopy()
 
 const isFilterDrawerOpen = ref(false)
+
+const { sheetStyle: filterSheetStyle, onPointerDown: onFilterPointerDown } = useSwipeDismiss({
+  onDismiss: () => {
+    isFilterDrawerOpen.value = false
+  },
+  isOpen: isFilterDrawerOpen
+})
+
 const tempPartId = ref<number | null>(null)
 const tempDateFrom = ref('')
 const tempDateTo = ref('')

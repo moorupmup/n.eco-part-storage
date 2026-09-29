@@ -1,6 +1,6 @@
 <template>
   <div
-    class="group relative bg-zinc-900/90 border border-zinc-800 hover:border-zinc-700 active:border-emerald-500/50 rounded-xl p-3 shadow-sm transition-all duration-150 cursor-pointer active:scale-[0.99]"
+    class="group relative bg-zinc-900/90 border border-zinc-800 hover:border-zinc-700 active:border-emerald-500/50 rounded-xl p-3 shadow-sm transition-all duration-150 cursor-pointer active:scale-[0.99] focus-within:z-30"
     @click="openDetail"
   >
     <!-- Top Row: Photo (top-aligned) + Info (Category, Menu, Name) -->
@@ -51,7 +51,7 @@
 
       <!-- Dropdown menu -->
       <div class="shrink-0 -mr-1 -mt-0.5" @click.stop>
-        <UDropdown :items="menuItems" :popper="{ placement: 'bottom-end' }">
+        <UDropdown :items="menuItems" :popper="{ placement: 'bottom-end', strategy: 'absolute' }">
           <UButton
             color="gray"
             variant="ghost"
