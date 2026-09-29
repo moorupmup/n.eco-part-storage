@@ -159,6 +159,15 @@
           </h2>
         </div>
 
+        <!-- Hidden input for direct article card photo upload -->
+        <input
+          ref="directPhotoInput"
+          type="file"
+          accept="image/*"
+          class="hidden"
+          @change="handleDirectPhotoSelected"
+        />
+
         <!-- Articles Blocks List -->
         <div class="space-y-2.5">
           <div
@@ -166,32 +175,64 @@
             :key="article.id"
             class="p-3.5 bg-zinc-900/90 border border-zinc-800 rounded-xl space-y-3 shadow-sm hover:border-zinc-700 transition-colors"
           >
-            <!-- Article Header: Code + Badges + Actions -->
-            <div class="flex items-center justify-between gap-2">
-              <div class="flex items-center gap-2 flex-wrap min-w-0">
+            <!-- Article Header: Thumbnail (if photo present) + Code / Badges / Note + Actions -->
+            <div class="flex items-start justify-between gap-2.5">
+              <div class="flex items-start gap-2.5 min-w-0 flex-1">
+                <!-- Article Thumbnail (if photo present) -->
                 <button
+                  v-if="article.image"
                   type="button"
-                  class="h-7 inline-flex items-center gap-1 font-mono text-xs font-bold px-2.5 rounded-lg bg-zinc-800 hover:bg-zinc-700/80 active:scale-95 text-emerald-400 cursor-pointer transition-all border border-zinc-700/70 shrink-0"
-                  title="Нажмите, чтобы скопировать артикул"
-                  @click="copyToClipboard(article.code, 'Артикул')"
+                  class="relative w-12 h-12 rounded-lg bg-zinc-950 border border-zinc-800 overflow-hidden shrink-0 cursor-pointer active:scale-95 transition-transform group/thumb shadow-inner"
+                  title="Нажмите для просмотра фото"
+                  @click="openPhotoPreview(article)"
                 >
-                  <UIcon name="i-lucide-barcode" class="w-3.5 h-3.5" />
-                  <span>{{ article.code }}</span>
+                  <img
+                    :src="article.image"
+                    :alt="article.code"
+                    class="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                  <div class="absolute inset-0 bg-black/40 opacity-0 group-hover/thumb:opacity-100 flex items-center justify-center transition-opacity">
+                    <UIcon name="i-lucide-zoom-in" class="w-3.5 h-3.5 text-white" />
+                  </div>
                 </button>
 
-                <!-- Warning badge "Мало" -->
-                <span
-                  v-if="isArticleLowStock(article)"
-                  class="h-7 inline-flex items-center gap-1 font-semibold text-xs px-2 rounded-lg bg-amber-500/15 text-amber-400 border border-amber-500/30 shrink-0 shadow-sm"
-                  :title="`Остаток (${getArticleTotalStock(article)} шт) меньше мин. кол-ва с собой (${article.min_stock} шт)`"
-                >
-                  <UIcon name="i-lucide-alert-triangle" class="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                  <span>Мало</span>
-                </span>
+                <!-- Code, Badges, Note -->
+                <div class="min-w-0 flex-1 space-y-1">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <button
+                      type="button"
+                      class="h-7 inline-flex items-center gap-1 font-mono text-xs font-bold px-2 rounded-lg bg-zinc-800 hover:bg-zinc-700/80 active:scale-95 text-emerald-400 cursor-pointer transition-all border border-zinc-700/70 shrink-0"
+                      title="Нажмите, чтобы скопировать артикул"
+                      @click="copyToClipboard(article.code, 'Артикул')"
+                    >
+                      <UIcon name="i-lucide-barcode" class="w-3.5 h-3.5" />
+                      <span>{{ article.code }}</span>
+                    </button>
+
+                    <!-- Warning badge "Мало" -->
+                    <span
+                      v-if="isArticleLowStock(article)"
+                      class="h-7 inline-flex items-center gap-1 font-semibold text-xs px-2 rounded-lg bg-amber-500/15 text-amber-400 border border-amber-500/30 shrink-0 shadow-sm"
+                      :title="`Остаток (${getArticleTotalStock(article)} шт) меньше мин. кол-ва с собой (${article.min_stock} шт)`"
+                    >
+                      <UIcon name="i-lucide-alert-triangle" class="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <span>Мало</span>
+                    </span>
+                  </div>
+
+                  <!-- Article Note / Comment -->
+                  <p
+                    v-if="article.name"
+                    class="text-xs text-zinc-400 font-medium leading-snug line-clamp-2"
+                  >
+                    {{ article.name }}
+                  </p>
+                </div>
               </div>
 
               <!-- Article Options -->
-              <div class="flex items-center gap-1 shrink-0">
+              <div class="flex items-center gap-1 shrink-0 -mt-0.5">
                 <button
                   type="button"
                   class="w-7 h-7 flex items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 active:scale-95 transition-all cursor-pointer shrink-0"
@@ -211,14 +252,6 @@
                 </button>
               </div>
             </div>
-
-            <!-- Article Note / Comment: separate line before stock counters -->
-            <p
-              v-if="article.name"
-              class="text-xs text-zinc-400 font-medium leading-snug -mt-1"
-            >
-              {{ article.name }}
-            </p>
 
             <!-- Stock row: Counters + Action Buttons (Exact compact row style) -->
             <div class="flex items-center gap-2">
@@ -294,9 +327,9 @@
     />
 
     <!-- Add / Edit Article Modal -->
-    <UModal v-model="isArticleModalOpen">
+    <UModal v-model="isArticleModalOpen" :ui="{ width: 'sm:max-w-md' }">
       <div
-        class="p-5 bg-zinc-900 border border-zinc-800 rounded-2xl"
+        class="p-5 bg-zinc-900 border border-zinc-800 rounded-2xl max-h-[90vh] overflow-y-auto"
         :style="articleSheetStyle"
       >
         <!-- Mobile Bottom Sheet Drag Handle -->
@@ -340,6 +373,78 @@
               placeholder="Например: Оригинал DeLonghi, Аналог Ceme, 230V"
               class="w-full h-10 px-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner"
             />
+          </div>
+
+          <!-- Article Photo Section -->
+          <div>
+            <label class="block text-xs font-semibold text-zinc-300 mb-1.5 flex items-center justify-between">
+              <span>Фото артикула</span>
+              <span class="text-[11px] text-zinc-500 font-normal">необязательно</span>
+            </label>
+
+            <!-- Hidden input for modal photo upload -->
+            <input
+              ref="articleModalPhotoInput"
+              type="file"
+              accept="image/*"
+              class="hidden"
+              @change="handleArticleModalPhotoSelected"
+            />
+
+            <!-- Compressing loader -->
+            <div
+              v-if="isCompressingModalPhoto"
+              class="h-28 rounded-xl bg-zinc-950 border border-zinc-800 flex flex-col items-center justify-center gap-2"
+            >
+              <UIcon name="i-lucide-loader-2" class="w-6 h-6 text-emerald-400 animate-spin" />
+              <span class="text-xs text-zinc-400">Сжатие фото...</span>
+            </div>
+
+            <!-- Has Image -->
+            <div
+              v-else-if="articleForm.image"
+              class="relative h-28 rounded-xl bg-zinc-950 border border-zinc-800 overflow-hidden flex items-center justify-center group"
+            >
+              <img
+                :src="articleForm.image"
+                alt="Фото артикула"
+                class="w-full h-full object-contain p-1.5"
+              />
+              <div class="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-zinc-950/90 to-transparent flex items-center justify-between">
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-900/90 hover:bg-zinc-800 active:scale-95 border border-zinc-700/60 text-xs font-semibold text-zinc-200 transition-all cursor-pointer shadow-sm"
+                  @click="articleModalPhotoInput?.click()"
+                >
+                  <UIcon name="i-lucide-camera" class="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Заменить</span>
+                </button>
+                <button
+                  type="button"
+                  class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-zinc-900/90 hover:bg-rose-500/20 active:scale-95 border border-zinc-700/60 hover:border-rose-500/40 text-zinc-400 hover:text-rose-400 transition-all cursor-pointer shadow-sm"
+                  title="Удалить фото"
+                  @click="articleForm.image = ''"
+                >
+                  <UIcon name="i-lucide-trash-2" class="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            <!-- No Image: Click to add button -->
+            <button
+              v-else
+              type="button"
+              class="w-full h-20 rounded-xl border border-dashed border-zinc-700 hover:border-emerald-500/50 hover:bg-zinc-950/60 flex items-center justify-center gap-3 text-zinc-400 hover:text-emerald-400 active:scale-[0.99] transition-all cursor-pointer p-2"
+              @click="articleModalPhotoInput?.click()"
+            >
+              <div class="w-9 h-9 rounded-xl bg-zinc-800/80 border border-zinc-700/60 flex items-center justify-center text-zinc-400 shrink-0">
+                <UIcon name="i-lucide-camera" class="w-4 h-4" />
+              </div>
+              <div class="text-left">
+                <div class="text-xs font-semibold text-zinc-200">Добавить фото артикула</div>
+                <div class="text-[10px] text-zinc-500">Снимок с камеры или выбор из галереи</div>
+              </div>
+            </button>
           </div>
 
           <!-- Stock counts -->
@@ -461,6 +566,71 @@
             class="flex-1 font-bold"
             @click="executeDeleteArticle"
           />
+        </div>
+      </div>
+    </UModal>
+
+    <!-- Article Photo Lightbox Modal -->
+    <UModal v-model="isPhotoPreviewOpen" :ui="{ width: 'sm:max-w-md' }">
+      <div
+        class="p-5 bg-zinc-900 border border-zinc-800 rounded-2xl space-y-4"
+        :style="previewSheetStyle"
+      >
+        <!-- Mobile Bottom Sheet Drag Handle -->
+        <ModalDragHandle class="-mt-2 mb-1" @pointerdown="onPreviewPointerDown" />
+
+        <div
+          class="flex items-center justify-between pb-3 border-b border-zinc-800 cursor-grab active:cursor-grabbing touch-none select-none"
+          @pointerdown="onPreviewPointerDown"
+        >
+          <div class="min-w-0">
+            <h3 class="text-sm font-bold text-zinc-100 flex items-center gap-2">
+              <UIcon name="i-lucide-barcode" class="w-4 h-4 text-emerald-400 shrink-0" />
+              <span class="font-mono truncate">{{ previewArticle?.code }}</span>
+            </h3>
+            <p v-if="previewArticle?.name" class="text-xs text-zinc-400 truncate mt-0.5">
+              {{ previewArticle.name }}
+            </p>
+          </div>
+          <button
+            type="button"
+            class="w-7 h-7 flex items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 active:scale-95 cursor-pointer shrink-0"
+            @click="isPhotoPreviewOpen = false"
+          >
+            <UIcon name="i-lucide-x" class="w-4 h-4" />
+          </button>
+        </div>
+
+        <!-- Large Image Container -->
+        <div class="w-full max-h-[60vh] rounded-xl bg-zinc-950 border border-zinc-800 overflow-hidden flex items-center justify-center shadow-inner">
+          <img
+            v-if="previewArticle?.image"
+            :src="previewArticle.image"
+            :alt="previewArticle.code"
+            class="w-full max-h-[60vh] object-contain p-2"
+          />
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center gap-2 pt-1">
+          <button
+            type="button"
+            class="flex-1 h-10 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 active:scale-95 text-xs font-semibold text-zinc-200 inline-flex items-center justify-center gap-1.5 border border-zinc-700/60 transition-all cursor-pointer shadow-sm"
+            @click="triggerDirectPhotoUpload(previewArticle?.id)"
+          >
+            <UIcon name="i-lucide-camera" class="w-4 h-4 text-emerald-400" />
+            <span>Заменить фото</span>
+          </button>
+
+          <button
+            type="button"
+            class="h-10 px-3 rounded-xl bg-zinc-800 hover:bg-rose-500/20 active:scale-95 text-xs font-semibold text-zinc-400 hover:text-rose-400 inline-flex items-center justify-center gap-1.5 border border-zinc-700/60 hover:border-rose-500/40 transition-all cursor-pointer shadow-sm"
+            title="Удалить фото"
+            @click="removeArticlePhoto(previewArticle?.id)"
+          >
+            <UIcon name="i-lucide-trash-2" class="w-4 h-4" />
+            <span>Удалить</span>
+          </button>
         </div>
       </div>
     </UModal>
@@ -628,6 +798,88 @@ function isArticleLowStock(article: PartArticle): boolean {
   return getArticleTotalStock(article) < min
 }
 
+// Direct card article photo upload
+const directPhotoInput = ref<HTMLInputElement | null>(null)
+const uploadingArticleId = ref<string | null>(null)
+const targetDirectArticleId = ref<string | null>(null)
+
+function triggerDirectPhotoUpload(articleId?: string) {
+  if (!articleId) return
+  targetDirectArticleId.value = articleId
+  directPhotoInput.value?.click()
+}
+
+async function handleDirectPhotoSelected(event: Event) {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  const articleId = targetDirectArticleId.value
+  if (!file || !articleId || !part.value) return
+
+  uploadingArticleId.value = articleId
+  try {
+    const base64 = await compressImage(file, 1200, 1200, 0.82)
+    await partsStore.updateArticleImage(part.value.id, articleId, base64)
+    haptics.successVibe()
+    toast.add({
+      title: 'Фото артикула сохранено',
+      color: 'emerald'
+    })
+    if (previewArticle.value && previewArticle.value.id === articleId) {
+      previewArticle.value.image = base64
+    }
+  } catch (err: any) {
+    haptics.errorVibe()
+    toast.add({
+      title: 'Ошибка загрузки фото',
+      description: err.message,
+      color: 'red'
+    })
+  } finally {
+    uploadingArticleId.value = null
+    target.value = ''
+    targetDirectArticleId.value = null
+  }
+}
+
+async function removeArticlePhoto(articleId?: string) {
+  if (!articleId || !part.value) return
+  try {
+    await partsStore.updateArticleImage(part.value.id, articleId, '')
+    if (previewArticle.value && previewArticle.value.id === articleId) {
+      previewArticle.value.image = ''
+      isPhotoPreviewOpen.value = false
+    }
+    haptics.lightTap()
+    toast.add({
+      title: 'Фото артикула удалено',
+      color: 'gray'
+    })
+  } catch (err: any) {
+    toast.add({
+      title: 'Ошибка удаления фото',
+      description: err.message,
+      color: 'red'
+    })
+  }
+}
+
+// Article Photo Lightbox Modal
+const isPhotoPreviewOpen = ref(false)
+const previewArticle = ref<PartArticle | null>(null)
+
+const { sheetStyle: previewSheetStyle, onPointerDown: onPreviewPointerDown } = useSwipeDismiss({
+  onDismiss: () => {
+    isPhotoPreviewOpen.value = false
+  },
+  isOpen: isPhotoPreviewOpen
+})
+
+function openPhotoPreview(article: PartArticle) {
+  haptics.lightTap()
+  previewArticle.value = article
+  isPhotoPreviewOpen.value = true
+}
+
 // Add / Edit Article Logic
 const isArticleModalOpen = ref(false)
 
@@ -643,10 +895,36 @@ const editingArticleId = ref<string | null>(null)
 const articleForm = reactive({
   code: '',
   name: '',
+  image: '',
   stock_new: 0,
   stock_used: 0,
   min_stock: null as number | null
 })
+
+// Modal photo upload logic
+const articleModalPhotoInput = ref<HTMLInputElement | null>(null)
+const isCompressingModalPhoto = ref(false)
+
+async function handleArticleModalPhotoSelected(event: Event) {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+
+  isCompressingModalPhoto.value = true
+  try {
+    const base64 = await compressImage(file, 1200, 1200, 0.82)
+    articleForm.image = base64
+  } catch (err: any) {
+    toast.add({
+      title: 'Ошибка загрузки фото',
+      description: err.message,
+      color: 'red'
+    })
+  } finally {
+    isCompressingModalPhoto.value = false
+    target.value = ''
+  }
+}
 
 function openAddArticleModal() {
   haptics.lightTap()
@@ -654,6 +932,7 @@ function openAddArticleModal() {
   editingArticleId.value = null
   articleForm.code = ''
   articleForm.name = ''
+  articleForm.image = ''
   articleForm.stock_new = 0
   articleForm.stock_used = 0
   articleForm.min_stock = null
@@ -666,6 +945,7 @@ function openEditArticleModal(article: PartArticle) {
   editingArticleId.value = article.id
   articleForm.code = article.code
   articleForm.name = article.name || ''
+  articleForm.image = article.image || ''
   articleForm.stock_new = article.stock_new
   articleForm.stock_used = article.stock_used
   articleForm.min_stock = article.min_stock !== undefined && article.min_stock > 0 ? article.min_stock : null
@@ -684,6 +964,7 @@ async function saveArticle() {
       await partsStore.updateArticle(part.value.id, editingArticleId.value, {
         code: articleForm.code.trim(),
         name: articleForm.name.trim(),
+        image: articleForm.image || '',
         stock_new: Math.max(0, Number(articleForm.stock_new) || 0),
         stock_used: Math.max(0, Number(articleForm.stock_used) || 0),
         min_stock: minStockVal
@@ -698,6 +979,7 @@ async function saveArticle() {
       await partsStore.addArticle(part.value.id, {
         code: articleForm.code.trim(),
         name: articleForm.name.trim(),
+        image: articleForm.image || '',
         stock_new: Math.max(0, Number(articleForm.stock_new) || 0),
         stock_used: Math.max(0, Number(articleForm.stock_used) || 0),
         min_stock: minStockVal

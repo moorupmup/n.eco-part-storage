@@ -24,6 +24,7 @@ export function enrichPart(p: any): Part {
         id: `art-${p.id || Date.now()}-1`,
         code: defaultCode,
         name: '',
+        image: '',
         stock_new: Number(p.stock_new) || 0,
         stock_used: Number(p.stock_used) || 0,
         min_stock: Number(p.min_stock) || 0,
@@ -37,6 +38,7 @@ export function enrichPart(p: any): Part {
       id: a.id || `art-${p.id || Date.now()}-${idx + 1}`,
       code: (a.code || p.code || 'АРТИКУЛ').trim(),
       name: a.name || '',
+      image: a.image || '',
       stock_new: Number(a.stock_new) || 0,
       stock_used: Number(a.stock_used) || 0,
       min_stock: Number(a.min_stock) || 0,
@@ -511,6 +513,7 @@ class DatabaseService {
       ? data.articles.map((a, idx) => ({
           ...a,
           id: a.id || `art-${Date.now()}-${idx + 1}`,
+          image: a.image || '',
           stock_new: Number(a.stock_new) || 0,
           stock_used: Number(a.stock_used) || 0,
           min_stock: Number(a.min_stock) || 0,
@@ -522,6 +525,7 @@ class DatabaseService {
           id: `art-${Date.now()}-1`,
           code: data.code.trim(),
           name: '',
+          image: '',
           stock_new: Number(data.stock_new) || 0,
           stock_used: Number(data.stock_used) || 0,
           min_stock: Number(data.min_stock) || 0,
@@ -654,6 +658,7 @@ class DatabaseService {
       id: `art-${partId}-${Date.now()}`,
       code: articleData.code.trim(),
       name: (articleData.name || '').trim(),
+      image: articleData.image || '',
       stock_new: Number(articleData.stock_new) || 0,
       stock_used: Number(articleData.stock_used) || 0,
       min_stock: Number(articleData.min_stock) || 0,
@@ -678,6 +683,7 @@ class DatabaseService {
           ...updates,
           code: updates.code !== undefined ? updates.code.trim() : a.code,
           name: updates.name !== undefined ? updates.name.trim() : a.name,
+          image: updates.image !== undefined ? updates.image : (a.image || ''),
           stock_new: updates.stock_new !== undefined ? Number(updates.stock_new) : a.stock_new,
           stock_used: updates.stock_used !== undefined ? Number(updates.stock_used) : a.stock_used,
           min_stock: updates.min_stock !== undefined ? Number(updates.min_stock) : (a.min_stock || 0)
@@ -688,6 +694,10 @@ class DatabaseService {
 
     await this.updatePart(partId, { articles })
     return (await this.getPartById(partId))!
+  }
+
+  async updateArticleImage(partId: number, articleId: string, image: string): Promise<Part> {
+    return await this.updateArticle(partId, articleId, { image })
   }
 
   async deleteArticle(partId: number, articleId: string): Promise<Part> {

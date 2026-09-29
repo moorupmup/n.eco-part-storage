@@ -191,8 +191,8 @@
                 <!-- Thumbnail / Icon -->
                 <div class="w-10 h-10 rounded-xl bg-zinc-950 border border-zinc-800 overflow-hidden shrink-0 flex items-center justify-center">
                   <img
-                    v-if="group.part.image"
-                    :src="group.part.image"
+                    v-if="group.part.image || group.articles.find(a => a.image)?.image"
+                    :src="group.part.image || group.articles.find(a => a.image)?.image"
                     :alt="group.part.name"
                     class="w-full h-full object-cover"
                     loading="lazy"

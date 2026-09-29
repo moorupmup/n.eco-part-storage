@@ -339,6 +339,23 @@ export const usePartsStore = defineStore('parts', {
       }
     },
 
+    async updateArticleImage(partId: number, articleId: string, image: string) {
+      this.isLoading = true
+      try {
+        const updatedPart = await dbService.updateArticleImage(partId, articleId, image)
+        const index = this.parts.findIndex(p => p.id === partId)
+        if (index !== -1) {
+          this.parts[index] = updatedPart
+        }
+        return updatedPart
+      } catch (err: any) {
+        this.error = err.message
+        throw err
+      } finally {
+        this.isLoading = false
+      }
+    },
+
     async updatePartImage(partId: number, image: string) {
       this.isLoading = true
       try {

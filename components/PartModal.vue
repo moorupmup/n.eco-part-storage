@@ -4,17 +4,20 @@
       class="bg-zinc-900 border border-zinc-800 rounded-2xl flex flex-col max-h-[88vh] overflow-hidden"
       :style="sheetStyle"
     >
-      <!-- Mobile Bottom Sheet Drag Handle -->
-      <ModalDragHandle @pointerdown="onPointerDown" />
+      <!-- Header Area -->
+      <div class="px-5 pt-5 border-b border-zinc-800 shrink-0">
+        <!-- Mobile Bottom Sheet Drag Handle -->
+        <ModalDragHandle class="-mt-2 mb-1" @pointerdown="onPointerDown" />
 
-      <div
-        class="flex items-center px-5 pb-3 border-b border-zinc-800 shrink-0 cursor-grab active:cursor-grabbing touch-none select-none"
-        @pointerdown="onPointerDown"
-      >
-        <h2 class="text-base font-bold text-zinc-100 flex items-center gap-2">
-          <UIcon :name="isEdit ? 'i-lucide-pencil' : 'i-lucide-plus-circle'" class="w-5 h-5 text-primary-400" />
-          {{ isEdit ? 'Редактировать запчасть' : 'Новая запчасть' }}
-        </h2>
+        <div
+          class="flex items-center pb-3 cursor-grab active:cursor-grabbing touch-none select-none"
+          @pointerdown="onPointerDown"
+        >
+          <h3 class="text-sm font-bold text-zinc-100 flex items-center gap-2">
+            <UIcon :name="isEdit ? 'i-lucide-pencil' : 'i-lucide-plus'" class="w-4 h-4 text-emerald-400" />
+            <span>{{ isEdit ? 'Редактировать запчасть' : 'Новая запчасть' }}</span>
+          </h3>
+        </div>
       </div>
 
       <div class="p-5 overflow-y-auto overscroll-contain flex-1">

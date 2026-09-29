@@ -8,8 +8,8 @@
       <!-- Photo Thumbnail or Icon Placeholder (aligned to top, 80x80) -->
       <div class="relative w-20 h-20 rounded-xl bg-zinc-950 border border-zinc-800 overflow-hidden shrink-0 flex items-center justify-center">
         <img
-          v-if="part.image"
-          :src="part.image"
+          v-if="displayImage"
+          :src="displayImage"
           :alt="part.name"
           class="w-full h-full object-cover"
           loading="lazy"
@@ -105,6 +105,7 @@ const articlesCount = computed(() => props.part?.articles?.length || 1)
 const showCategory = computed(() => !!props.part.category && partsStore.selectedCategory === 'all')
 const showArticlesCount = computed(() => articlesCount.value > 1)
 const hasTopBadges = computed(() => showCategory.value || showArticlesCount.value)
+const displayImage = computed(() => props.part?.image || props.part?.articles?.find(a => a.image)?.image || '')
 
 function openDetail() {
   navigateTo(`/part/${props.part.id}`)

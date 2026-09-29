@@ -2,6 +2,7 @@ export interface PartArticle {
   id: string              // Уникальный ID артикула (например, "art-1727500000000")
   code: string            // Каталожный номер / артикул (например, ULKA-EX5, 5513214821)
   name?: string           // Примечание / производитель (например, "Оригинал DeLonghi")
+  image?: string          // URL или base64 Data URL фотографии артикула
   stock_new: number       // В наличии новых (шт)
   stock_used: number      // В наличии б/у (шт)
   min_stock?: number      // Минимальный остаток с собой (новые + б/у)
