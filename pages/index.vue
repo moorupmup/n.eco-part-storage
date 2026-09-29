@@ -334,33 +334,31 @@
 
           <!-- Bottom Action Buttons: Selection controls + "Импорт в XLS" / "Копировать в буфер" -->
           <div class="pt-3 pb-12 space-y-3">
+            <!-- Selection Counter Info (above buttons) -->
+            <div class="px-1 text-xs text-zinc-400 font-mono">
+              Выбрано: <strong :class="selectedArticleIds.size > 0 ? 'text-emerald-400 font-bold' : 'text-zinc-500'">{{ selectedArticleIds.size }}</strong> / {{ currentArticlesTotalCount }}
+            </div>
+
             <!-- Neutral Selection Controls: "Выбрать все" and "Снять все" -->
-            <div class="flex items-center justify-between gap-2 px-1">
-              <div class="flex items-center gap-2">
-                <button
-                  type="button"
-                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-800/90 text-zinc-300 border border-zinc-800 shadow-sm active:scale-95 transition-all cursor-pointer"
-                  @click="selectAllArticles"
-                >
-                  <UIcon name="i-lucide-check-square" class="w-3.5 h-3.5 text-zinc-400" />
-                  <span>Выбрать все</span>
-                </button>
+            <div class="grid grid-cols-2 sm:flex sm:items-center gap-2">
+              <button
+                type="button"
+                class="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-800/90 text-zinc-300 border border-zinc-800 shadow-sm active:scale-95 transition-all cursor-pointer whitespace-nowrap"
+                @click="selectAllArticles"
+              >
+                <UIcon name="i-lucide-check-square" class="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                <span>Выбрать все</span>
+              </button>
 
-                <button
-                  type="button"
-                  :disabled="selectedArticleIds.size === 0"
-                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-800/90 text-zinc-400 hover:text-zinc-300 border border-zinc-800 shadow-sm active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
-                  @click="unselectAllArticles"
-                >
-                  <UIcon name="i-lucide-square" class="w-3.5 h-3.5 text-zinc-500" />
-                  <span>Снять все</span>
-                </button>
-              </div>
-
-              <!-- Counter -->
-              <span class="text-xs text-zinc-400 font-mono">
-                Выбрано: <strong :class="selectedArticleIds.size > 0 ? 'text-emerald-400' : 'text-zinc-500'">{{ selectedArticleIds.size }}</strong> / {{ currentArticlesTotalCount }}
-              </span>
+              <button
+                type="button"
+                :disabled="selectedArticleIds.size === 0"
+                class="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-800/90 text-zinc-400 hover:text-zinc-300 border border-zinc-800 shadow-sm active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer whitespace-nowrap"
+                @click="unselectAllArticles"
+              >
+                <UIcon name="i-lucide-square" class="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                <span>Снять все</span>
+              </button>
             </div>
 
             <!-- Import and Copy buttons: only shown if something is selected with a checkmark! -->
