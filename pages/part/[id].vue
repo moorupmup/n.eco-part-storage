@@ -235,6 +235,14 @@
               <div class="flex items-center gap-1 shrink-0 -mt-0.5">
                 <button
                   type="button"
+                  class="w-7 h-7 flex items-center justify-center rounded-lg text-zinc-400 hover:text-emerald-400 hover:bg-zinc-800 active:scale-95 transition-all cursor-pointer shrink-0"
+                  title="Скопировать артикул в другую деталь"
+                  @click="openCopyArticleModal(article)"
+                >
+                  <UIcon name="i-lucide-copy" class="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
                   class="w-7 h-7 flex items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 active:scale-95 transition-all cursor-pointer shrink-0"
                   title="Редактировать артикул"
                   @click="openEditArticleModal(article)"
@@ -336,13 +344,24 @@
         <ModalDragHandle class="-mt-2 mb-1" @pointerdown="onArticlePointerDown" />
 
         <div
-          class="flex items-center pb-3 mb-4 border-b border-zinc-800 cursor-grab active:cursor-grabbing touch-none select-none"
+          class="flex items-center justify-between pb-3 mb-4 border-b border-zinc-800 cursor-grab active:cursor-grabbing touch-none select-none"
           @pointerdown="onArticlePointerDown"
         >
           <h3 class="text-sm font-bold text-zinc-100 flex items-center gap-2">
             <UIcon :name="isEditingArticle ? 'i-lucide-pencil' : 'i-lucide-plus'" class="w-4 h-4 text-emerald-400" />
             <span>{{ isEditingArticle ? 'Редактировать артикул' : 'Новый артикул' }}</span>
           </h3>
+
+          <button
+            v-if="isEditingArticle && editingArticle"
+            type="button"
+            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-750 text-zinc-300 hover:text-emerald-400 text-xs font-medium border border-zinc-700/60 active:scale-95 transition-all cursor-pointer"
+            title="Скопировать артикул в другую деталь"
+            @click="copyFromEditModal"
+          >
+            <UIcon name="i-lucide-copy" class="w-3.5 h-3.5" />
+            <span>Копировать</span>
+          </button>
         </div>
 
         <form @submit.prevent="saveArticle" class="space-y-4">
@@ -679,6 +698,15 @@
         </div>
       </div>
     </UModal>
+
+    <!-- Copy Article Modal -->
+    <CopyArticleModal
+      v-model="isCopyArticleModalOpen"
+      :article="articleToCopy"
+      :current-part-id="part?.id || 0"
+      :current-part-name="part?.name || ''"
+      @copied="handleArticleCopied"
+    />
   </div>
 </template>
 
@@ -926,10 +954,33 @@ async function handleArticleModalPhotoSelected(event: Event) {
   }
 }
 
+// Copy Article Logic
+const isCopyArticleModalOpen = ref(false)
+const articleToCopy = ref<PartArticle | null>(null)
+const editingArticle = ref<PartArticle | null>(null)
+
+function openCopyArticleModal(article: PartArticle) {
+  haptics.lightTap()
+  articleToCopy.value = article
+  isCopyArticleModalOpen.value = true
+}
+
+function copyFromEditModal() {
+  if (editingArticle.value) {
+    isArticleModalOpen.value = false
+    openCopyArticleModal(editingArticle.value)
+  }
+}
+
+function handleArticleCopied(targetPart: Part, newArticle: PartArticle) {
+  // Store updates automatically, nothing extra needed
+}
+
 function openAddArticleModal() {
   haptics.lightTap()
   isEditingArticle.value = false
   editingArticleId.value = null
+  editingArticle.value = null
   articleForm.code = ''
   articleForm.name = ''
   articleForm.image = ''
@@ -943,6 +994,7 @@ function openEditArticleModal(article: PartArticle) {
   haptics.lightTap()
   isEditingArticle.value = true
   editingArticleId.value = article.id
+  editingArticle.value = article
   articleForm.code = article.code
   articleForm.name = article.name || ''
   articleForm.image = article.image || ''

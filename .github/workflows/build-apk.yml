@@ -8,12 +8,12 @@ on:
         description: 'Создать официальный релиз на GitHub?'
         required: true
         type: boolean
-        default: false
+        default: true
       tag_name:
-        description: 'Имя версии/тега (например: v1.0.0)'
+        description: 'Имя версии/тега (например: v1.0.3)'
         required: false
         type: string
-        default: 'v1.0.0'
+        default: 'v1.0.3'
 
   # 2. Запуск, когда вы САМИ создаете релиз через интерфейс GitHub (Releases -> Draft a new release -> Publish)
   release:
