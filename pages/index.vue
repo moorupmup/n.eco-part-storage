@@ -227,100 +227,105 @@
                 <div
                   v-for="article in group.articles"
                   :key="article.id"
-                  class="rounded-xl p-2.5 flex items-center justify-between gap-2.5 transition-all cursor-pointer select-none"
+                  class="rounded-xl p-2.5 transition-all cursor-pointer select-none space-y-2"
                   :class="isArticleSelected(article.id)
                     ? 'bg-zinc-950/95 border border-emerald-500/40 ring-1 ring-emerald-500/20'
                     : 'bg-zinc-950/70 border border-zinc-800/80 hover:border-zinc-700/60'"
                   @click="toggleArticleSelection(article.id)"
                 >
-                  <!-- Left side: Checkbox + Article Details -->
-                  <div class="flex items-center gap-2 min-w-0 flex-1">
-                    <!-- Checkbox (Touch target min 36x36 for mobile, thin 1px border) -->
+                  <!-- Line 1: Checkbox + Article Code + Article Note -->
+                  <div class="flex items-center gap-2 min-w-0">
+                    <!-- Checkbox (Touch target min 28x28, fixed w-5 h-5 box, thin 1px border) -->
                     <button
                       type="button"
                       role="checkbox"
                       :aria-checked="isArticleSelected(article.id)"
-                      class="w-7 h-8 -ml-0.5 flex items-center justify-center text-zinc-400 hover:text-zinc-200 active:scale-90 transition-all shrink-0 cursor-pointer"
+                      class="w-6 h-6 flex items-center justify-center text-zinc-400 hover:text-zinc-200 active:scale-90 transition-all shrink-0 cursor-pointer"
                       :title="isArticleSelected(article.id) ? 'Снять отметку' : 'Выбрать артикул'"
                       @click.stop="toggleArticleSelection(article.id)"
                     >
                       <div
-                        class="w-4.5 h-4.5 rounded-[5px] border flex items-center justify-center transition-all"
+                        class="w-5 h-5 rounded-[5px] border flex items-center justify-center shrink-0 transition-all"
                         :class="isArticleSelected(article.id)
                           ? 'border-emerald-500 bg-emerald-500 text-zinc-950 shadow-sm shadow-emerald-500/30'
-                          : 'border-zinc-700 bg-zinc-900 hover:border-zinc-500'"
+                          : 'border-zinc-700 bg-zinc-900/90 hover:border-zinc-500'"
                       >
                         <UIcon
                           v-if="isArticleSelected(article.id)"
                           name="i-lucide-check"
-                          class="w-3 h-3 stroke-[2.5]"
+                          class="w-3.5 h-3.5 stroke-[2.5]"
                         />
                       </div>
                     </button>
 
-                    <!-- Article Code & Name + Stock text -->
-                    <div class="min-w-0 flex-1">
-                      <div class="flex items-center gap-1.5 flex-wrap">
-                        <button
-                          type="button"
-                          class="inline-flex items-center gap-1 font-mono text-xs font-bold px-2 py-0.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 active:scale-95 text-emerald-400 cursor-pointer transition-all border border-zinc-700/60"
-                          title="Нажмите, чтобы скопировать артикул"
-                          @click.stop="copyArticleCode(article.code)"
-                        >
-                          <UIcon name="i-lucide-barcode" class="w-3.5 h-3.5" />
-                          <span>{{ article.code }}</span>
-                        </button>
-
-                        <span
-                          v-if="article.name"
-                          class="text-xs text-zinc-400 truncate max-w-[130px] sm:max-w-[200px]"
-                          :title="article.name"
-                        >
-                          {{ article.name }}
-                        </span>
-                      </div>
-
-                      <!-- Stock info description -->
-                      <div class="flex items-center gap-2 mt-1 text-[11px] text-zinc-400">
-                        <span v-if="partsStore.stockFilter === 'low'">
-                          В наличии: <strong class="text-amber-300 font-mono">{{ article.totalStock }}</strong> / мин. с собой: <span class="font-mono text-zinc-400">{{ article.min_stock }} шт</span>
-                          <span class="text-zinc-600 hidden sm:inline"> (нов: {{ article.stock_new }}, б/у: {{ article.stock_used }})</span>
-                        </span>
-                        <span v-else>
-                          Остаток: <strong class="text-rose-400 font-mono">0 шт</strong>
-                          <template v-if="article.min_stock > 0">
-                            · мин. с собой: <span class="font-mono text-zinc-400">{{ article.min_stock }} шт</span>
-                          </template>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Right actions: Badge + Quick Replenish Button -->
-                  <div class="flex items-center gap-2 shrink-0">
-                    <!-- Deficit pill -->
-                    <span
-                      v-if="partsStore.stockFilter === 'low'"
-                      class="text-[11px] font-bold px-2 py-1 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/30 font-mono whitespace-nowrap"
-                    >
-                      +{{ article.deficit }} шт
-                    </span>
-                    <span
-                      v-else
-                      class="text-[11px] font-bold px-2 py-1 rounded-lg bg-rose-500/15 text-rose-400 border border-rose-500/30 font-mono whitespace-nowrap"
-                    >
-                      0 шт
-                    </span>
-
-                    <!-- Quick Replenish "+" button -->
+                    <!-- Article Code Badge (Click to Copy) -->
                     <button
                       type="button"
-                      class="flex items-center justify-center w-8 h-8 rounded-lg bg-zinc-800/80 hover:bg-emerald-500/20 active:scale-95 text-zinc-300 hover:text-emerald-400 border border-zinc-700/60 transition-all cursor-pointer"
-                      title="Пополнить запас"
-                      @click.stop="openReplenishModal(group.part, article)"
+                      class="h-7 inline-flex items-center gap-1 font-mono text-xs font-bold px-2.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 active:scale-95 text-emerald-400 cursor-pointer transition-all border border-zinc-700/60 shrink-0"
+                      title="Нажмите, чтобы скопировать артикул"
+                      @click.stop="copyArticleCode(article.code)"
                     >
-                      <UIcon name="i-lucide-plus" class="w-4 h-4 stroke-[2.5]" />
+                      <UIcon name="i-lucide-barcode" class="w-3.5 h-3.5" />
+                      <span>{{ article.code }}</span>
                     </button>
+
+                    <!-- Article Note/Name -->
+                    <span
+                      v-if="article.name"
+                      class="text-xs text-zinc-400 font-medium truncate min-w-0 flex-1"
+                      :title="article.name"
+                    >
+                      {{ article.name }}
+                    </span>
+                  </div>
+
+                  <!-- Line 2: Stock status ("Есть 0 шт. / Нужно 0 шт.") + Deficit Badge & Quick Replenish Button -->
+                  <div class="flex items-center justify-between gap-2 pl-8">
+                    <!-- Stock text: "Есть 0 шт. / Нужно 0 шт." -->
+                    <div
+                      class="text-xs text-zinc-400 font-medium leading-none"
+                      :title="`Новые: ${article.stock_new} шт, Б/У: ${article.stock_used} шт`"
+                    >
+                      <template v-if="partsStore.stockFilter === 'low'">
+                        Есть <strong class="text-amber-300 font-mono">{{ article.totalStock }} шт.</strong>
+                        <span class="text-zinc-600 mx-1">/</span>
+                        Нужно <strong class="text-zinc-300 font-mono">{{ article.min_stock }} шт.</strong>
+                      </template>
+                      <template v-else>
+                        Есть <strong class="text-rose-400 font-mono">0 шт.</strong>
+                        <template v-if="article.min_stock > 0">
+                          <span class="text-zinc-600 mx-1">/</span>
+                          Нужно <strong class="text-zinc-300 font-mono">{{ article.min_stock }} шт.</strong>
+                        </template>
+                      </template>
+                    </div>
+
+                    <!-- Deficit Badge + Quick Replenish Button (exact same height: h-7) -->
+                    <div class="flex items-center gap-1.5 shrink-0">
+                      <!-- Deficit badge -->
+                      <span
+                        v-if="partsStore.stockFilter === 'low'"
+                        class="h-7 px-2.5 rounded-lg flex items-center justify-center text-xs font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 font-mono whitespace-nowrap shadow-sm"
+                      >
+                        +{{ article.deficit }} шт
+                      </span>
+                      <span
+                        v-else
+                        class="h-7 px-2.5 rounded-lg flex items-center justify-center text-xs font-bold bg-rose-500/15 text-rose-400 border border-rose-500/30 font-mono whitespace-nowrap shadow-sm"
+                      >
+                        0 шт
+                      </span>
+
+                      <!-- Quick Replenish "+" button -->
+                      <button
+                        type="button"
+                        class="w-7 h-7 rounded-lg flex items-center justify-center bg-zinc-800 hover:bg-emerald-500/20 active:bg-zinc-700 active:scale-95 text-zinc-300 hover:text-emerald-400 border border-zinc-700/60 transition-all cursor-pointer shrink-0"
+                        title="Пополнить запас"
+                        @click.stop="openReplenishModal(group.part, article)"
+                      >
+                        <UIcon name="i-lucide-plus" class="w-3.5 h-3.5 stroke-[2.5]" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
