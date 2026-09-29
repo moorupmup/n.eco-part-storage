@@ -47,6 +47,27 @@ export function useSwipeDismiss(options: SwipeDismissOptions) {
       // Do not reset when closing, otherwise the card jumps back into view during exit animation!
       if (newVal) {
         resetState()
+
+        // Drop any existing active element focus (e.g. catalog search bar)
+        if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur()
+        }
+
+        // Prevent virtual keyboard from popping up on open by blurring any auto-focused input
+        if (typeof window !== 'undefined') {
+          setTimeout(() => {
+            const active = document.activeElement
+            if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
+              (active as HTMLElement).blur()
+            }
+          }, 60)
+          setTimeout(() => {
+            const active = document.activeElement
+            if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
+              (active as HTMLElement).blur()
+            }
+          }, 150)
+        }
       }
     })
   }
