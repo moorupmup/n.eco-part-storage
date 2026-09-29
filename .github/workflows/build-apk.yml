@@ -80,14 +80,14 @@ jobs:
           CLEAN_VER=$(echo "$RAW_TAG" | sed 's/^v//')
           if [ -n "$CLEAN_VER" ] && [ "$CLEAN_VER" != "main" ]; then
             python3 -c "
-            import re
-            gradle_path = 'android/app/build.gradle'
-            with open(gradle_path, 'r') as f:
-                code = f.read()
-            code = re.sub(r'versionName\s+[\"\\\'].*?[\"\\\']', f'versionName \"$CLEAN_VER\"', code)
-            with open(gradle_path, 'w') as f:
-                f.write(code)
-            "
+import re
+gradle_path = 'android/app/build.gradle'
+with open(gradle_path, 'r') as f:
+    code = f.read()
+code = re.sub(r'versionName\s+[\"\\\'].*?[\"\\\']', f'versionName \"$CLEAN_VER\"', code)
+with open(gradle_path, 'w') as f:
+    f.write(code)
+"
           fi
 
       - name: Apply Custom Portafilter App Icons
@@ -97,16 +97,16 @@ jobs:
       - name: Configure Android Permissions for In-App Updates
         run: |
           python3 -c "
-          manifest_path = 'android/app/src/main/AndroidManifest.xml'
-          with open(manifest_path, 'r') as f:
-              code = f.read()
-          
-          perm = '<uses-permission android:name=\"android.permission.REQUEST_INSTALL_PACKAGES\" />'
-          if 'REQUEST_INSTALL_PACKAGES' not in code:
-              code = code.replace('</manifest>', f'    {perm}\n</manifest>')
-              with open(manifest_path, 'w') as f:
-                  f.write(code)
-          "
+manifest_path = 'android/app/src/main/AndroidManifest.xml'
+with open(manifest_path, 'r') as f:
+    code = f.read()
+
+perm = '<uses-permission android:name=\"android.permission.REQUEST_INSTALL_PACKAGES\" />'
+if 'REQUEST_INSTALL_PACKAGES' not in code:
+    code = code.replace('</manifest>', f'    {perm}\n</manifest>')
+    with open(manifest_path, 'w') as f:
+        f.write(code)
+"
 
       - name: Configure Permanent Signing Keystore
         run: |
@@ -115,28 +115,28 @@ jobs:
           
           # Inject signingConfigs into android/app/build.gradle
           python3 -c "
-          with open('android/app/build.gradle', 'r') as f:
-              code = f.read()
-          
-          signing_block = '''
-              signingConfigs {
-                  release {
-                      storeFile file('keystore/release.keystore')
-                      storePassword 'necopart2026'
-                      keyAlias 'necopart'
-                      keyPassword 'necopart2026'
-                      v1SigningEnabled true
-                      v2SigningEnabled true
-                  }
-              }
-          '''
-          if 'signingConfigs {' not in code:
-              code = code.replace('buildTypes {', signing_block + '\n    buildTypes {')
-              # Ensure debug and release both use our permanent release key
-              code = code.replace('signingConfig signingConfigs.debug', 'signingConfig signingConfigs.release')
-              with open('android/app/build.gradle', 'w') as f:
-                  f.write(code)
-          "
+with open('android/app/build.gradle', 'r') as f:
+    code = f.read()
+
+signing_block = '''
+    signingConfigs {
+        release {
+            storeFile file('keystore/release.keystore')
+            storePassword 'necopart2026'
+            keyAlias 'necopart'
+            keyPassword 'necopart2026'
+            v1SigningEnabled true
+            v2SigningEnabled true
+        }
+    }
+'''
+if 'signingConfigs {' not in code:
+    code = code.replace('buildTypes {', signing_block + '\n    buildTypes {')
+    # Ensure debug and release both use our permanent release key
+    code = code.replace('signingConfig signingConfigs.debug', 'signingConfig signingConfigs.release')
+    with open('android/app/build.gradle', 'w') as f:
+        f.write(code)
+"
 
       - name: Build Android APK
         run: |
