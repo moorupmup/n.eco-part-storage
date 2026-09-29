@@ -310,6 +310,9 @@
     <!-- Add / Edit Article Modal -->
     <UModal v-model="isArticleModalOpen">
       <div class="p-5 bg-zinc-900 border border-zinc-800 rounded-xl">
+        <!-- Mobile Bottom Sheet Drag Handle -->
+        <div class="w-10 h-1 rounded-full bg-zinc-700/80 mx-auto -mt-1 mb-3.5" />
+
         <div class="flex items-center justify-between pb-3 mb-4 border-b border-zinc-800">
           <h3 class="text-sm font-bold text-zinc-100 flex items-center gap-2">
             <UIcon :name="isEditingArticle ? 'i-lucide-pencil' : 'i-lucide-plus'" class="w-4 h-4 text-emerald-400" />
@@ -333,6 +336,10 @@
             <input
               v-model="articleForm.code"
               type="text"
+              autocapitalize="characters"
+              autocorrect="off"
+              autocomplete="off"
+              spellcheck="false"
               placeholder="Например: 5513214821, ULKA-EX5"
               required
               class="w-full h-10 px-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm font-mono text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner"
@@ -370,8 +377,9 @@
                 </label>
                 <input
                   v-model.number="articleForm.stock_new"
-                  type="number"
-                  min="0"
+                  type="text"
+                  inputmode="numeric"
+                  pattern="[0-9]*"
                   class="w-full h-10 rounded-xl bg-zinc-900 border border-zinc-800 text-center font-mono text-sm font-bold text-blue-400 focus:outline-none focus:border-blue-500 shadow-inner"
                 />
               </div>
@@ -381,8 +389,9 @@
                 </label>
                 <input
                   v-model.number="articleForm.stock_used"
-                  type="number"
-                  min="0"
+                  type="text"
+                  inputmode="numeric"
+                  pattern="[0-9]*"
                   class="w-full h-10 rounded-xl bg-zinc-900 border border-zinc-800 text-center font-mono text-sm font-bold text-amber-400 focus:outline-none focus:border-amber-500 shadow-inner"
                 />
               </div>
@@ -403,8 +412,9 @@
             <div class="relative flex items-center">
               <input
                 v-model.number="articleForm.min_stock"
-                type="number"
-                min="0"
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]*"
                 placeholder="0"
                 class="w-full h-10 pl-3 pr-8 rounded-xl bg-zinc-950 border border-zinc-800 text-sm font-mono text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner"
               />
@@ -528,7 +538,13 @@ const route = useRoute()
 const router = useRouter()
 const partsStore = usePartsStore()
 const toast = useToast()
-const { copyToClipboard } = useClipboardCopy()
+const haptics = useHaptics()
+const { copyToClipboard: baseCopy } = useClipboardCopy()
+
+function copyToClipboard(text: string, label?: string) {
+  haptics.lightTap()
+  baseCopy(text, label)
+}
 
 const partId = computed(() => Number(route.params.id))
 const part = computed<Part | null>(() => {
@@ -607,6 +623,7 @@ const selectedArticle = ref<PartArticle | null>(null)
 const actionType = ref<MovementType>('IN')
 
 function openStockModal(article: PartArticle, type: MovementType) {
+  haptics.lightTap()
   selectedArticle.value = article
   actionType.value = type
   isStockModalOpen.value = true
@@ -640,6 +657,7 @@ const articleForm = reactive({
 })
 
 function openAddArticleModal() {
+  haptics.lightTap()
   isEditingArticle.value = false
   editingArticleId.value = null
   articleForm.code = ''
@@ -651,6 +669,7 @@ function openAddArticleModal() {
 }
 
 function openEditArticleModal(article: PartArticle) {
+  haptics.lightTap()
   isEditingArticle.value = true
   editingArticleId.value = article.id
   articleForm.code = article.code
@@ -677,6 +696,7 @@ async function saveArticle() {
         stock_used: Math.max(0, Number(articleForm.stock_used) || 0),
         min_stock: minStockVal
       })
+      haptics.successVibe()
       toast.add({
         title: 'Артикул обновлен',
         description: articleForm.code,
@@ -690,6 +710,7 @@ async function saveArticle() {
         stock_used: Math.max(0, Number(articleForm.stock_used) || 0),
         min_stock: minStockVal
       })
+      haptics.successVibe()
       toast.add({
         title: 'Артикул добавлен',
         description: articleForm.code,
@@ -698,6 +719,7 @@ async function saveArticle() {
     }
     isArticleModalOpen.value = false
   } catch (err: any) {
+    haptics.errorVibe()
     toast.add({
       title: 'Ошибка сохранения артикула',
       description: err.message,
@@ -711,6 +733,7 @@ const isDeleteArticleConfirmOpen = ref(false)
 const articleToDelete = ref<PartArticle | null>(null)
 
 function confirmDeleteArticle(article: PartArticle) {
+  haptics.mediumTap()
   articleToDelete.value = article
   isDeleteArticleConfirmOpen.value = true
 }
@@ -720,6 +743,7 @@ async function executeDeleteArticle() {
   try {
     const code = articleToDelete.value.code
     await partsStore.deleteArticle(part.value.id, articleToDelete.value.id)
+    haptics.mediumTap()
     toast.add({
       title: 'Артикул удален',
       description: code,
@@ -727,6 +751,7 @@ async function executeDeleteArticle() {
     })
     isDeleteArticleConfirmOpen.value = false
   } catch (err: any) {
+    haptics.errorVibe()
     toast.add({
       title: 'Ошибка удаления',
       description: err.message,
@@ -738,12 +763,14 @@ async function executeDeleteArticle() {
 // Edit Part Info
 const isEditPartModalOpen = ref(false)
 function openEditPartModal() {
+  haptics.lightTap()
   isEditPartModalOpen.value = true
 }
 
 // Delete Part
 const isDeletePartConfirmOpen = ref(false)
 function confirmDeletePart() {
+  haptics.mediumTap()
   isDeletePartConfirmOpen.value = true
 }
 
@@ -752,6 +779,7 @@ async function executeDeletePart() {
   try {
     const name = part.value.name
     await partsStore.deletePart(part.value.id)
+    haptics.mediumTap()
     toast.add({
       title: 'Деталь удалена',
       description: name,
@@ -760,6 +788,7 @@ async function executeDeletePart() {
     isDeletePartConfirmOpen.value = false
     navigateTo('/')
   } catch (err: any) {
+    haptics.errorVibe()
     toast.add({
       title: 'Ошибка удаления',
       description: err.message,

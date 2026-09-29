@@ -105,3 +105,53 @@ export async function parseExcelOrCSV(file: File): Promise<Partial<Part>[]> {
     reader.readAsBinaryString(file)
   })
 }
+
+export interface DeficitArticleExportRow {
+  partName: string
+  category: string
+  code: string
+  articleName?: string
+  stockNew: number
+  stockUsed: number
+  totalStock: number
+  minStock: number
+  deficit: number
+}
+
+export function exportLowStockToExcel(items: DeficitArticleExportRow[], filename = 'malo_zapchastey.xlsx') {
+  const data = items.map((r, i) => ({
+    '№': i + 1,
+    'Деталь': r.partName,
+    'Категория': r.category,
+    'Артикул': r.code,
+    'Примечание': r.articleName || '',
+    'Новые (шт)': r.stockNew,
+    'Б/У (шт)': r.stockUsed,
+    'Всего (шт)': r.totalStock,
+    'Мин. с собой (шт)': r.minStock,
+    'Требуется пополнить (шт)': r.deficit
+  }))
+
+  const worksheet = XLSX.utils.json_to_sheet(data)
+  const workbook = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Мало')
+  XLSX.writeFile(workbook, filename)
+}
+
+export function exportOutOfStockToExcel(items: { partName: string; category: string; code: string; articleName?: string; minStock: number }[], filename = 'zakonchilis_zapchasti.xlsx') {
+  const data = items.map((r, i) => ({
+    '№': i + 1,
+    'Деталь': r.partName,
+    'Категория': r.category,
+    'Артикул': r.code,
+    'Примечание': r.articleName || '',
+    'Текущий остаток': 0,
+    'Мин. с собой (шт)': r.minStock || '',
+    'Требуется (шт)': (r.minStock && r.minStock > 0) ? r.minStock : ''
+  }))
+
+  const worksheet = XLSX.utils.json_to_sheet(data)
+  const workbook = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Закончились')
+  XLSX.writeFile(workbook, filename)
+}

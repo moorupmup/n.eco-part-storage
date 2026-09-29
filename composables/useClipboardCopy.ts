@@ -24,7 +24,7 @@ export function useClipboardCopy() {
 
       toast.add({
         title: `${label} скопирован`,
-        description: cleanText,
+        description: cleanText.length > 80 ? `${cleanText.slice(0, 80)}...` : cleanText,
         color: 'emerald',
         icon: 'i-lucide-copy-check',
         timeout: 1800

@@ -78,6 +78,141 @@ export const INITIAL_CATEGORIES = [
   'Гидравлика'
 ]
 
+export const SAMPLE_PARTS_DATA = [
+  {
+    id: 1,
+    code: 'ULKA-EX5',
+    name: 'Помпа вибрационная Ulka EX5 (48W, 230V)',
+    category: 'Помпы / Насосы',
+    location: '',
+    stock_new: 6,
+    stock_used: 3,
+    min_stock: 11,
+    price_new: 1850,
+    price_used: 700,
+    notes: serializeTags(['230V', '48W', 'Ulka', 'DeLonghi', 'Saeco', 'Jura', 'Nivona', 'Универсальная']),
+    tags: ['230V', '48W', 'Ulka', 'DeLonghi', 'Saeco', 'Jura', 'Nivona', 'Универсальная'],
+    articles: [
+      { id: 'art-1-1', code: '5513214821', name: 'Оригинал DeLonghi', stock_new: 1, stock_used: 0, min_stock: 3, price_new: 1850, price_used: 700 },
+      { id: 'art-1-2', code: 'EX5-230V', name: 'Универсальная Ulka', stock_new: 4, stock_used: 2, min_stock: 2, price_new: 1650, price_used: 600 },
+      { id: 'art-1-3', code: '996530007754', name: 'Saeco / Philips аналог', stock_new: 0, stock_used: 0, min_stock: 2, price_new: 1900, price_used: 750 },
+      { id: 'art-1-4', code: 'EP5-PLASTIC', name: 'Ulka EP5 пластик. шток', stock_new: 1, stock_used: 1, min_stock: 4, price_new: 1550, price_used: 500 }
+    ]
+  },
+  {
+    id: 2,
+    code: '5513214821',
+    name: 'Жернова конические (пара) DeLonghi',
+    category: 'Кофемолка',
+    location: '',
+    stock_new: 1,
+    stock_used: 1,
+    min_stock: 6,
+    price_new: 2400,
+    price_used: 900,
+    notes: serializeTags(['DeLonghi', 'ECAM', 'ETAM', 'ESAM', 'Закаленная сталь']),
+    tags: ['DeLonghi', 'ECAM', 'ETAM', 'ESAM', 'Закаленная сталь'],
+    articles: [
+      { id: 'art-2-1', code: '5513214821', name: 'Оригинал сталь', stock_new: 1, stock_used: 0, min_stock: 3, price_new: 2400, price_used: 900 },
+      { id: 'art-2-2', code: 'DL-GRIND-TITAN', name: 'Титан износостойкий', stock_new: 0, stock_used: 1, min_stock: 2, price_new: 3200, price_used: 1400 },
+      { id: 'art-2-3', code: '7313217421', name: 'Внешний конус ECAM', stock_new: 0, stock_used: 0, min_stock: 1, price_new: 1200, price_used: 400 }
+    ]
+  },
+  {
+    id: 3,
+    code: 'OR-KIT-DEL',
+    name: 'Ремкомплект уплотнителей заварочного блока (O-Ring)',
+    category: 'Уплотнители',
+    location: '',
+    stock_new: 21,
+    stock_used: 0,
+    min_stock: 19,
+    price_new: 450,
+    price_used: 0,
+    notes: serializeTags(['DeLonghi', 'O-Ring', 'Силикон', 'VMQ', 'EPDM']),
+    tags: ['DeLonghi', 'O-Ring', 'Силикон', 'VMQ', 'EPDM'],
+    articles: [
+      { id: 'art-3-1', code: 'OR-KIT-DEL', name: 'DeLonghi красный силикон (комплект)', stock_new: 18, stock_used: 0, min_stock: 6, price_new: 450, price_used: 0 },
+      { id: 'art-3-2', code: 'OR-JURA-BLUE', name: 'Jura EPDM синий (пара колец)', stock_new: 2, stock_used: 0, min_stock: 8, price_new: 550, price_used: 0 },
+      { id: 'art-3-3', code: 'OR-SAECO-NM', name: 'Saeco желтый 32x4мм', stock_new: 1, stock_used: 0, min_stock: 5, price_new: 380, price_used: 0 }
+    ]
+  },
+  {
+    id: 4,
+    code: '70163-JUR',
+    name: 'Заварочный блок в сборе Jura Claris / E-серия',
+    category: 'Заварочный блок',
+    location: '',
+    stock_new: 1,
+    stock_used: 4,
+    min_stock: 4,
+    price_new: 9800,
+    price_used: 3800,
+    notes: serializeTags(['Jura', 'Claris', 'E-серия', 'OKS 1110']),
+    tags: ['Jura', 'Claris', 'E-серия', 'OKS 1110'],
+    articles: [
+      { id: 'art-4-1', code: '70163-JUR', name: 'Jura Claris E-серия оригинал', stock_new: 1, stock_used: 3, min_stock: 2, price_new: 9800, price_used: 3800 },
+      { id: 'art-4-2', code: '70163-J6', name: 'Jura J-серия в сборе', stock_new: 0, stock_used: 1, min_stock: 2, price_new: 11500, price_used: 4200 }
+    ]
+  },
+  {
+    id: 5,
+    code: '5213218421',
+    name: 'Электромагнитный клапан 3-ходовой Ceme (230V)',
+    category: 'Клапаны',
+    location: '',
+    stock_new: 1,
+    stock_used: 1,
+    min_stock: 6,
+    price_new: 3100,
+    price_used: 1200,
+    notes: serializeTags(['DeLonghi', 'Ceme', '230V', 'Пар/вода']),
+    tags: ['DeLonghi', 'Ceme', '230V', 'Пар/вода'],
+    articles: [
+      { id: 'art-5-1', code: '5213218421', name: 'Ceme 230V 50Hz прямой', stock_new: 0, stock_used: 1, min_stock: 2, price_new: 3100, price_used: 1200 },
+      { id: 'art-5-2', code: '5213214100', name: 'Угловой 13.5VA', stock_new: 0, stock_used: 0, min_stock: 2, price_new: 3400, price_used: 1300 },
+      { id: 'art-5-3', code: 'CEME-688', name: 'Клапан сброса пара', stock_new: 1, stock_used: 0, min_stock: 2, price_new: 2900, price_used: 1100 }
+    ]
+  },
+  {
+    id: 6,
+    code: '5232104600',
+    name: 'Датчик температуры бойлера NTC (термистор)',
+    category: 'Электроника',
+    location: '',
+    stock_new: 8,
+    stock_used: 2,
+    min_stock: 7,
+    price_new: 650,
+    price_used: 250,
+    notes: serializeTags(['DeLonghi', 'Magnifica', 'NTC', 'Термистор']),
+    tags: ['DeLonghi', 'Magnifica', 'NTC', 'Термистор'],
+    articles: [
+      { id: 'art-6-1', code: '5232104600', name: 'Клемма 2 pin плоская', stock_new: 7, stock_used: 2, min_stock: 3, price_new: 650, price_used: 250 },
+      { id: 'art-6-2', code: '5217100200', name: 'Винтовой термодатчик M4', stock_new: 1, stock_used: 0, min_stock: 4, price_new: 850, price_used: 300 }
+    ]
+  },
+  {
+    id: 7,
+    code: '62999-JUR',
+    name: 'Дренажный клапан Jura в сборе',
+    category: 'Гидравлика',
+    location: '',
+    stock_new: 3,
+    stock_used: 4,
+    min_stock: 10,
+    price_new: 2200,
+    price_used: 800,
+    notes: serializeTags(['Jura', 'Дренаж', 'Клапан']),
+    tags: ['Jura', 'Дренаж', 'Клапан'],
+    articles: [
+      { id: 'art-7-1', code: '62999-JUR', name: 'Оригинал V2', stock_new: 2, stock_used: 4, min_stock: 3, price_new: 2200, price_used: 800 },
+      { id: 'art-7-2', code: '62999-MOD', name: 'Усиленный алюминиевый шток', stock_new: 1, stock_used: 0, min_stock: 3, price_new: 2600, price_used: 950 },
+      { id: 'art-7-3', code: '62999-SEAL', name: 'Манжета дренажника (губка)', stock_new: 0, stock_used: 0, min_stock: 4, price_new: 420, price_used: 0 }
+    ]
+  }
+]
+
 class DatabaseService {
   private sqlite: SQLiteConnection | null = null
   private db: SQLiteDBConnection | null = null
@@ -196,27 +331,33 @@ class DatabaseService {
     const checkCount = await this.db.query('SELECT COUNT(*) as count FROM parts')
     if (checkCount.values && checkCount.values[0]?.count === 0) {
       await this.seedInitialDataNative()
+    } else {
+      // Check if native SQLite needs migration to V2 rich articles with low stock positions
+      try {
+        const checkSeed = await this.db.query("SELECT COUNT(*) as count FROM parts WHERE articles LIKE '%art-1-4%'")
+        if (checkSeed.values && checkSeed.values[0]?.count === 0) {
+          for (const sample of SAMPLE_PARTS_DATA) {
+            const articlesJson = JSON.stringify(sample.articles)
+            await this.db.run(
+              `UPDATE parts SET articles = ?, stock_new = ?, stock_used = ?, min_stock = ? WHERE code = ?`,
+              [articlesJson, sample.stock_new, sample.stock_used, sample.min_stock, sample.code]
+            )
+          }
+        }
+      } catch {}
     }
   }
 
   private async seedInitialDataNative() {
     if (!this.db) return
     const now = new Date().toISOString()
-    const sampleParts = [
-      { code: 'ULKA-EX5', name: 'Помпа вибрационная Ulka EX5 (48W, 230V)', category: 'Помпы / Насосы', location: '', stock_new: 6, stock_used: 2, min_stock: 3, price_new: 1850, price_used: 700, notes: serializeTags(['230V', '48W', 'Ulka', 'DeLonghi', 'Saeco', 'Jura', 'Nivona', 'Универсальная']) },
-      { code: '5513214821', name: 'Жернова конические (пара) DeLonghi', category: 'Кофемолка', location: '', stock_new: 4, stock_used: 1, min_stock: 2, price_new: 2400, price_used: 900, notes: serializeTags(['DeLonghi', 'ECAM', 'ETAM', 'ESAM', 'Закаленная сталь']) },
-      { code: 'OR-KIT-DEL', name: 'Ремкомплект уплотнителей заварочного блока (O-Ring)', category: 'Уплотнители', location: '', stock_new: 18, stock_used: 0, min_stock: 6, price_new: 450, price_used: 0, notes: serializeTags(['DeLonghi', 'O-Ring', 'Силикон', 'VMQ', 'EPDM']) },
-      { code: '70163-JUR', name: 'Заварочный блок в сборе Jura Claris / E-серия', category: 'Заварочный блок', location: '', stock_new: 1, stock_used: 3, min_stock: 2, price_new: 9800, price_used: 3800, notes: serializeTags(['Jura', 'Claris', 'E-серия', 'OKS 1110']) },
-      { code: '5213218421', name: 'Электромагнитный клапан 3-ходовой Ceme (230V)', category: 'Клапаны', location: '', stock_new: 0, stock_used: 1, min_stock: 2, price_new: 3100, price_used: 1200, notes: serializeTags(['DeLonghi', 'Ceme', '230V', 'Пар/вода']) },
-      { code: '5232104600', name: 'Датчик температуры бойлера NTC (термистор)', category: 'Электроника', location: '', stock_new: 7, stock_used: 2, min_stock: 3, price_new: 650, price_used: 250, notes: serializeTags(['DeLonghi', 'Magnifica', 'NTC', 'Термистор']) },
-      { code: '62999-JUR', name: 'Дренажный клапан Jura в сборе', category: 'Гидравлика', location: '', stock_new: 2, stock_used: 4, min_stock: 3, price_new: 2200, price_used: 800, notes: serializeTags(['Jura', 'Дренаж', 'Клапан']) }
-    ]
 
-    for (const p of sampleParts) {
+    for (const p of SAMPLE_PARTS_DATA) {
+      const articlesJson = JSON.stringify(p.articles)
       await this.db.run(
-        `INSERT INTO parts (code, name, category, location, stock_new, stock_used, min_stock, price_new, price_used, notes, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [p.code, p.name, p.category, p.location, p.stock_new, p.stock_used, p.min_stock, p.price_new, p.price_used, p.notes, now, now]
+        `INSERT INTO parts (code, name, category, location, stock_new, stock_used, min_stock, price_new, price_used, notes, articles, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [p.code, p.name, p.category, p.location || '', p.stock_new, p.stock_used, p.min_stock, p.price_new, p.price_used, p.notes, articlesJson, now, now]
       )
     }
 
@@ -284,15 +425,11 @@ class DatabaseService {
     const hasOldCarParts = this.webParts.some(p => p && (p.code === '04465-33450' || (p.name && p.name.includes('Колодки'))))
     if (this.webParts.length === 0 || hasOldCarParts) {
       const now = new Date().toISOString()
-      this.webParts = [
-        { id: 1, code: 'ULKA-EX5', name: 'Помпа вибрационная Ulka EX5 (48W, 230V)', category: 'Помпы / Насосы', location: '', stock_new: 6, stock_used: 2, min_stock: 3, price_new: 1850, price_used: 700, notes: serializeTags(['230V', '48W', 'Ulka', 'DeLonghi', 'Saeco', 'Jura', 'Nivona', 'Универсальная']), created_at: now, updated_at: now },
-        { id: 2, code: '5513214821', name: 'Жернова конические (пара) DeLonghi', category: 'Кофемолка', location: '', stock_new: 4, stock_used: 1, min_stock: 2, price_new: 2400, price_used: 900, notes: serializeTags(['DeLonghi', 'ECAM', 'ETAM', 'ESAM', 'Закаленная сталь']), created_at: now, updated_at: now },
-        { id: 3, code: 'OR-KIT-DEL', name: 'Ремкомплект уплотнителей заварочного блока (O-Ring)', category: 'Уплотнители', location: '', stock_new: 18, stock_used: 0, min_stock: 6, price_new: 450, price_used: 0, notes: serializeTags(['DeLonghi', 'O-Ring', 'Силикон', 'VMQ', 'EPDM']), created_at: now, updated_at: now },
-        { id: 4, code: '70163-JUR', name: 'Заварочный блок в сборе Jura Claris / E-серия', category: 'Заварочный блок', location: '', stock_new: 1, stock_used: 3, min_stock: 2, price_new: 9800, price_used: 3800, notes: serializeTags(['Jura', 'Claris', 'E-серия', 'OKS 1110']), created_at: now, updated_at: now },
-        { id: 5, code: '5213218421', name: 'Электромагнитный клапан 3-ходовой Ceme (230V)', category: 'Клапаны', location: '', stock_new: 0, stock_used: 1, min_stock: 2, price_new: 3100, price_used: 1200, notes: serializeTags(['DeLonghi', 'Ceme', '230V', 'Пар/вода']), created_at: now, updated_at: now },
-        { id: 6, code: '5232104600', name: 'Датчик температуры бойлера NTC (термистор)', category: 'Электроника', location: '', stock_new: 7, stock_used: 2, min_stock: 3, price_new: 650, price_used: 250, notes: serializeTags(['DeLonghi', 'Magnifica', 'NTC', 'Термистор']), created_at: now, updated_at: now },
-        { id: 7, code: '62999-JUR', name: 'Дренажный клапан Jura в сборе', category: 'Гидравлика', location: '', stock_new: 2, stock_used: 4, min_stock: 3, price_new: 2200, price_used: 800, notes: serializeTags(['Jura', 'Дренаж', 'Клапан']), created_at: now, updated_at: now }
-      ]
+      this.webParts = SAMPLE_PARTS_DATA.map(p => ({
+        ...p,
+        created_at: now,
+        updated_at: now
+      }))
       this.webTransactions = [
         { id: 1, part_id: 1, part_code: 'ULKA-EX5', part_name: 'Помпа вибрационная Ulka EX5 (48W, 230V)', type: 'IN', condition: 'NEW', quantity: 10, stock_before: 0, stock_after: 10, reason: 'Поступление партии помп Ulka от ООО "КофеСнаб"', created_at: now },
         { id: 2, part_id: 1, part_code: 'ULKA-EX5', part_name: 'Помпа вибрационная Ulka EX5 (48W, 230V)', type: 'OUT', condition: 'NEW', quantity: 1, stock_before: 10, stock_after: 9, reason: 'Заказ-наряд #412 (DeLonghi Magnifica S - замена помпы)', created_at: now },
@@ -302,6 +439,25 @@ class DatabaseService {
       ]
       this.persistWebStore()
     } else {
+      // Upgrade existing web store demo parts to rich articles with low-stock test positions
+      const lowStockSeedApplied = typeof localStorage !== 'undefined' ? localStorage.getItem('neco_sample_v2_low_stock') : null
+      if (!lowStockSeedApplied) {
+        const sampleMap = new Map(SAMPLE_PARTS_DATA.map(s => [s.code, s]))
+        for (const p of this.webParts) {
+          const sampleMatch = sampleMap.get(p.code)
+          if (sampleMatch) {
+            p.articles = [...sampleMatch.articles]
+            p.stock_new = sampleMatch.stock_new
+            p.stock_used = sampleMatch.stock_used
+            p.min_stock = sampleMatch.min_stock
+          }
+        }
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem('neco_sample_v2_low_stock', '1')
+        }
+        this.persistWebStore()
+      }
+
       // Clear any leftover warehouse locations from previous demo data
       let cleaned = false
       for (const p of this.webParts) {

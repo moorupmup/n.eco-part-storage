@@ -1,6 +1,9 @@
 <template>
   <UModal v-model="isOpen" :ui="{ width: 'sm:max-w-md' }">
     <div class="p-5 bg-zinc-900 border border-zinc-800 rounded-xl">
+      <!-- Mobile Bottom Sheet Drag Handle -->
+      <div class="w-10 h-1 rounded-full bg-zinc-700/80 mx-auto -mt-1 mb-3.5" />
+
       <!-- Modal Header -->
       <div class="flex items-start justify-between gap-3 mb-4">
         <div>
@@ -25,7 +28,7 @@
               type="button"
               class="inline-flex items-center gap-1 font-mono text-xs font-semibold px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700/80 active:scale-95 text-primary-400 cursor-pointer transition-all border border-zinc-700/60"
               title="Нажмите, чтобы скопировать артикул"
-              @click="copyToClipboard(activeCode, 'Артикул')"
+              @click="handleCopyCode"
             >
               <span>{{ activeCode }}</span>
             </button>
@@ -57,9 +60,9 @@
         <div class="grid grid-cols-2 gap-2">
           <button
             type="button"
-            class="flex items-center justify-between px-3 py-2 rounded-lg border text-xs font-medium transition-all"
+            class="flex items-center justify-between px-3 py-2 rounded-lg border text-xs font-medium transition-all active:scale-95 cursor-pointer"
             :class="condition === 'NEW' ? 'bg-blue-500/20 border-blue-500 text-blue-300' : 'bg-zinc-950 border-zinc-800 text-zinc-400'"
-            @click="condition = 'NEW'"
+            @click="setCondition('NEW')"
           >
             <div class="flex items-center gap-1.5">
               <span class="w-2 h-2 rounded-full bg-blue-500" />
@@ -70,9 +73,9 @@
 
           <button
             type="button"
-            class="flex items-center justify-between px-3 py-2 rounded-lg border text-xs font-medium transition-all"
+            class="flex items-center justify-between px-3 py-2 rounded-lg border text-xs font-medium transition-all active:scale-95 cursor-pointer"
             :class="condition === 'USED' ? 'bg-amber-500/20 border-amber-500 text-amber-300' : 'bg-zinc-950 border-zinc-800 text-zinc-400'"
-            @click="condition = 'USED'"
+            @click="setCondition('USED')"
           >
             <div class="flex items-center gap-1.5">
               <span class="w-2 h-2 rounded-full bg-amber-500" />
@@ -98,25 +101,25 @@
           <button
             type="button"
             :disabled="quantity <= 1"
-            class="h-12 w-12 flex items-center justify-center rounded-xl bg-zinc-800 hover:bg-zinc-700 active:scale-95 border border-zinc-700/80 text-zinc-200 disabled:opacity-30 disabled:pointer-events-none transition-all shadow-sm"
-            @click="quantity > 1 ? quantity-- : null"
+            class="h-12 w-12 flex items-center justify-center rounded-xl bg-zinc-800 hover:bg-zinc-700 active:scale-95 border border-zinc-700/80 text-zinc-200 disabled:opacity-30 disabled:pointer-events-none transition-all shadow-sm cursor-pointer"
+            @click="decrement"
           >
             <UIcon name="i-lucide-minus" class="w-5 h-5 stroke-[2.5]" />
           </button>
 
           <input
             v-model.number="quantity"
-            type="number"
-            min="1"
-            :max="type === 'OUT' ? currentAvailableStock : 9999"
+            type="text"
+            inputmode="numeric"
+            pattern="[0-9]*"
             class="flex-1 min-w-0 h-12 rounded-xl bg-zinc-950 border border-zinc-800 text-center font-mono text-xl font-bold text-zinc-100 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner"
           />
 
           <button
             type="button"
             :disabled="type === 'OUT' && quantity >= currentAvailableStock"
-            class="h-12 w-12 flex items-center justify-center rounded-xl bg-zinc-800 hover:bg-zinc-700 active:scale-95 border border-zinc-700/80 text-zinc-200 disabled:opacity-30 disabled:pointer-events-none transition-all shadow-sm"
-            @click="quantity++"
+            class="h-12 w-12 flex items-center justify-center rounded-xl bg-zinc-800 hover:bg-zinc-700 active:scale-95 border border-zinc-700/80 text-zinc-200 disabled:opacity-30 disabled:pointer-events-none transition-all shadow-sm cursor-pointer"
+            @click="increment"
           >
             <UIcon name="i-lucide-plus" class="w-5 h-5 stroke-[2.5]" />
           </button>
@@ -128,16 +131,16 @@
             v-for="preset in [1, 2, 5, 10]"
             :key="preset"
             type="button"
-            class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-zinc-800 border border-zinc-700/60 text-zinc-300 hover:bg-zinc-700 active:scale-95 transition-all"
-            @click="setPreset(preset)"
+            class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-zinc-800 border border-zinc-700/60 text-zinc-300 hover:bg-zinc-700 active:scale-95 transition-all cursor-pointer"
+            @click="applyPreset(preset)"
           >
             +{{ preset }}
           </button>
           <button
             v-if="type === 'OUT' && currentAvailableStock > 0"
             type="button"
-            class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-zinc-800 border border-zinc-700/60 text-amber-400 hover:bg-zinc-700 active:scale-95 transition-all ml-auto"
-            @click="quantity = currentAvailableStock"
+            class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-zinc-800 border border-zinc-700/60 text-amber-400 hover:bg-zinc-700 active:scale-95 transition-all ml-auto cursor-pointer"
+            @click="applyAllStock"
           >
             Списать все ({{ currentAvailableStock }})
           </button>
@@ -161,6 +164,7 @@
         <input
           v-model="reason"
           type="text"
+          enterkeyhint="done"
           placeholder="Например: Заказ-наряд #312 (DeLonghi Magnifica)"
           class="w-full h-11 px-3.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 transition-colors shadow-inner"
         />
@@ -170,7 +174,7 @@
       <button
         type="button"
         :disabled="isSubmitDisabled || isSubmitting"
-        class="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold shadow-lg transition-all active:scale-[0.98] disabled:opacity-30 disabled:pointer-events-none"
+        class="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold shadow-lg transition-all active:scale-[0.98] disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
         :class="type === 'IN' ? 'bg-emerald-500 hover:bg-emerald-400 text-zinc-950 shadow-emerald-500/20' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700 shadow-zinc-950/40'"
         @click="handleSubmit"
       >
@@ -202,7 +206,42 @@ const emit = defineEmits<{
 const partsStore = usePartsStore()
 const transStore = useTransactionsStore()
 const toast = useToast()
+const haptics = useHaptics()
 const { copyToClipboard } = useClipboardCopy()
+
+function handleCopyCode() {
+  haptics.lightTap()
+  copyToClipboard(activeCode.value, 'Артикул')
+}
+
+function setCondition(c: PartCondition) {
+  haptics.lightTap()
+  condition.value = c
+}
+
+function decrement() {
+  if (quantity.value > 1) {
+    haptics.lightTap()
+    quantity.value--
+  }
+}
+
+function increment() {
+  if (type.value !== 'OUT' || quantity.value < currentAvailableStock.value) {
+    haptics.lightTap()
+    quantity.value++
+  }
+}
+
+function applyPreset(amount: number) {
+  haptics.lightTap()
+  quantity.value += amount
+}
+
+function applyAllStock() {
+  haptics.lightTap()
+  quantity.value = currentAvailableStock.value
+}
 
 const isOpen = computed({
   get: () => props.modelValue,
@@ -264,10 +303,6 @@ const isSubmitDisabled = computed(() => {
   return false
 })
 
-function setPreset(amount: number) {
-  quantity.value += amount
-}
-
 async function handleSubmit() {
   if (!props.part || isSubmitDisabled.value) return
 
@@ -286,6 +321,8 @@ async function handleSubmit() {
 
     await transStore.fetchTransactions()
 
+    haptics.successVibe()
+
     toast.add({
       title: type.value === 'IN' ? 'Приход оформлен' : 'Списание оформлено',
       description: `${activeCode.value || props.part.name}: ${type.value === 'IN' ? '+' : '-'}${quantity.value} шт (${condition.value === 'NEW' ? 'новые' : 'б/у'})`,
@@ -295,6 +332,7 @@ async function handleSubmit() {
     isOpen.value = false
     emit('success')
   } catch (err: any) {
+    haptics.errorVibe()
     toast.add({
       title: 'Ошибка операции',
       description: err.message,

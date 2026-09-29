@@ -1,6 +1,9 @@
 <template>
   <UModal v-model="isOpen" :ui="{ width: 'sm:max-w-lg' }">
     <div class="p-5 bg-zinc-900 border border-zinc-800 rounded-xl max-h-[85vh] overflow-y-auto">
+      <!-- Mobile Bottom Sheet Drag Handle -->
+      <div class="w-10 h-1 rounded-full bg-zinc-700/80 mx-auto -mt-1 mb-3.5" />
+
       <div class="flex items-center justify-between pb-3 mb-4 border-b border-zinc-800">
         <h2 class="text-base font-bold text-zinc-100 flex items-center gap-2">
           <UIcon :name="isEdit ? 'i-lucide-pencil' : 'i-lucide-plus-circle'" class="w-5 h-5 text-primary-400" />
@@ -49,7 +52,7 @@
               type="button"
               class="px-2.5 py-1 text-[11px] rounded-lg border transition-all shrink-0 whitespace-nowrap active:scale-95 cursor-pointer"
               :class="form.category === cat ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 font-semibold shadow-sm' : 'bg-zinc-800 border-zinc-700/60 text-zinc-300 hover:text-zinc-100 hover:bg-zinc-700'"
-              @click="form.category = form.category === cat ? '' : cat"
+              @click="toggleCategory(cat)"
             >
               {{ cat }}
             </button>
@@ -90,6 +93,10 @@
               <input
                 v-model="newTagInput"
                 type="text"
+                autocapitalize="none"
+                autocorrect="off"
+                spellcheck="false"
+                enterkeyhint="done"
                 placeholder="Добавить тег..."
                 maxlength="30"
                 class="w-full h-10 pl-7 pr-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner"
@@ -185,6 +192,12 @@ const emit = defineEmits<{
 
 const partsStore = usePartsStore()
 const toast = useToast()
+const haptics = useHaptics()
+
+function toggleCategory(cat: string) {
+  haptics.lightTap()
+  form.category = form.category === cat ? '' : cat
+}
 
 const isOpen = computed({
   get: () => props.modelValue,
@@ -314,11 +327,13 @@ function addTag(tag: string) {
   const clean = tag.trim().replace(/^#+/, '')
   if (!clean) return
   if (!tags.value.some(t => t.toLowerCase() === clean.toLowerCase())) {
+    haptics.lightTap()
     tags.value.push(clean)
   }
 }
 
 function removeTag(index: number) {
+  haptics.lightTap()
   tags.value.splice(index, 1)
 }
 
@@ -395,9 +410,11 @@ async function handleSave() {
       })
     }
 
+    haptics.successVibe()
     isOpen.value = false
     emit('saved', savedPart)
   } catch (err: any) {
+    haptics.errorVibe()
     toast.add({
       title: 'Ошибка',
       description: err.message,

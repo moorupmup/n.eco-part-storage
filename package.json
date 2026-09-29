@@ -20,6 +20,7 @@
     "@capacitor/app": "^6.0.3",
     "@capacitor/core": "^6.2.0",
     "@capacitor/filesystem": "^6.0.4",
+    "@capacitor/haptics": "^6.0.3",
     "@nuxt/ui": "^2.21.0",
     "@pinia/nuxt": "^0.9.0",
     "@vueuse/core": "^12.5.0",

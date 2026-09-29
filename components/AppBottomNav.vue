@@ -7,6 +7,7 @@
         :to="tab.path"
         class="relative flex flex-col items-center justify-center flex-1 h-full py-1 text-xs font-medium transition-all duration-150 active:scale-95"
         :class="route.path === tab.path ? 'text-emerald-400 font-semibold' : 'text-zinc-400 hover:text-zinc-200'"
+        @click="haptics.lightTap()"
       >
         <div class="relative">
           <UIcon :name="tab.icon" class="w-6 h-6 mb-0.5" />
@@ -37,6 +38,7 @@ import { usePartsStore } from '~/stores/parts'
 
 const route = useRoute()
 const partsStore = usePartsStore()
+const haptics = useHaptics()
 
 const tabs = computed(() => [
   {
