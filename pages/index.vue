@@ -180,74 +180,45 @@
             <div
               v-for="group in currentGroupedList"
               :key="group.part.id"
-              class="border rounded-2xl p-3.5 space-y-3 shadow-sm transition-all"
-              :class="isPartSelected(group.part.id)
-                ? 'bg-zinc-900/95 border-emerald-500/40 ring-1 ring-emerald-500/20'
-                : 'bg-zinc-900/90 border-zinc-800 hover:border-zinc-700/80'"
+              class="bg-zinc-900/90 border border-zinc-800 hover:border-zinc-700/80 rounded-2xl p-3.5 space-y-3 shadow-sm transition-all"
             >
-              <!-- Part Header: Checkbox + Photo/Icon + Name + Category -->
-              <div class="flex items-center gap-1.5">
-                <!-- Checkbox (Thin border, comfortable touch target, snug gap to photo) -->
-                <button
-                  type="button"
-                  role="checkbox"
-                  :aria-checked="isPartSelected(group.part.id)"
-                  class="w-7 h-10 -ml-1 flex items-center justify-center text-zinc-400 hover:text-zinc-200 active:scale-90 transition-all shrink-0 cursor-pointer"
-                  :title="isPartSelected(group.part.id) ? 'Снять отметку' : 'Выбрать деталь'"
-                  @click.stop="togglePartSelection(group.part.id)"
-                >
-                  <div
-                    class="w-5 h-5 rounded-md border flex items-center justify-center transition-all"
-                    :class="isPartSelected(group.part.id)
-                      ? 'border-emerald-500 bg-emerald-500 text-zinc-950 shadow-sm shadow-emerald-500/30'
-                      : 'border-zinc-700 bg-zinc-950 hover:border-zinc-500'"
-                  >
-                    <UIcon
-                      v-if="isPartSelected(group.part.id)"
-                      name="i-lucide-check"
-                      class="w-3.5 h-3.5 stroke-[2.5]"
-                    />
-                  </div>
-                </button>
+              <!-- Part Header: Photo/Icon + Name + Category -->
+              <div
+                class="flex items-center gap-3 cursor-pointer group/hdr"
+                title="Перейти к детали"
+                @click="navigateToPart(group.part.id)"
+              >
+                <!-- Thumbnail / Icon -->
+                <div class="w-10 h-10 rounded-xl bg-zinc-950 border border-zinc-800 overflow-hidden shrink-0 flex items-center justify-center">
+                  <img
+                    v-if="group.part.image"
+                    :src="group.part.image"
+                    :alt="group.part.name"
+                    class="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                  <UIcon v-else name="i-lucide-package" class="w-5 h-5 text-zinc-600" />
+                </div>
 
-                <!-- Part Info (Clickable to open Part details) -->
-                <div
-                  class="flex items-center gap-3 min-w-0 flex-1 cursor-pointer group/hdr"
-                  title="Перейти к детали"
-                  @click="navigateToPart(group.part.id)"
-                >
-                  <!-- Thumbnail / Icon -->
-                  <div class="w-10 h-10 rounded-xl bg-zinc-950 border border-zinc-800 overflow-hidden shrink-0 flex items-center justify-center">
-                    <img
-                      v-if="group.part.image"
-                      :src="group.part.image"
-                      :alt="group.part.name"
-                      class="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                    <UIcon v-else name="i-lucide-package" class="w-5 h-5 text-zinc-600" />
+                <!-- Name and Category -->
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span
+                      v-if="group.part.category"
+                      class="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 truncate max-w-[140px]"
+                    >
+                      {{ group.part.category }}
+                    </span>
+                    <span
+                      class="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                      :class="partsStore.stockFilter === 'low' ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30' : 'bg-rose-500/15 text-rose-300 border border-rose-500/30'"
+                    >
+                      {{ group.articles.length }} арт.
+                    </span>
                   </div>
-
-                  <!-- Name and Category -->
-                  <div class="min-w-0 flex-1">
-                    <div class="flex items-center gap-1.5 flex-wrap">
-                      <span
-                        v-if="group.part.category"
-                        class="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 truncate max-w-[140px]"
-                      >
-                        {{ group.part.category }}
-                      </span>
-                      <span
-                        class="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                        :class="partsStore.stockFilter === 'low' ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30' : 'bg-rose-500/15 text-rose-300 border border-rose-500/30'"
-                      >
-                        {{ group.articles.length }} арт.
-                      </span>
-                    </div>
-                    <h3 class="text-sm font-semibold text-zinc-100 group-hover/hdr:text-emerald-300 transition-colors line-clamp-1 mt-0.5">
-                      {{ group.part.name }}
-                    </h3>
-                  </div>
+                  <h3 class="text-sm font-semibold text-zinc-100 group-hover/hdr:text-emerald-300 transition-colors line-clamp-1 mt-0.5">
+                    {{ group.part.name }}
+                  </h3>
                 </div>
               </div>
 
@@ -256,42 +227,72 @@
                 <div
                   v-for="article in group.articles"
                   :key="article.id"
-                  class="bg-zinc-950/70 border border-zinc-800/80 rounded-xl p-2.5 flex items-center justify-between gap-2.5 transition-colors hover:border-zinc-700/60"
+                  class="rounded-xl p-2.5 flex items-center justify-between gap-2.5 transition-all cursor-pointer select-none"
+                  :class="isArticleSelected(article.id)
+                    ? 'bg-zinc-950/95 border border-emerald-500/40 ring-1 ring-emerald-500/20'
+                    : 'bg-zinc-950/70 border border-zinc-800/80 hover:border-zinc-700/60'"
+                  @click="toggleArticleSelection(article.id)"
                 >
-                  <!-- Article Code & Name -->
-                  <div class="min-w-0 flex-1">
-                    <div class="flex items-center gap-2 flex-wrap">
-                      <button
-                        type="button"
-                        class="inline-flex items-center gap-1 font-mono text-xs font-bold px-2 py-0.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 active:scale-95 text-emerald-400 cursor-pointer transition-all border border-zinc-700/60"
-                        title="Нажмите, чтобы скопировать артикул"
-                        @click.stop="copyArticleCode(article.code)"
+                  <!-- Left side: Checkbox + Article Details -->
+                  <div class="flex items-center gap-2 min-w-0 flex-1">
+                    <!-- Checkbox (Touch target min 36x36 for mobile, thin 1px border) -->
+                    <button
+                      type="button"
+                      role="checkbox"
+                      :aria-checked="isArticleSelected(article.id)"
+                      class="w-7 h-8 -ml-0.5 flex items-center justify-center text-zinc-400 hover:text-zinc-200 active:scale-90 transition-all shrink-0 cursor-pointer"
+                      :title="isArticleSelected(article.id) ? 'Снять отметку' : 'Выбрать артикул'"
+                      @click.stop="toggleArticleSelection(article.id)"
+                    >
+                      <div
+                        class="w-4.5 h-4.5 rounded-[5px] border flex items-center justify-center transition-all"
+                        :class="isArticleSelected(article.id)
+                          ? 'border-emerald-500 bg-emerald-500 text-zinc-950 shadow-sm shadow-emerald-500/30'
+                          : 'border-zinc-700 bg-zinc-900 hover:border-zinc-500'"
                       >
-                        <UIcon name="i-lucide-barcode" class="w-3.5 h-3.5" />
-                        <span>{{ article.code }}</span>
-                      </button>
+                        <UIcon
+                          v-if="isArticleSelected(article.id)"
+                          name="i-lucide-check"
+                          class="w-3 h-3 stroke-[2.5]"
+                        />
+                      </div>
+                    </button>
 
-                      <span
-                        v-if="article.name"
-                        class="text-xs text-zinc-400 truncate max-w-[140px] sm:max-w-[200px]"
-                        :title="article.name"
-                      >
-                        {{ article.name }}
-                      </span>
-                    </div>
+                    <!-- Article Code & Name + Stock text -->
+                    <div class="min-w-0 flex-1">
+                      <div class="flex items-center gap-1.5 flex-wrap">
+                        <button
+                          type="button"
+                          class="inline-flex items-center gap-1 font-mono text-xs font-bold px-2 py-0.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 active:scale-95 text-emerald-400 cursor-pointer transition-all border border-zinc-700/60"
+                          title="Нажмите, чтобы скопировать артикул"
+                          @click.stop="copyArticleCode(article.code)"
+                        >
+                          <UIcon name="i-lucide-barcode" class="w-3.5 h-3.5" />
+                          <span>{{ article.code }}</span>
+                        </button>
 
-                    <!-- Stock info description -->
-                    <div class="flex items-center gap-2 mt-1 text-[11px] text-zinc-400">
-                      <span v-if="partsStore.stockFilter === 'low'">
-                        В наличии: <strong class="text-amber-300 font-mono">{{ article.totalStock }}</strong> / мин. с собой: <span class="font-mono text-zinc-400">{{ article.min_stock }} шт</span>
-                        <span class="text-zinc-600 hidden sm:inline"> (нов: {{ article.stock_new }}, б/у: {{ article.stock_used }})</span>
-                      </span>
-                      <span v-else>
-                        Остаток: <strong class="text-rose-400 font-mono">0 шт</strong>
-                        <template v-if="article.min_stock > 0">
-                          · мин. с собой: <span class="font-mono text-zinc-400">{{ article.min_stock }} шт</span>
-                        </template>
-                      </span>
+                        <span
+                          v-if="article.name"
+                          class="text-xs text-zinc-400 truncate max-w-[130px] sm:max-w-[200px]"
+                          :title="article.name"
+                        >
+                          {{ article.name }}
+                        </span>
+                      </div>
+
+                      <!-- Stock info description -->
+                      <div class="flex items-center gap-2 mt-1 text-[11px] text-zinc-400">
+                        <span v-if="partsStore.stockFilter === 'low'">
+                          В наличии: <strong class="text-amber-300 font-mono">{{ article.totalStock }}</strong> / мин. с собой: <span class="font-mono text-zinc-400">{{ article.min_stock }} шт</span>
+                          <span class="text-zinc-600 hidden sm:inline"> (нов: {{ article.stock_new }}, б/у: {{ article.stock_used }})</span>
+                        </span>
+                        <span v-else>
+                          Остаток: <strong class="text-rose-400 font-mono">0 шт</strong>
+                          <template v-if="article.min_stock > 0">
+                            · мин. с собой: <span class="font-mono text-zinc-400">{{ article.min_stock }} шт</span>
+                          </template>
+                        </span>
+                      </div>
                     </div>
                   </div>
 
@@ -334,7 +335,7 @@
                 <button
                   type="button"
                   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-800/90 text-zinc-300 border border-zinc-800 shadow-sm active:scale-95 transition-all cursor-pointer"
-                  @click="selectAllParts"
+                  @click="selectAllArticles"
                 >
                   <UIcon name="i-lucide-check-square" class="w-3.5 h-3.5 text-zinc-400" />
                   <span>Выбрать все</span>
@@ -342,9 +343,9 @@
 
                 <button
                   type="button"
-                  :disabled="selectedPartIds.size === 0"
+                  :disabled="selectedArticleIds.size === 0"
                   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-800/90 text-zinc-400 hover:text-zinc-300 border border-zinc-800 shadow-sm active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
-                  @click="unselectAllParts"
+                  @click="unselectAllArticles"
                 >
                   <UIcon name="i-lucide-square" class="w-3.5 h-3.5 text-zinc-500" />
                   <span>Снять все</span>
@@ -353,12 +354,12 @@
 
               <!-- Counter -->
               <span class="text-xs text-zinc-400 font-mono">
-                Выбрано: <strong :class="selectedPartIds.size > 0 ? 'text-emerald-400' : 'text-zinc-500'">{{ selectedPartIds.size }}</strong> / {{ currentGroupedList.length }}
+                Выбрано: <strong :class="selectedArticleIds.size > 0 ? 'text-emerald-400' : 'text-zinc-500'">{{ selectedArticleIds.size }}</strong> / {{ currentArticlesTotalCount }}
               </span>
             </div>
 
             <!-- Import and Copy buttons: only shown if something is selected with a checkmark! -->
-            <div v-if="selectedPartIds.size > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <div v-if="selectedArticleIds.size > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
               <!-- Кнопка 1: Импорт в XLS -->
               <button
                 type="button"
@@ -366,7 +367,7 @@
                 @click="exportCurrentListToXLS"
               >
                 <UIcon name="i-lucide-file-spreadsheet" class="w-5 h-5 text-emerald-400 shrink-0" />
-                <span>Импорт в XLS ({{ selectedPartIds.size }})</span>
+                <span>Импорт в XLS ({{ selectedArticleIds.size }})</span>
               </button>
 
               <!-- Кнопка 2: Копировать в буфер -->
@@ -376,7 +377,7 @@
                 @click="copyCurrentListToClipboard"
               >
                 <UIcon name="i-lucide-copy" class="w-5 h-5 shrink-0" />
-                <span>Копировать в буфер ({{ selectedPartIds.size }})</span>
+                <span>Копировать в буфер ({{ selectedArticleIds.size }})</span>
               </button>
             </div>
           </div>
@@ -666,41 +667,57 @@ const currentArticlesTotalCount = computed(() => {
   return currentGroupedList.value.reduce((sum, g) => sum + g.articles.length, 0)
 })
 
-// Selection state for grouped deficit list
-const selectedPartIds = ref<Set<number>>(new Set())
+// Selection state for grouped deficit list (article-level selection)
+const selectedArticleIds = ref<Set<string>>(new Set())
 
-function isPartSelected(id: number): boolean {
-  return selectedPartIds.value.has(id)
+function isArticleSelected(id: string): boolean {
+  return selectedArticleIds.value.has(id)
 }
 
-function togglePartSelection(id: number) {
+function toggleArticleSelection(id: string) {
   haptics.lightTap()
-  const next = new Set(selectedPartIds.value)
+  const next = new Set(selectedArticleIds.value)
   if (next.has(id)) {
     next.delete(id)
   } else {
     next.add(id)
   }
-  selectedPartIds.value = next
+  selectedArticleIds.value = next
 }
 
-function selectAllParts() {
+function selectAllArticles() {
   haptics.lightTap()
-  selectedPartIds.value = new Set(currentGroupedList.value.map(g => g.part.id))
+  const ids: string[] = []
+  for (const g of currentGroupedList.value) {
+    for (const a of g.articles) {
+      ids.push(a.id)
+    }
+  }
+  selectedArticleIds.value = new Set(ids)
 }
 
-function unselectAllParts() {
+function unselectAllArticles() {
   haptics.lightTap()
-  selectedPartIds.value = new Set()
+  selectedArticleIds.value = new Set()
 }
 
 // Reset selection on filter or search changes
 watch([() => partsStore.stockFilter, () => partsStore.selectedCategory, () => partsStore.searchQuery], () => {
-  selectedPartIds.value = new Set()
+  selectedArticleIds.value = new Set()
 })
 
 const selectedGroupedList = computed(() => {
-  return currentGroupedList.value.filter(g => selectedPartIds.value.has(g.part.id))
+  const result: GroupedDeficitPart[] = []
+  for (const g of currentGroupedList.value) {
+    const matching = g.articles.filter(a => selectedArticleIds.value.has(a.id))
+    if (matching.length > 0) {
+      result.push({
+        part: g.part,
+        articles: matching
+      })
+    }
+  }
+  return result
 })
 
 const categoryCountMap = computed(() => {
@@ -858,7 +875,7 @@ function exportCurrentListToXLS() {
   const today = new Date().toISOString().slice(0, 10)
 
   if (selectedGroupedList.value.length === 0) {
-    toast.add({ title: 'Ничего не выбрано', description: 'Отметьте детали галочками для экспорта', color: 'amber' })
+    toast.add({ title: 'Ничего не выбрано', description: 'Отметьте артикулы галочками для экспорта', color: 'amber' })
     return
   }
 
@@ -919,7 +936,7 @@ function copyCurrentListToClipboard() {
   })
 
   if (lines.length === 0) {
-    toast.add({ title: 'Ничего не выбрано', description: 'Отметьте детали галочками для копирования', color: 'amber' })
+    toast.add({ title: 'Ничего не выбрано', description: 'Отметьте артикулы галочками для копирования', color: 'amber' })
     return
   }
 

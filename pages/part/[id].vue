@@ -111,23 +111,9 @@
 
       <!-- 2. PART NAME -->
       <div class="px-1">
-        <div class="flex items-start justify-between gap-3">
-          <h1
-            class="text-lg sm:text-xl font-bold text-zinc-100 hover:text-emerald-300 transition-colors cursor-pointer leading-snug"
-            title="Нажмите, чтобы скопировать название"
-            @click="copyToClipboard(part.name, 'Название детали')"
-          >
-            {{ part.name }}
-          </h1>
-          <button
-            type="button"
-            class="text-zinc-500 hover:text-zinc-200 p-1 rounded-lg hover:bg-zinc-800 transition-colors shrink-0"
-            title="Копировать название"
-            @click="copyToClipboard(part.name, 'Название детали')"
-          >
-            <UIcon name="i-lucide-copy" class="w-4 h-4" />
-          </button>
-        </div>
+        <h1 class="text-lg sm:text-xl font-bold text-zinc-100 leading-snug">
+          {{ part.name }}
+        </h1>
       </div>
 
       <!-- 3. TAGS SECTION -->
@@ -180,12 +166,12 @@
             :key="article.id"
             class="p-3.5 bg-zinc-900/90 border border-zinc-800 rounded-xl space-y-3 shadow-sm hover:border-zinc-700 transition-colors"
           >
-            <!-- Article Header: Code + Name/Note + Actions -->
+            <!-- Article Header: Code + Badges + Actions -->
             <div class="flex items-center justify-between gap-2">
               <div class="flex items-center gap-2 flex-wrap min-w-0">
                 <button
                   type="button"
-                  class="inline-flex items-center gap-1 font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700/80 active:scale-95 text-primary-400 cursor-pointer transition-all border border-zinc-700/70"
+                  class="h-7 inline-flex items-center gap-1 font-mono text-xs font-bold px-2.5 rounded-lg bg-zinc-800 hover:bg-zinc-700/80 active:scale-95 text-emerald-400 cursor-pointer transition-all border border-zinc-700/70 shrink-0"
                   title="Нажмите, чтобы скопировать артикул"
                   @click="copyToClipboard(article.code, 'Артикул')"
                 >
@@ -196,19 +182,11 @@
                 <!-- Warning badge "Мало" -->
                 <span
                   v-if="isArticleLowStock(article)"
-                  class="inline-flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-400 border border-amber-500/30 shrink-0 shadow-sm"
+                  class="h-7 inline-flex items-center gap-1 font-semibold text-xs px-2 rounded-lg bg-amber-500/15 text-amber-400 border border-amber-500/30 shrink-0 shadow-sm"
                   :title="`Остаток (${getArticleTotalStock(article)} шт) меньше мин. кол-ва с собой (${article.min_stock} шт)`"
                 >
                   <UIcon name="i-lucide-alert-triangle" class="w-3.5 h-3.5 text-amber-400 shrink-0" />
                   <span>Мало</span>
-                </span>
-
-                <span
-                  v-if="article.name"
-                  class="text-xs text-zinc-400 font-medium truncate max-w-[180px]"
-                  :title="article.name"
-                >
-                  {{ article.name }}
                 </span>
               </div>
 
@@ -216,7 +194,7 @@
               <div class="flex items-center gap-1 shrink-0">
                 <button
                   type="button"
-                  class="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-all"
+                  class="w-7 h-7 flex items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 active:scale-95 transition-all cursor-pointer shrink-0"
                   title="Редактировать артикул"
                   @click="openEditArticleModal(article)"
                 >
@@ -225,7 +203,7 @@
                 <button
                   v-if="part.articles.length > 1"
                   type="button"
-                  class="p-1.5 rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-zinc-800 transition-all"
+                  class="w-7 h-7 flex items-center justify-center rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-zinc-800 active:scale-95 transition-all cursor-pointer shrink-0"
                   title="Удалить артикул"
                   @click="confirmDeleteArticle(article)"
                 >
@@ -233,6 +211,14 @@
                 </button>
               </div>
             </div>
+
+            <!-- Article Note / Comment: separate line before stock counters -->
+            <p
+              v-if="article.name"
+              class="text-xs text-zinc-400 font-medium leading-snug -mt-1"
+            >
+              {{ article.name }}
+            </p>
 
             <!-- Stock row: Counters + Action Buttons (Exact compact row style) -->
             <div class="flex items-center gap-2">
