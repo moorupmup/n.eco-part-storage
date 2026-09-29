@@ -1,8 +1,132 @@
 import * as XLSX from 'xlsx'
+import { Capacitor } from '@capacitor/core'
+import { Filesystem, Directory } from '@capacitor/filesystem'
+import { FileOpener } from '@capacitor-community/file-opener'
 import type { Part, Transaction } from '~/types'
 import { parseTags, serializeTags } from '~/utils/tags'
 
-export function exportPartsToExcel(parts: Part[], filename = 'neco_parts_backpack.xlsx') {
+export interface SaveFileResult {
+  success: boolean
+  location: string
+  filename: string
+  uri?: string
+}
+
+/**
+ * Universal file saver: handles Capacitor native Android/iOS and standard browsers.
+ * In mobile browsers, avoids premature URL.revokeObjectURL which causes downloads to fail.
+ */
+export async function saveOrDownloadFile(
+  content: Blob | string,
+  filename: string,
+  mimeType: string = 'application/octet-stream'
+): Promise<SaveFileResult> {
+  const blob = typeof content === 'string' ? new Blob([content], { type: mimeType }) : content
+
+  // 1. If running inside Capacitor native Android/iOS app
+  if (Capacitor.isNativePlatform()) {
+    try {
+      const reader = new FileReader()
+      const base64Promise = new Promise<string>((resolve, reject) => {
+        reader.onloadend = () => {
+          const res = reader.result as string
+          const base64 = res.split(',')[1] || res
+          resolve(base64)
+        }
+        reader.onerror = reject
+      })
+      reader.readAsDataURL(blob)
+      const base64Data = await base64Promise
+
+      const writeResult = await Filesystem.writeFile({
+        path: filename,
+        data: base64Data,
+        directory: Directory.Documents,
+        recursive: true
+      })
+
+      // Try opening via file-opener so user can view/share immediately
+      try {
+        await FileOpener.open({
+          filePath: writeResult.uri,
+          contentType: mimeType
+        })
+      } catch {
+        // FileOpener is optional, file is already written
+      }
+
+      return {
+        success: true,
+        location: 'папку «Документы»',
+        filename,
+        uri: writeResult.uri
+      }
+    } catch (nativeErr) {
+      console.warn('Native filesystem write failed, falling back to browser download:', nativeErr)
+    }
+  }
+
+  // 2. Standard Web Browser download (compatible with mobile Chrome, Safari, desktop)
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.style.display = 'none'
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+
+  // Delay revoking URL by 60 seconds so mobile browsers have time to complete the download
+  setTimeout(() => {
+    try {
+      if (document.body.contains(a)) {
+        document.body.removeChild(a)
+      }
+    } catch {}
+    URL.revokeObjectURL(url)
+  }, 60000)
+
+  return {
+    success: true,
+    location: 'папку «Загрузки» (Downloads)',
+    filename
+  }
+}
+
+/**
+ * Web Share API: triggers native Android/iOS share sheet (Telegram, Google Drive, WhatsApp, Files)
+ */
+export async function shareFile(
+  content: Blob | string,
+  filename: string,
+  mimeType: string = 'application/octet-stream',
+  title = 'Экспорт данных N.ECO'
+): Promise<boolean> {
+  if (typeof navigator === 'undefined' || !navigator.share) {
+    return false
+  }
+
+  try {
+    const blob = typeof content === 'string' ? new Blob([content], { type: mimeType }) : content
+    const file = new File([blob], filename, { type: mimeType })
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        files: [file],
+        title,
+        text: `Резервная копия: ${filename}`
+      })
+      return true
+    }
+  } catch (err: any) {
+    if (err.name === 'AbortError') {
+      return true // User dismissed share sheet
+    }
+    console.warn('Web Share failed:', err)
+  }
+  return false
+}
+
+export async function exportPartsToExcel(parts: Part[], filename = 'neco_parts_backpack.xlsx'): Promise<SaveFileResult> {
   const data = parts.map(p => {
     const tagList = p.tags && p.tags.length > 0 ? p.tags : parseTags(p.notes)
     return {
@@ -21,10 +145,12 @@ export function exportPartsToExcel(parts: Part[], filename = 'neco_parts_backpac
   const worksheet = XLSX.utils.json_to_sheet(data)
   const workbook = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Запчасти')
-  XLSX.writeFile(workbook, filename)
+  const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })
+  const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+  return await saveOrDownloadFile(blob, filename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 }
 
-export function exportTransactionsToExcel(transactions: Transaction[], filename = 'istoriya_dvizheniy.xlsx') {
+export async function exportTransactionsToExcel(transactions: Transaction[], filename = 'istoriya_dvizheniy.xlsx'): Promise<SaveFileResult> {
   const typeMap: Record<string, string> = {
     'IN': 'Приход (+)',
     'OUT': 'Списание/Выдача (-)',
@@ -47,10 +173,13 @@ export function exportTransactionsToExcel(transactions: Transaction[], filename 
   const worksheet = XLSX.utils.json_to_sheet(data)
   const workbook = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(workbook, worksheet, 'История')
-  XLSX.writeFile(workbook, filename)
+  const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })
+  const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+  return await saveOrDownloadFile(blob, filename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 }
 
-export function exportFullBackupJSON(parts: Part[], transactions: Transaction[]) {
+export async function exportFullBackupJSON(parts: Part[], transactions: Transaction[], filename?: string): Promise<SaveFileResult> {
+  const finalFilename = filename || `backup_neco_${new Date().toISOString().slice(0, 10)}.json`
   const backup = {
     exportedAt: new Date().toISOString(),
     version: '1.0',
@@ -58,13 +187,9 @@ export function exportFullBackupJSON(parts: Part[], transactions: Transaction[])
     transactions
   }
 
-  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `backup_neco_${new Date().toISOString().slice(0, 10)}.json`
-  a.click()
-  URL.revokeObjectURL(url)
+  const jsonStr = JSON.stringify(backup, null, 2)
+  const blob = new Blob([jsonStr], { type: 'application/json' })
+  return await saveOrDownloadFile(blob, finalFilename, 'application/json')
 }
 
 export async function parseExcelOrCSV(file: File): Promise<Partial<Part>[]> {
@@ -118,7 +243,7 @@ export interface DeficitArticleExportRow {
   deficit: number
 }
 
-export function exportLowStockToExcel(items: DeficitArticleExportRow[], filename = 'malo_zapchastey.xlsx') {
+export async function exportLowStockToExcel(items: DeficitArticleExportRow[], filename = 'malo_zapchastey.xlsx'): Promise<SaveFileResult> {
   const data = items.map((r, i) => ({
     '№': i + 1,
     'Деталь': r.partName,
@@ -135,10 +260,12 @@ export function exportLowStockToExcel(items: DeficitArticleExportRow[], filename
   const worksheet = XLSX.utils.json_to_sheet(data)
   const workbook = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Мало')
-  XLSX.writeFile(workbook, filename)
+  const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })
+  const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+  return await saveOrDownloadFile(blob, filename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 }
 
-export function exportOutOfStockToExcel(items: { partName: string; category: string; code: string; articleName?: string; minStock: number }[], filename = 'zakonchilis_zapchasti.xlsx') {
+export async function exportOutOfStockToExcel(items: { partName: string; category: string; code: string; articleName?: string; minStock: number }[], filename = 'zakonchilis_zapchasti.xlsx'): Promise<SaveFileResult> {
   const data = items.map((r, i) => ({
     '№': i + 1,
     'Деталь': r.partName,
@@ -153,5 +280,7 @@ export function exportOutOfStockToExcel(items: { partName: string; category: str
   const worksheet = XLSX.utils.json_to_sheet(data)
   const workbook = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Закончились')
-  XLSX.writeFile(workbook, filename)
+  const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })
+  const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+  return await saveOrDownloadFile(blob, filename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 }

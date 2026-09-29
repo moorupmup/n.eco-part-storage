@@ -355,11 +355,11 @@ function clearAllFilters() {
   tempDateTo.value = ''
 }
 
-function exportHistory() {
-  exportTransactionsToExcel(transStore.filteredTransactions)
+async function exportHistory() {
+  const res = await exportTransactionsToExcel(transStore.filteredTransactions)
   toast.add({
     title: 'Экспорт завершен',
-    description: 'Файл Excel с историей сохранен',
+    description: `Файл ${res.filename} сохранён в ${res.location}`,
     color: 'emerald'
   })
 }

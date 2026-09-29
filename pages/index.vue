@@ -873,7 +873,7 @@ function handleMovementSuccess() {
   // Handled inside component and store
 }
 
-function exportCurrentListToXLS() {
+async function exportCurrentListToXLS() {
   haptics.successVibe()
   const today = new Date().toISOString().slice(0, 10)
 
@@ -899,8 +899,8 @@ function exportCurrentListToXLS() {
         })
       }
     }
-    exportLowStockToExcel(rows, `malo_zapchastey_${today}.xlsx`)
-    toast.add({ title: 'Файл скачан', description: `Экспортировано ${rows.length} арт. (${selectedGroupedList.value.length} дет.)`, color: 'emerald' })
+    const res = await exportLowStockToExcel(rows, `malo_zapchastey_${today}.xlsx`)
+    toast.add({ title: 'Файл сохранён', description: `Экспортировано ${rows.length} арт. (${res.filename} в ${res.location})`, color: 'emerald' })
   } else if (partsStore.stockFilter === 'out') {
     const rows: { partName: string; category: string; code: string; articleName?: string; minStock: number }[] = []
     for (const g of selectedGroupedList.value) {
@@ -914,8 +914,8 @@ function exportCurrentListToXLS() {
         })
       }
     }
-    exportOutOfStockToExcel(rows, `zakonchilis_${today}.xlsx`)
-    toast.add({ title: 'Файл скачан', description: `Экспортировано ${rows.length} арт. (${selectedGroupedList.value.length} дет.)`, color: 'emerald' })
+    const res = await exportOutOfStockToExcel(rows, `zakonchilis_${today}.xlsx`)
+    toast.add({ title: 'Файл сохранён', description: `Экспортировано ${rows.length} арт. (${res.filename} в ${res.location})`, color: 'emerald' })
   }
 }
 

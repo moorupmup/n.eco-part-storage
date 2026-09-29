@@ -42,30 +42,55 @@
         <div class="space-y-2">
           <button
             type="button"
-            class="flex items-center gap-2.5 w-full py-2.5 px-3.5 rounded-xl bg-zinc-950 border border-zinc-800 hover:border-zinc-700 text-xs font-semibold text-zinc-200 active:scale-[0.99] transition-all"
+            class="flex items-center gap-2.5 w-full py-2.5 px-3.5 rounded-xl bg-zinc-950 border border-zinc-800 hover:border-zinc-700 text-xs font-semibold text-zinc-200 active:scale-[0.99] transition-all cursor-pointer"
             @click="exportPartsExcel"
           >
-            <UIcon name="i-lucide-file-spreadsheet" class="w-4 h-4 text-emerald-400" />
+            <UIcon name="i-lucide-file-spreadsheet" class="w-4 h-4 text-emerald-400 shrink-0" />
             <span>Экспорт каталога в Excel (.xlsx)</span>
           </button>
 
           <button
             type="button"
-            class="flex items-center gap-2.5 w-full py-2.5 px-3.5 rounded-xl bg-zinc-950 border border-zinc-800 hover:border-zinc-700 text-xs font-semibold text-zinc-200 active:scale-[0.99] transition-all"
+            class="flex items-center gap-2.5 w-full py-2.5 px-3.5 rounded-xl bg-zinc-950 border border-zinc-800 hover:border-zinc-700 text-xs font-semibold text-zinc-200 active:scale-[0.99] transition-all cursor-pointer"
             @click="exportHistoryExcel"
           >
-            <UIcon name="i-lucide-history" class="w-4 h-4 text-blue-400" />
+            <UIcon name="i-lucide-history" class="w-4 h-4 text-blue-400 shrink-0" />
             <span>Экспорт истории операций в Excel</span>
           </button>
 
           <button
             type="button"
-            class="flex items-center gap-2.5 w-full py-2.5 px-3.5 rounded-xl bg-zinc-950 border border-zinc-800 hover:border-zinc-700 text-xs font-semibold text-zinc-200 active:scale-[0.99] transition-all"
+            class="flex items-center gap-2.5 w-full py-2.5 px-3.5 rounded-xl bg-zinc-950 border border-zinc-800 hover:border-zinc-700 text-xs font-semibold text-zinc-200 active:scale-[0.99] transition-all cursor-pointer"
             @click="exportJSON"
           >
-            <UIcon name="i-lucide-file-json" class="w-4 h-4 text-amber-400" />
+            <UIcon name="i-lucide-file-json" class="w-4 h-4 text-amber-400 shrink-0" />
             <span>Полный JSON бэкап (База целиком)</span>
           </button>
+
+          <!-- Share button (when Web Share API is available, e.g. on mobile Android/iOS) -->
+          <button
+            v-if="canShare"
+            type="button"
+            class="flex items-center justify-center gap-2 w-full py-2.5 px-3.5 rounded-xl bg-emerald-950/40 hover:bg-emerald-900/50 border border-emerald-500/30 text-xs font-bold text-emerald-400 active:scale-[0.99] transition-all cursor-pointer mt-1"
+            @click="shareJSON"
+          >
+            <UIcon name="i-lucide-share-2" class="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>Отправить бэкап в Telegram / Диск</span>
+          </button>
+        </div>
+
+        <!-- Info block about save location -->
+        <div class="p-3 rounded-xl bg-zinc-950/60 border border-zinc-800/80 text-[11px] text-zinc-400 space-y-1">
+          <div class="flex items-center gap-1.5 text-zinc-300 font-semibold">
+            <UIcon name="i-lucide-folder-down" class="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            <span>Куда сохраняются файлы?</span>
+          </div>
+          <p class="leading-relaxed text-zinc-400">
+            • Файлы скачиваются в системную папку <strong>«Загрузки» (Downloads)</strong> на вашем устройстве.<br />
+            • В мобильном приложении файл также пишется в системную папку <strong>«Документы»</strong>.<br />
+            • Название файла бэкапа: <span class="font-mono text-amber-300 text-[10px]">backup_neco_ГГГГ-ММ-ДД.json</span>.<br />
+            • Кнопка «Отправить бэкап» позволяет сразу переслать файл в Telegram (в «Избранное») или на Google Диск.
+          </p>
         </div>
       </div>
 
@@ -164,7 +189,8 @@ import {
   exportPartsToExcel,
   exportTransactionsToExcel,
   exportFullBackupJSON,
-  parseExcelOrCSV
+  parseExcelOrCSV,
+  shareFile
 } from '~/utils/exportImport'
 
 const partsStore = usePartsStore()
@@ -175,32 +201,62 @@ const fileInputRef = ref<HTMLInputElement | null>(null)
 const isImporting = ref(false)
 const isClearConfirmOpen = ref(false)
 
-function exportPartsExcel() {
-  exportPartsToExcel(partsStore.parts)
+const canShare = ref(false)
+
+onMounted(() => {
+  if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+    canShare.value = true
+  }
+})
+
+async function exportPartsExcel() {
+  const res = await exportPartsToExcel(partsStore.parts)
   toast.add({
     title: 'Каталог выгружен',
-    description: 'Файл Excel успешно сохранен',
+    description: `Файл ${res.filename} сохранён в ${res.location}`,
     color: 'emerald'
   })
 }
 
-function exportHistoryExcel() {
-  exportTransactionsToExcel(transStore.transactions)
+async function exportHistoryExcel() {
+  const res = await exportTransactionsToExcel(transStore.transactions)
   toast.add({
     title: 'История выгружена',
-    description: 'Файл Excel успешно сохранен',
+    description: `Файл ${res.filename} сохранён в ${res.location}`,
     color: 'emerald'
   })
 }
 
 async function exportJSON() {
   const { parts, transactions } = await dbService.exportAllData()
-  exportFullBackupJSON(parts, transactions)
+  const res = await exportFullBackupJSON(parts, transactions)
   toast.add({
     title: 'JSON бэкап сохранен',
-    description: 'Полная копия базы готова',
+    description: `Файл ${res.filename} сохранён в ${res.location}`,
     color: 'emerald'
   })
+}
+
+async function shareJSON() {
+  const { parts, transactions } = await dbService.exportAllData()
+  const filename = `backup_neco_${new Date().toISOString().slice(0, 10)}.json`
+  const jsonStr = JSON.stringify({
+    exportedAt: new Date().toISOString(),
+    version: '1.0',
+    parts,
+    transactions
+  }, null, 2)
+
+  const shared = await shareFile(jsonStr, filename, 'application/json', 'Бэкап базы N.ECO')
+  if (!shared) {
+    await exportJSON()
+  } else {
+    toast.add({
+      title: 'Бэкап отправлен',
+      description: 'Резервная копия передана',
+      color: 'emerald'
+    })
+  }
 }
 
 function triggerFileInput() {
