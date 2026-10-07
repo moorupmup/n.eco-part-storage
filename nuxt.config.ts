@@ -12,6 +12,14 @@ export default defineNuxtConfig({
     '@vueuse/nuxt'
   ],
 
+  // Bundle all Lucide icons offline into client JS bundle for Capacitor
+  icon: {
+    clientBundle: {
+      scan: true,
+      sizeLimitKb: 512
+    }
+  },
+
   // Generate directly to 'dist' directory for Capacitor
   nitro: {
     output: {

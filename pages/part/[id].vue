@@ -224,7 +224,7 @@
                   <!-- Article Note / Comment -->
                   <p
                     v-if="article.name"
-                    class="text-xs text-zinc-400 font-medium leading-snug line-clamp-2"
+                    class="text-xs text-zinc-400 font-medium leading-relaxed whitespace-pre-line break-words"
                   >
                     {{ article.name }}
                   </p>
@@ -384,13 +384,13 @@
 
           <div>
             <label class="block text-xs font-semibold text-zinc-300 mb-1">
-              Примечание / Производитель (необязательно)
+              Примечание / Комментарий (необязательно)
             </label>
-            <input
+            <textarea
               v-model="articleForm.name"
-              type="text"
-              placeholder="Например: Оригинал DeLonghi, Аналог Ceme, 230V"
-              class="w-full h-10 px-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner"
+              rows="2"
+              placeholder="Например: Оригинал DeLonghi, Аналог Ceme, 230V..."
+              class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner resize-y min-h-[50px]"
             />
           </div>
 

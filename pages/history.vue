@@ -135,11 +135,11 @@
           </div>
 
           <!-- Reason & Stock balance -->
-          <div class="flex items-center justify-between text-xs text-zinc-400 pt-1 border-t border-zinc-800/80">
-            <span class="text-zinc-300 italic line-clamp-1 pr-2">
+          <div class="pt-1.5 border-t border-zinc-800/80 flex items-start justify-between gap-3 text-xs text-zinc-400">
+            <span class="text-zinc-400 whitespace-pre-line break-words leading-relaxed min-w-0 flex-1">
               {{ item.reason || 'Без комментария' }}
             </span>
-            <span class="text-[11px] font-mono text-zinc-500 shrink-0">
+            <span class="text-[11px] font-mono text-zinc-500 shrink-0 pt-0.5 whitespace-nowrap">
               Остаток: {{ item.stock_before }} → <strong class="text-zinc-300">{{ item.stock_after }}</strong>
             </span>
           </div>
