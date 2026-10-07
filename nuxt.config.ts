@@ -6,6 +6,12 @@ export default defineNuxtConfig({
   // Mobile apps run in SPA mode inside Capacitor WebView
   ssr: false,
 
+  runtimeConfig: {
+    public: {
+      aptabaseAppKey: process.env.NUXT_PUBLIC_APTABASE_APP_KEY || 'A-US-6174154603'
+    }
+  },
+
   modules: [
     '@nuxt/ui',
     '@pinia/nuxt',

@@ -1,6 +1,6 @@
 {
   "name": "neco-part-storage",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "private": true,
   "type": "module",
   "scripts": {
@@ -14,18 +14,20 @@
     "cap:build": "nuxt generate && npx cap sync android"
   },
   "dependencies": {
+    "@aptabase/web": "^0.5.0",
     "@capacitor-community/file-opener": "^6.0.1",
     "@capacitor-community/sqlite": "^6.0.1",
     "@capacitor/android": "^6.2.0",
     "@capacitor/app": "^6.0.3",
     "@capacitor/core": "^6.2.0",
+    "@capacitor/device": "^6.0.3",
     "@capacitor/filesystem": "^6.0.4",
     "@capacitor/haptics": "^6.0.3",
+    "@iconify-json/lucide": "^1.2.140",
     "@nuxt/ui": "^2.21.0",
     "@pinia/nuxt": "^0.9.0",
     "@vueuse/core": "^12.5.0",
     "@vueuse/nuxt": "^12.5.0",
-    "@iconify-json/lucide": "^1.2.140",
     "jeep-sqlite": "^2.7.2",
     "lucide-vue-next": "^0.475.0",
     "pinia": "^2.3.1",
