@@ -168,120 +168,13 @@
           </div>
         </div>
       </div>
-
-      <!-- Analytics & Device Telemetry Card -->
-      <div class="p-4 rounded-2xl bg-zinc-900/90 border border-zinc-800 space-y-4 shadow-sm">
-        <div class="flex items-start justify-between gap-3">
-          <div class="flex items-center gap-3">
-            <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500/20 via-indigo-500/10 to-transparent border border-indigo-500/30 text-indigo-400 shadow-md shadow-indigo-950/40 shrink-0">
-              <UIcon name="i-lucide-bar-chart-3" class="w-6 h-6 text-indigo-400" />
-            </div>
-            <div>
-              <h3 class="text-sm font-extrabold text-zinc-100 tracking-tight">
-                Статистика и аналитика (Aptabase)
-              </h3>
-              <p class="text-xs text-zinc-400 mt-0.5">
-                Мониторинг активных устройств и пользователей
-              </p>
-            </div>
-          </div>
-
-          <span
-            class="text-[11px] px-2.5 py-1 rounded-full font-semibold border"
-            :class="isInitialized ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' : 'bg-zinc-800 text-zinc-400 border-zinc-700/60'"
-          >
-            {{ isInitialized ? 'Подключено' : 'Не настроено' }}
-          </span>
-        </div>
-
-        <!-- Hardware & Device Details Detected -->
-        <div v-if="deviceInfo" class="p-3 rounded-xl bg-zinc-950/80 border border-zinc-800/80 space-y-2">
-          <div class="text-[11px] font-semibold text-zinc-400 flex items-center justify-between">
-            <span class="flex items-center gap-1.5">
-              <UIcon :name="deviceInfo.isTablet ? 'i-lucide-tablet' : 'i-lucide-smartphone'" class="w-4 h-4 text-indigo-400" />
-              <span>Данные текущего устройства:</span>
-            </span>
-            <span class="font-mono text-[10px] text-zinc-500 uppercase">{{ deviceInfo.platform }}</span>
-          </div>
-
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs">
-            <div class="bg-zinc-900/80 p-2 rounded-lg border border-zinc-800/60">
-              <span class="text-[10px] text-zinc-500 block">Модель</span>
-              <span class="font-semibold text-zinc-200 truncate block" :title="deviceInfo.model">
-                {{ deviceInfo.manufacturer }} {{ deviceInfo.model }}
-              </span>
-            </div>
-            <div class="bg-zinc-900/80 p-2 rounded-lg border border-zinc-800/60">
-              <span class="text-[10px] text-zinc-500 block">ОС</span>
-              <span class="font-semibold text-zinc-200 block">
-                {{ deviceInfo.operatingSystem }} {{ deviceInfo.osVersion || '' }}
-              </span>
-            </div>
-            <div class="bg-zinc-900/80 p-2 rounded-lg border border-zinc-800/60">
-              <span class="text-[10px] text-zinc-500 block">Тип экрана</span>
-              <span class="font-semibold text-zinc-200 block">
-                {{ deviceInfo.isTablet ? 'Планшет' : 'Смартфон' }}
-              </span>
-            </div>
-            <div class="bg-zinc-900/80 p-2 rounded-lg border border-zinc-800/60">
-              <span class="text-[10px] text-zinc-500 block">Разрешение</span>
-              <span class="font-mono text-zinc-200 block">
-                {{ deviceInfo.screenWidth }}×{{ deviceInfo.screenHeight }}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <!-- App Key Input -->
-        <div class="space-y-2">
-          <label class="block text-xs font-semibold text-zinc-300">
-            Aptabase App Key
-          </label>
-          <div class="flex items-center gap-2">
-            <input
-              v-model="inputAppKey"
-              type="text"
-              placeholder="A-EU-xxxxxxxxxx"
-              class="flex-1 h-10 px-3 rounded-xl bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/40 shadow-inner"
-            />
-            <button
-              type="button"
-              class="h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-xs font-semibold text-white transition-all cursor-pointer shadow-sm shrink-0"
-              @click="handleSaveKey"
-            >
-              Сохранить
-            </button>
-          </div>
-          <p class="text-[11px] text-zinc-500 leading-normal">
-            Бесплатный ключ создается за 1 минуту на <a href="https://aptabase.com" target="_blank" rel="noopener noreferrer" class="text-indigo-400 hover:underline">aptabase.com</a>. После ввода статистика запусков и моделей устройств сразу отображается в вашем дашборде.
-          </p>
-        </div>
-
-        <!-- Test Event Trigger -->
-        <div v-if="isInitialized" class="pt-1 flex items-center justify-between gap-3 flex-wrap">
-          <button
-            type="button"
-            :disabled="isSendingPing"
-            class="flex items-center gap-2 py-2 px-3 rounded-xl bg-zinc-950 hover:bg-zinc-800 active:scale-95 border border-zinc-800 hover:border-zinc-700 text-xs font-semibold text-zinc-300 transition-all cursor-pointer disabled:opacity-50"
-            @click="handleSendPing"
-          >
-            <UIcon name="i-lucide-send" class="w-3.5 h-3.5 text-indigo-400" :class="{ 'animate-pulse': isSendingPing }" />
-            <span>{{ isSendingPing ? 'Отправка...' : 'Отправить тестовый пинг в дашборд' }}</span>
-          </button>
-
-          <span v-if="lastEventSent" class="text-[10px] text-zinc-500">
-            Посл. событие: {{ lastEventSent }}
-          </span>
-        </div>
-      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import { useAppUpdater } from '~/composables/useAppUpdater'
-import { useAnalytics } from '~/composables/useAnalytics'
 
 const {
   currentVersion,
@@ -303,55 +196,7 @@ const {
   formatBytes
 } = useAppUpdater()
 
-const {
-  aptabaseAppKey,
-  isInitialized,
-  lastEventSent,
-  deviceInfo,
-  loadDeviceInfo,
-  setAppKey,
-  sendTestEvent
-} = useAnalytics()
-
-const inputAppKey = ref('')
-const isSendingPing = ref(false)
-const toast = useToast()
-
-const handleSaveKey = async () => {
-  await setAppKey(inputAppKey.value)
-  toast.add({
-    title: inputAppKey.value.trim() ? 'Ключ аналитики сохранен' : 'Ключ очищен',
-    description: inputAppKey.value.trim() ? 'Сбор телеметрии активирован' : 'Сбор аналитики отключен',
-    color: inputAppKey.value.trim() ? 'emerald' : 'gray',
-    icon: inputAppKey.value.trim() ? 'i-lucide-check-circle' : 'i-lucide-info'
-  })
-}
-
-const handleSendPing = async () => {
-  isSendingPing.value = true
-  try {
-    await sendTestEvent()
-    toast.add({
-      title: 'Пинг успешно отправлен',
-      description: 'Проверьте событие test_ping в дашборде Aptabase',
-      color: 'emerald',
-      icon: 'i-lucide-check'
-    })
-  } catch (err) {
-    toast.add({
-      title: 'Ошибка отправки',
-      description: String(err),
-      color: 'rose',
-      icon: 'i-lucide-alert-circle'
-    })
-  } finally {
-    isSendingPing.value = false
-  }
-}
-
 onMounted(() => {
   checkForUpdates(false)
-  loadDeviceInfo()
-  inputAppKey.value = aptabaseAppKey.value
 })
 </script>
