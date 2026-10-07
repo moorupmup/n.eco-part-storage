@@ -1,6 +1,6 @@
 <template>
   <div
-    class="group relative bg-zinc-900/90 border border-zinc-800 hover:border-zinc-700 active:border-emerald-500/50 rounded-xl p-3 shadow-sm transition-all duration-150 cursor-pointer active:scale-[0.99] focus-within:z-30"
+    class="group relative bg-zinc-900/90 border border-zinc-800 hover:border-zinc-700 active:border-emerald-500/50 rounded-xl p-3 shadow-sm transition-all duration-150 cursor-pointer active:scale-[0.99] focus-within:z-30 h-full flex flex-col justify-between"
     @click="openDetail"
   >
     <!-- Top Row: Photo (top-aligned) + Info (Category, Menu, Name) -->

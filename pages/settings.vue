@@ -2,7 +2,7 @@
   <div>
     <!-- Top Header with Back button -->
     <header class="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800/80 pt-safe transition-colors">
-      <div class="flex items-center justify-between h-14 px-4 max-w-lg mx-auto">
+      <div class="flex items-center justify-between h-14 sm:h-16 px-4 sm:px-6 md:px-8 max-w-4xl mx-auto">
         <div class="flex items-center gap-2">
           <NuxtLink
             to="/"
@@ -12,24 +12,24 @@
             <UIcon name="i-lucide-chevron-left" class="w-5 h-5" />
           </NuxtLink>
           <div>
-            <h1 class="text-sm font-bold text-zinc-100 leading-none">
+            <h1 class="text-sm sm:text-base font-bold text-zinc-100 leading-none">
               Настройки
             </h1>
-            <p class="text-[11px] text-zinc-400 mt-0.5 leading-none">
+            <p class="text-[11px] sm:text-xs text-zinc-400 mt-0.5 leading-none">
               Версия приложения
             </p>
           </div>
         </div>
 
         <div class="flex items-center gap-2">
-          <span class="font-mono text-xs font-semibold px-2 py-0.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400">
+          <span class="font-mono text-xs font-semibold px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400">
             {{ currentVersion }}
           </span>
         </div>
       </div>
     </header>
 
-    <div class="px-4 py-4 space-y-3 max-w-lg mx-auto">
+    <div class="px-4 sm:px-6 md:px-8 py-4 sm:py-6 space-y-4 max-w-4xl mx-auto">
       <!-- Unified App Brand & Update Card -->
       <div class="p-4 rounded-2xl bg-zinc-900/90 border border-zinc-800 space-y-4 shadow-sm">
         <div class="flex items-start justify-between gap-3">

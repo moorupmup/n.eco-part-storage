@@ -1,5 +1,5 @@
 <template>
-  <div class="px-4 py-4 max-w-lg mx-auto pb-28">
+  <div class="px-4 sm:px-6 md:px-8 py-4 sm:py-6 max-w-7xl mx-auto pb-28 md:pb-32">
     <!-- Top Bar with Back Button & Actions -->
     <div class="flex items-center justify-between gap-2 mb-4">
       <button
@@ -42,7 +42,9 @@
       <UButton label="В каталог" color="primary" size="sm" @click="goBack" />
     </div>
 
-    <div v-else class="space-y-4">
+    <div v-else class="space-y-6 md:space-y-0 md:grid md:grid-cols-12 md:gap-6 lg:gap-8 items-start">
+      <!-- LEFT COLUMN: Media & Part Overview (Sticky on tablet) -->
+      <div class="md:col-span-5 lg:col-span-4 space-y-4 md:sticky md:top-20">
       <!-- 1. PHOTO SECTION -->
       <div class="relative w-full h-56 sm:h-64 rounded-2xl bg-zinc-900/90 border border-zinc-800 overflow-hidden flex items-center justify-center group shadow-inner">
         <!-- Hidden file input -->
@@ -146,7 +148,27 @@
         </p>
       </div>
 
-      <!-- 4. ARTICLES SECTION -->
+      <!-- 4. TOTAL STOCK SUMMARY CARD -->
+      <div class="p-3.5 bg-zinc-900/90 border border-zinc-800 rounded-xl space-y-2 shadow-sm">
+        <span class="text-xs font-semibold text-zinc-400 uppercase tracking-wider block">
+          Суммарный остаток детали
+        </span>
+        <div class="grid grid-cols-2 gap-2">
+          <div class="p-2.5 rounded-lg bg-zinc-950 border border-zinc-800/80 text-center">
+            <span class="block text-[11px] text-zinc-400 font-medium">Новые</span>
+            <span class="text-base font-bold text-blue-400 font-mono">{{ part.stock_new }} шт</span>
+          </div>
+          <div class="p-2.5 rounded-lg bg-zinc-950 border border-zinc-800/80 text-center">
+            <span class="block text-[11px] text-zinc-400 font-medium">Б/У</span>
+            <span class="text-base font-bold text-amber-400 font-mono">{{ part.stock_used }} шт</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: Articles Workbench -->
+    <div class="md:col-span-7 lg:col-span-8 space-y-4">
+      <!-- 5. ARTICLES SECTION -->
       <div class="space-y-3">
         <!-- Section Header -->
         <div class="flex items-center justify-between px-1 pt-2">
@@ -324,6 +346,7 @@
         </button>
       </div>
     </div>
+  </div>
 
     <!-- Stock In/Out Modal for Specific Article -->
     <StockActionModal
@@ -335,7 +358,7 @@
     />
 
     <!-- Add / Edit Article Modal -->
-    <UModal v-model="isArticleModalOpen" :ui="{ width: 'sm:max-w-md' }">
+    <UModal v-model="isArticleModalOpen" :ui="{ width: 'sm:max-w-lg md:max-w-xl' }">
       <div
         class="p-5 bg-zinc-900 border border-zinc-800 rounded-2xl max-h-[90vh] overflow-y-auto"
         :style="articleSheetStyle"
@@ -590,7 +613,7 @@
     </UModal>
 
     <!-- Article Photo Lightbox Modal -->
-    <UModal v-model="isPhotoPreviewOpen" :ui="{ width: 'sm:max-w-md' }">
+    <UModal v-model="isPhotoPreviewOpen" :ui="{ width: 'sm:max-w-md md:max-w-xl' }">
       <div
         class="p-5 bg-zinc-900 border border-zinc-800 rounded-2xl space-y-4"
         :style="previewSheetStyle"

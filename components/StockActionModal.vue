@@ -1,5 +1,5 @@
 <template>
-  <UModal v-model="isOpen" :ui="{ width: 'sm:max-w-md' }">
+  <UModal v-model="isOpen" :ui="{ width: 'sm:max-w-md md:max-w-lg' }">
     <div
       class="p-5 bg-zinc-900 border border-zinc-800 rounded-2xl"
       :style="sheetStyle"

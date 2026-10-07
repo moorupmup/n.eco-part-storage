@@ -10,10 +10,10 @@ on:
         type: boolean
         default: true
       tag_name:
-        description: 'Имя версии/тега (например: v1.0.6)'
+        description: 'Имя версии/тега (например: v1.0.7)'
         required: false
         type: string
-        default: 'v1.0.6'
+        default: 'v1.0.7'
 
   # 2. Запуск, когда вы САМИ создаете релиз через интерфейс GitHub (Releases -> Draft a new release -> Publish)
   release:

@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col antialiased selection:bg-primary-500/30 selection:text-primary-300">
     <!-- Main content area -->
-    <main class="flex-1 pb-24 max-w-lg w-full mx-auto">
+    <main class="flex-1 pb-24 md:pb-28 max-w-7xl w-full mx-auto px-0 sm:px-2 md:px-4 transition-all">
       <slot />
     </main>
 

@@ -17,58 +17,66 @@
       </template>
     </AppHeader>
 
-    <div class="px-4 py-3 space-y-4">
-      <!-- Add New Category Card -->
-      <div class="p-3.5 rounded-2xl bg-zinc-900 border border-zinc-800 shadow-sm overflow-hidden">
-        <label class="block text-xs font-bold text-zinc-300 mb-2 flex items-center gap-1.5">
-          <UIcon name="i-lucide-plus-circle" class="w-4 h-4 text-emerald-400" />
-          Добавить новую категорию / узел
-        </label>
-        <form @submit.prevent="handleAddCategory" class="flex items-center gap-2 w-full">
-          <input
-            v-model="newCategoryName"
-            type="text"
-            placeholder="Например: Капучинаторы, Редукторы..."
-            maxlength="50"
-            class="flex-1 min-w-0 h-11 px-3.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner"
-          />
-          <button
-            type="submit"
-            :disabled="!newCategoryName.trim() || isSubmitting"
-            class="h-11 px-3.5 sm:px-4 flex items-center justify-center gap-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs shadow-md shadow-emerald-500/20 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none shrink-0"
-          >
-            <UIcon v-if="isSubmitting" name="i-lucide-loader-2" class="w-4 h-4 animate-spin" />
-            <UIcon v-else name="i-lucide-plus" class="w-4 h-4 stroke-[2.5]" />
-            <span>Добавить</span>
-          </button>
-        </form>
-      </div>
+    <div class="px-4 sm:px-6 md:px-8 py-3 sm:py-4 space-y-4">
+      <!-- Top Action Controls Row (Add & Search) -->
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-3.5 items-start">
+        <!-- Add New Category Card -->
+        <div class="p-3.5 rounded-2xl bg-zinc-900 border border-zinc-800 shadow-sm overflow-hidden" :class="partsStore.categoriesWithStats.length > 4 ? 'md:col-span-7 lg:col-span-8' : 'md:col-span-12'">
+          <label class="block text-xs font-bold text-zinc-300 mb-2 flex items-center gap-1.5">
+            <UIcon name="i-lucide-plus-circle" class="w-4 h-4 text-emerald-400" />
+            Добавить новую категорию / узел
+          </label>
+          <form @submit.prevent="handleAddCategory" class="flex items-center gap-2 w-full">
+            <input
+              v-model="newCategoryName"
+              type="text"
+              placeholder="Например: Капучинаторы, Редукторы..."
+              maxlength="50"
+              class="flex-1 min-w-0 h-11 px-3.5 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 shadow-inner"
+            />
+            <button
+              type="submit"
+              :disabled="!newCategoryName.trim() || isSubmitting"
+              class="h-11 px-3.5 sm:px-4 flex items-center justify-center gap-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs shadow-md shadow-emerald-500/20 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none shrink-0"
+            >
+              <UIcon v-if="isSubmitting" name="i-lucide-loader-2" class="w-4 h-4 animate-spin" />
+              <UIcon v-else name="i-lucide-plus" class="w-4 h-4 stroke-[2.5]" />
+              <span>Добавить</span>
+            </button>
+          </form>
+        </div>
 
-      <!-- Quick Search Bar (if categories exist) -->
-      <div v-if="partsStore.categoriesWithStats.length > 4" class="relative">
-        <UIcon name="i-lucide-search" class="absolute left-3.5 top-3 w-4 h-4 text-zinc-500 pointer-events-none" />
-        <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="Поиск по категориям..."
-          class="w-full h-10 pl-10 pr-10 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 transition-colors shadow-inner"
-        />
-        <button
-          v-if="searchQuery"
-          type="button"
-          class="absolute right-3 top-2.5 p-0.5 rounded-full text-zinc-500 hover:text-zinc-300"
-          @click="searchQuery = ''"
-        >
-          <UIcon name="i-lucide-x" class="w-3.5 h-3.5" />
-        </button>
+        <!-- Quick Search Bar (if categories exist) -->
+        <div v-if="partsStore.categoriesWithStats.length > 4" class="p-3.5 rounded-2xl bg-zinc-900 border border-zinc-800 shadow-sm md:col-span-5 lg:col-span-4 flex flex-col justify-between">
+          <label class="block text-xs font-bold text-zinc-300 mb-2 flex items-center gap-1.5">
+            <UIcon name="i-lucide-search" class="w-4 h-4 text-emerald-400" />
+            Поиск по категориям
+          </label>
+          <div class="relative flex items-center">
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Введите название..."
+              class="w-full h-11 pl-3.5 pr-9 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 transition-colors shadow-inner"
+            />
+            <button
+              v-if="searchQuery"
+              type="button"
+              class="absolute right-3 p-1 rounded-full text-zinc-500 hover:text-zinc-300"
+              @click="searchQuery = ''"
+            >
+              <UIcon name="i-lucide-x" class="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Categories List -->
-      <div v-if="filteredCategories.length > 0" class="space-y-2.5">
+      <div v-if="filteredCategories.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
         <div
           v-for="cat in filteredCategories"
           :key="cat.id"
-          class="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-3 shadow-sm hover:border-zinc-700/80 transition-colors"
+          class="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-3 shadow-sm hover:border-zinc-700/80 transition-colors h-full flex flex-col justify-between"
         >
           <!-- Top Row: Icon + Name + Action buttons -->
           <div class="flex items-start justify-between gap-3">
@@ -150,7 +158,7 @@
     </div>
 
     <!-- Rename Category Modal -->
-    <UModal v-model="isEditModalOpen">
+    <UModal v-model="isEditModalOpen" :ui="{ width: 'sm:max-w-md md:max-w-lg' }">
       <div
         class="p-5 bg-zinc-900 border border-zinc-800 rounded-2xl space-y-4"
         :style="editSheetStyle"
@@ -207,7 +215,7 @@
     </UModal>
 
     <!-- Delete Confirmation Modal -->
-    <UModal v-model="isDeleteModalOpen">
+    <UModal v-model="isDeleteModalOpen" :ui="{ width: 'sm:max-w-md md:max-w-lg' }">
       <div class="p-5 bg-zinc-900 border border-zinc-800 rounded-xl space-y-3">
         <div class="flex items-center gap-2 text-rose-400 font-bold text-base">
           <UIcon name="i-lucide-alert-triangle" class="w-5 h-5 text-rose-500" />

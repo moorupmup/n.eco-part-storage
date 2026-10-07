@@ -28,9 +28,9 @@
       </template>
     </AppHeader>
 
-    <div class="px-4 py-3 space-y-3">
+    <div class="px-4 sm:px-6 md:px-8 py-3 sm:py-4 space-y-3 sm:space-y-4">
       <!-- Quick Type Filter Buttons -->
-      <div class="grid grid-cols-3 gap-2">
+      <div class="grid grid-cols-3 gap-2 sm:max-w-md">
         <button
           type="button"
           class="py-2 text-xs font-semibold rounded-xl border transition-all text-center"
@@ -60,7 +60,7 @@
       </div>
 
       <!-- Active filters bar if set -->
-      <div v-if="isFilterActive" class="flex items-center justify-between p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-xs">
+      <div v-if="isFilterActive" class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs">
         <div class="flex items-center gap-1.5 text-zinc-300 flex-wrap">
           <span class="text-zinc-500">Фильтры:</span>
           <span v-if="selectedPartName" class="px-1.5 py-0.5 rounded bg-zinc-800 text-primary-300">
@@ -72,7 +72,7 @@
         </div>
         <button
           type="button"
-          class="text-xs text-rose-400 hover:text-rose-300 font-medium ml-2"
+          class="text-xs text-rose-400 hover:text-rose-300 font-medium ml-2 cursor-pointer"
           @click="clearAllFilters"
         >
           Сброс
@@ -80,11 +80,11 @@
       </div>
 
       <!-- Transactions List -->
-      <div v-if="transStore.filteredTransactions.length > 0" class="space-y-2.5">
+      <div v-if="transStore.filteredTransactions.length > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5">
         <div
           v-for="item in transStore.filteredTransactions"
           :key="item.id"
-          class="p-3.5 rounded-xl bg-zinc-900 border border-zinc-800 space-y-2 shadow-sm"
+          class="p-3.5 rounded-xl bg-zinc-900 border border-zinc-800 space-y-2 shadow-sm h-full flex flex-col justify-between"
         >
           <!-- Top row: Type indicator + Condition pill + Date -->
           <div class="flex items-center justify-between gap-2">
@@ -164,7 +164,7 @@
     </div>
 
     <!-- Filter Modal / Bottom Sheet -->
-    <UModal v-model="isFilterDrawerOpen">
+    <UModal v-model="isFilterDrawerOpen" :ui="{ width: 'sm:max-w-md md:max-w-lg' }">
       <div
         class="p-5 bg-zinc-900 border border-zinc-800 rounded-2xl space-y-4"
         :style="filterSheetStyle"

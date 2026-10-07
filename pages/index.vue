@@ -23,7 +23,7 @@
       </template>
     </AppHeader>
 
-    <div class="px-4 py-3 space-y-3">
+    <div class="px-4 sm:px-6 md:px-8 py-3 sm:py-4 space-y-3 sm:space-y-4">
       <!-- Quick Search Bar (Dark Theme) -->
       <div class="relative">
         <div class="relative flex items-center">
@@ -123,7 +123,7 @@
         <div
           v-if="partsStore.filteredParts.length > 0"
           :key="`${partsStore.selectedCategory}-${partsStore.stockFilter}`"
-          class="space-y-2.5 pt-1"
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-3.5 pt-1"
         >
           <PartCard
             v-for="(part, index) in partsStore.filteredParts"
@@ -176,7 +176,7 @@
           </div>
 
           <!-- Grouped Cards -->
-          <div class="space-y-3">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
             <div
               v-for="group in currentGroupedList"
               :key="group.part.id"
@@ -407,13 +407,13 @@
     </div>
 
     <!-- Floating Action Button (FAB) to Add Part -->
-    <div class="fixed right-4 bottom-20 z-30">
+    <div class="fixed right-4 md:right-8 bottom-20 md:bottom-24 z-30">
       <button
         type="button"
-        class="flex items-center justify-center w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-400 text-zinc-950 shadow-xl shadow-emerald-500/30 active:scale-90 transition-all focus:outline-none"
+        class="flex items-center justify-center w-14 h-14 md:w-16 md:h-16 rounded-full bg-emerald-500 hover:bg-emerald-400 text-zinc-950 shadow-xl shadow-emerald-500/30 active:scale-90 transition-all focus:outline-none cursor-pointer"
         @click="openAddModal"
       >
-        <UIcon name="i-lucide-plus" class="w-7 h-7 stroke-[2.5]" />
+        <UIcon name="i-lucide-plus" class="w-7 h-7 md:w-8 md:h-8 stroke-[2.5]" />
       </button>
     </div>
 
@@ -434,7 +434,7 @@
     />
 
     <!-- Delete Confirmation Modal -->
-    <UModal v-model="isDeleteConfirmOpen">
+    <UModal v-model="isDeleteConfirmOpen" :ui="{ width: 'sm:max-w-md md:max-w-lg' }">
       <div class="p-5 bg-zinc-900 border border-zinc-800 rounded-xl">
         <div class="flex items-center gap-3 mb-3 text-rose-400">
           <div class="p-2 rounded-full bg-rose-500/10 border border-rose-500/20">

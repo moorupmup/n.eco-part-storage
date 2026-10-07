@@ -1,11 +1,11 @@
 <template>
-  <nav class="fixed bottom-0 inset-x-0 z-40 bg-zinc-950/90 backdrop-blur-lg border-t border-zinc-800 pb-safe">
-    <div class="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
+  <nav class="fixed bottom-0 inset-x-0 z-40 bg-zinc-950/90 backdrop-blur-lg border-t border-zinc-800 pb-safe md:bg-transparent md:border-t-0 md:pointer-events-none md:pb-4 transition-all">
+    <div class="flex items-center justify-around h-16 max-w-lg md:max-w-xl mx-auto px-2 md:px-4 md:bg-zinc-900/95 md:backdrop-blur-xl md:border md:border-zinc-800/90 md:rounded-2xl md:shadow-2xl md:shadow-black/70 md:pointer-events-auto transition-all">
       <NuxtLink
         v-for="tab in tabs"
         :key="tab.path"
         :to="tab.path"
-        class="relative flex flex-col items-center justify-center flex-1 h-full py-1 text-xs font-medium transition-all duration-150 active:scale-95"
+        class="relative flex flex-col items-center justify-center flex-1 h-full py-1 text-xs font-medium transition-all duration-150 active:scale-95 md:hover:bg-zinc-800/40 md:rounded-xl"
         :class="route.path === tab.path ? 'text-emerald-400 font-semibold' : 'text-zinc-400 hover:text-zinc-200'"
         @click="haptics.lightTap()"
       >
