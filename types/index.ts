@@ -51,9 +51,13 @@ export interface Transaction {
 
 export interface InventoryStats {
   totalPositions: number
+  totalArticlesCount: number
   totalNewQuantity: number
   totalUsedQuantity: number
   lowStockPositions: number
+  totalValuation: number
+  newValuation: number
+  usedValuation: number
 }
 
 export interface Category {

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_name">N.ECO Склад</string>
+    <string name="widget_description">Остатки, дефицит и оценка склада N.ECO</string>
+</resources>

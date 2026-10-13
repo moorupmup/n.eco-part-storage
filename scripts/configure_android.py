@@ -46,11 +46,63 @@ def main():
         perm = '<uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />'
         if 'REQUEST_INSTALL_PACKAGES' not in code:
             code = code.replace('</manifest>', f'    {perm}\n</manifest>')
-            with open(manifest_path, 'w', encoding='utf-8') as f:
-                f.write(code)
             print(f"[CI] Added REQUEST_INSTALL_PACKAGES permission to {manifest_path}")
+
+        # 3. Configure Android Home Screen Widget receiver in AndroidManifest.xml
+        receiver_tag = """
+        <receiver android:name=".NecoPartsWidgetProvider" android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info" />
+        </receiver>
+"""
+        if 'NecoPartsWidgetProvider' not in code:
+            code = code.replace('</application>', f'{receiver_tag}\n    </application>')
+            print(f"[CI] Injected NecoPartsWidgetProvider receiver into {manifest_path}")
+
+        with open(manifest_path, 'w', encoding='utf-8') as f:
+            f.write(code)
     else:
         print(f"[CI] Warning: {manifest_path} not found")
+
+    # 4. Copy Java sources (Widget Provider & Plugin) to android/app/src/main/java/com/necopart/storage/
+    src_dir = 'android-src'
+    target_java_dir = 'android/app/src/main/java/com/necopart/storage'
+    if os.path.exists(src_dir):
+        os.makedirs(target_java_dir, exist_ok=True)
+        for fname in os.listdir(src_dir):
+            if fname.endswith('.java'):
+                src_file = os.path.join(src_dir, fname)
+                dest_file = os.path.join(target_java_dir, fname)
+                with open(src_file, 'r', encoding='utf-8') as sf:
+                    content = sf.read()
+                with open(dest_file, 'w', encoding='utf-8') as df:
+                    df.write(content)
+                print(f"[CI] Copied {fname} to {target_java_dir}")
+
+    # 5. Register NecoWidgetPlugin in MainActivity.java
+    main_activity_path = os.path.join(target_java_dir, 'MainActivity.java')
+    if os.path.exists(main_activity_path):
+        with open(main_activity_path, 'r', encoding='utf-8') as f:
+            m_code = f.read()
+
+        if 'registerPlugin(NecoWidgetPlugin.class)' not in m_code:
+            if 'onCreate' in m_code:
+                m_code = m_code.replace('super.onCreate(savedInstanceState);', 'registerPlugin(NecoWidgetPlugin.class);\n        super.onCreate(savedInstanceState);')
+            else:
+                on_create_block = """    @Override
+    public void onCreate(android.os.Bundle savedInstanceState) {
+        registerPlugin(NecoWidgetPlugin.class);
+        super.onCreate(savedInstanceState);
+    }
+}"""
+                m_code = re.sub(r'\}\s*$', on_create_block, m_code)
+            with open(main_activity_path, 'w', encoding='utf-8') as f:
+                f.write(m_code)
+            print(f"[CI] Registered NecoWidgetPlugin in {main_activity_path}")
 
 if __name__ == '__main__':
     main()

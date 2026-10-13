@@ -24,6 +24,13 @@
     </AppHeader>
 
     <div class="px-4 sm:px-6 md:px-8 py-3 sm:py-4 space-y-3 sm:space-y-4">
+      <!-- Live Dashboard Widgets -->
+      <DashboardWidgets
+        @filter-stock="selectStockFilter"
+        @open-add-part="openAddModal"
+        @open-stock-action="openQuickStockAction"
+      />
+
       <!-- Quick Search Bar (Dark Theme) -->
       <div class="relative">
         <div class="relative flex items-center">
@@ -819,6 +826,14 @@ function openReplenishModal(part: Part, article: DeficitArticleItem) {
   selectedArticle.value = fullArticle
   actionType.value = 'IN'
   isStockModalOpen.value = true
+}
+
+function openQuickStockAction() {
+  if (partsStore.parts.length > 0) {
+    openStockModal({ part: partsStore.parts[0], type: 'IN' })
+  } else {
+    openAddModal()
+  }
 }
 
 function openAddModal() {

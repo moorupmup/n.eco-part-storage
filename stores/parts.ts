@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { dbService } from '~/services/database'
 import type { Part, PartArticle, MovementType, PartCondition, InventoryStats, Category, CategoryWithStats } from '~/types'
 import { parseTags } from '~/utils/tags'
+import { useNativeWidget } from '~/composables/useNativeWidget'
 
 interface PartsState {
   parts: Part[]
@@ -139,24 +140,46 @@ export const usePartsStore = defineStore('parts', {
     },
 
     stats: (state): InventoryStats => {
+      let totalArticlesCount = 0
       let totalNewQuantity = 0
       let totalUsedQuantity = 0
       let lowStockPositions = 0
+      let newValuation = 0
+      let usedValuation = 0
 
       for (const p of state.parts) {
-        totalNewQuantity += p.stock_new
-        totalUsedQuantity += p.stock_used
-        const totalStock = p.stock_new + p.stock_used
+        if (!p) continue
+        totalNewQuantity += p.stock_new || 0
+        totalUsedQuantity += p.stock_used || 0
+        const totalStock = (p.stock_new || 0) + (p.stock_used || 0)
         if ((p.min_stock > 0 && totalStock <= p.min_stock) || totalStock === 0) {
           lowStockPositions++
+        }
+
+        if (Array.isArray(p.articles) && p.articles.length > 0) {
+          totalArticlesCount += p.articles.length
+          for (const a of p.articles) {
+            const pNew = (a.price_new !== undefined && a.price_new > 0) ? a.price_new : (p.price_new || 0)
+            const pUsed = (a.price_used !== undefined && a.price_used > 0) ? a.price_used : (p.price_used || 0)
+            newValuation += (Number(a.stock_new) || 0) * pNew
+            usedValuation += (Number(a.stock_used) || 0) * pUsed
+          }
+        } else {
+          totalArticlesCount += 1
+          newValuation += (Number(p.stock_new) || 0) * (p.price_new || 0)
+          usedValuation += (Number(p.stock_used) || 0) * (p.price_used || 0)
         }
       }
 
       return {
         totalPositions: state.parts.length,
+        totalArticlesCount,
         totalNewQuantity,
         totalUsedQuantity,
-        lowStockPositions
+        lowStockPositions,
+        totalValuation: Math.round(newValuation + usedValuation),
+        newValuation: Math.round(newValuation),
+        usedValuation: Math.round(usedValuation)
       }
     }
   },
@@ -172,6 +195,7 @@ export const usePartsStore = defineStore('parts', {
         ])
         this.parts = parts
         this.categoriesList = categories
+        useNativeWidget().syncWidget()
       } catch (err: any) {
         this.error = err.message || 'Ошибка загрузки запчастей'
       } finally {
@@ -245,11 +269,16 @@ export const usePartsStore = defineStore('parts', {
       }
     },
 
+    syncNativeWidget() {
+      useNativeWidget().syncWidget()
+    },
+
     async addPart(payload: Omit<Part, 'id' | 'created_at' | 'updated_at'>) {
       this.isLoading = true
       try {
         const newPart = await dbService.createPart(payload)
         this.parts.unshift(newPart)
+        this.syncNativeWidget()
         return newPart
       } catch (err: any) {
         this.error = err.message
@@ -267,6 +296,7 @@ export const usePartsStore = defineStore('parts', {
         if (index !== -1) {
           this.parts[index] = { ...this.parts[index], ...payload, updated_at: new Date().toISOString() }
         }
+        this.syncNativeWidget()
       } catch (err: any) {
         this.error = err.message
         throw err
@@ -280,6 +310,7 @@ export const usePartsStore = defineStore('parts', {
       try {
         await dbService.deletePart(id)
         this.parts = this.parts.filter(p => p.id !== id)
+        this.syncNativeWidget()
       } catch (err: any) {
         this.error = err.message
         throw err
@@ -296,6 +327,7 @@ export const usePartsStore = defineStore('parts', {
         if (index !== -1) {
           this.parts[index] = updatedPart
         }
+        this.syncNativeWidget()
         return updatedPart
       } catch (err: any) {
         this.error = err.message
@@ -313,6 +345,7 @@ export const usePartsStore = defineStore('parts', {
         if (index !== -1) {
           this.parts[index] = updatedPart
         }
+        this.syncNativeWidget()
         return updatedPart
       } catch (err: any) {
         this.error = err.message
@@ -330,6 +363,7 @@ export const usePartsStore = defineStore('parts', {
         if (index !== -1) {
           this.parts[index] = updatedPart
         }
+        this.syncNativeWidget()
         return updatedPart
       } catch (err: any) {
         this.error = err.message
@@ -388,6 +422,7 @@ export const usePartsStore = defineStore('parts', {
         if (index !== -1) {
           this.parts[index] = part
         }
+        this.syncNativeWidget()
         return { part, transaction }
       } catch (err: any) {
         this.error = err.message
