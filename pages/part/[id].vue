@@ -738,6 +738,7 @@ import type { Part, PartArticle, MovementType } from '~/types'
 import { usePartsStore } from '~/stores/parts'
 import { parseTags } from '~/utils/tags'
 import { compressImage } from '~/utils/image'
+import { exportPartsToExcel } from '~/utils/exportImport'
 
 const route = useRoute()
 const router = useRouter()
@@ -1150,8 +1151,24 @@ async function refreshData() {
   await partsStore.fetchParts()
 }
 
+async function exportCurrentPartExcel() {
+  if (!part.value) return
+  const safeName = (part.value.name || 'detal').replace(/[/\\?%*:|"<>]/g, '_').slice(0, 30)
+  const res = await exportPartsToExcel([part.value], `${safeName}_artikuly.xlsx`)
+  toast.add({
+    title: 'Деталь выгружена в Excel',
+    description: `Файл ${res.filename} сохранён в ${res.location}`,
+    color: 'emerald'
+  })
+}
+
 const partMenuItems = computed(() => [
   [
+    {
+      label: 'Экспорт детали в Excel',
+      icon: 'i-lucide-file-spreadsheet',
+      click: () => exportCurrentPartExcel()
+    },
     {
       label: 'Редактировать деталь',
       icon: 'i-lucide-pencil',

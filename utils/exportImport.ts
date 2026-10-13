@@ -2,7 +2,7 @@ import * as XLSX from 'xlsx'
 import { Capacitor } from '@capacitor/core'
 import { Filesystem, Directory } from '@capacitor/filesystem'
 import { FileOpener } from '@capacitor-community/file-opener'
-import type { Part, Transaction } from '~/types'
+import type { Part, PartArticle, Transaction } from '~/types'
 import { parseTags, serializeTags } from '~/utils/tags'
 
 export interface SaveFileResult {
@@ -127,24 +127,113 @@ export async function shareFile(
 }
 
 export async function exportPartsToExcel(parts: Part[], filename = 'neco_parts_backpack.xlsx'): Promise<SaveFileResult> {
-  const data = parts.map(p => {
+  // 1. Детальная таблица по всем артикулам (каждый артикул внутри детали - отдельная строка)
+  const articleRows: any[] = []
+  let rowNumber = 1
+
+  for (const p of parts) {
     const tagList = p.tags && p.tags.length > 0 ? p.tags : parseTags(p.notes)
+    const articles = Array.isArray(p.articles) && p.articles.length > 0
+      ? p.articles
+      : [{
+          id: `art-${p.id}-1`,
+          code: p.code || '',
+          name: '',
+          stock_new: p.stock_new,
+          stock_used: p.stock_used,
+          min_stock: p.min_stock,
+          price_new: p.price_new,
+          price_used: p.price_used
+        }]
+
+    for (const a of articles) {
+      const stockNew = Number(a.stock_new) || 0
+      const stockUsed = Number(a.stock_used) || 0
+      const totalStock = stockNew + stockUsed
+      const minStock = a.min_stock !== undefined ? a.min_stock : (p.min_stock || 0)
+      const priceNew = a.price_new !== undefined ? a.price_new : (p.price_new || 0)
+      const priceUsed = a.price_used !== undefined ? a.price_used : (p.price_used || 0)
+
+      articleRows.push({
+        '№': rowNumber++,
+        'ID детали': p.id,
+        'Деталь': p.name,
+        'Категория': p.category || 'Без категории',
+        'Артикул': a.code,
+        'Название артикула / Примечание': a.name || '',
+        'Новые (шт)': stockNew,
+        'Б/У (шт)': stockUsed,
+        'Всего (шт)': totalStock,
+        'Мин. остаток (шт)': minStock,
+        'Цена новая (руб)': priceNew,
+        'Цена б/у (руб)': priceUsed,
+        'Теги детали': tagList.join(', '),
+        'Обновлено': p.updated_at ? new Date(p.updated_at).toLocaleDateString('ru-RU') : ''
+      })
+    }
+  }
+
+  // 2. Сводная таблица по деталям (1 строка = 1 деталь со списком всех артикулов и суммарными остатками)
+  const summaryRows = parts.map((p, idx) => {
+    const tagList = p.tags && p.tags.length > 0 ? p.tags : parseTags(p.notes)
+    const allArticleCodes = (p.articles && p.articles.length > 0)
+      ? p.articles.map(a => a.code + (a.name ? ` (${a.name})` : '')).join('; ')
+      : (p.code || '')
+
     return {
-      'ID': p.id,
-      'Артикул / Код': p.code,
-      'Наименование': p.name,
-      'Категория': p.category,
-      'Новые (шт)': p.stock_new,
-      'Б/У (шт)': p.stock_used,
+      '№': idx + 1,
+      'ID детали': p.id,
+      'Деталь': p.name,
+      'Категория': p.category || 'Без категории',
+      'Все артикулы детали': allArticleCodes,
+      'Новые суммарно (шт)': p.stock_new,
+      'Б/У суммарно (шт)': p.stock_used,
       'Всего (шт)': p.stock_new + p.stock_used,
+      'Мин. остаток (шт)': p.min_stock,
       'Теги': tagList.join(', '),
-      'Обновлено': p.updated_at
+      'Обновлено': p.updated_at ? new Date(p.updated_at).toLocaleDateString('ru-RU') : ''
     }
   })
 
-  const worksheet = XLSX.utils.json_to_sheet(data)
   const workbook = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Запчасти')
+
+  // Лист 1: Все артикулы (основной детальный лист)
+  const worksheetArticles = XLSX.utils.json_to_sheet(articleRows)
+  worksheetArticles['!cols'] = [
+    { wch: 5 },  // №
+    { wch: 10 }, // ID детали
+    { wch: 38 }, // Деталь
+    { wch: 22 }, // Категория
+    { wch: 18 }, // Артикул
+    { wch: 34 }, // Название артикула / Примечание
+    { wch: 12 }, // Новые (шт)
+    { wch: 10 }, // Б/У (шт)
+    { wch: 12 }, // Всего (шт)
+    { wch: 16 }, // Мин. остаток (шт)
+    { wch: 16 }, // Цена новая (руб)
+    { wch: 15 }, // Цена б/у (руб)
+    { wch: 28 }, // Теги детали
+    { wch: 14 }  // Обновлено
+  ]
+  XLSX.utils.book_append_sheet(workbook, worksheetArticles, 'Артикулы')
+
+  // Лист 2: Сводно по деталям
+  const worksheetSummary = XLSX.utils.json_to_sheet(summaryRows)
+  worksheetSummary['!cols'] = [
+    { wch: 5 },  // №
+    { wch: 10 }, // ID детали
+    { wch: 38 }, // Деталь
+    { wch: 22 }, // Категория
+    { wch: 45 }, // Все артикулы детали
+    { wch: 20 }, // Новые суммарно (шт)
+    { wch: 18 }, // Б/У суммарно (шт)
+    { wch: 12 }, // Всего (шт)
+    { wch: 16 }, // Мин. остаток (шт)
+    { wch: 28 }, // Теги
+    { wch: 14 }  // Обновлено
+  ]
+  XLSX.utils.book_append_sheet(workbook, worksheetSummary, 'Сводно по запчастям')
+
   const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })
   const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
   return await saveOrDownloadFile(blob, filename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
@@ -160,7 +249,7 @@ export async function exportTransactionsToExcel(transactions: Transaction[], fil
   const data = transactions.map(t => ({
     'ID': t.id,
     'Дата': new Date(t.created_at).toLocaleString('ru-RU'),
-    'Артикул': t.part_code || '',
+    'Артикул': t.article_code || t.part_code || '',
     'Деталь': t.part_name || '',
     'Тип операции': typeMap[t.type] || t.type,
     'Состояние': t.condition === 'NEW' ? 'Новая' : 'Б/У',
@@ -171,6 +260,18 @@ export async function exportTransactionsToExcel(transactions: Transaction[], fil
   }))
 
   const worksheet = XLSX.utils.json_to_sheet(data)
+  worksheet['!cols'] = [
+    { wch: 8 },  // ID
+    { wch: 20 }, // Дата
+    { wch: 18 }, // Артикул
+    { wch: 35 }, // Деталь
+    { wch: 22 }, // Тип операции
+    { wch: 12 }, // Состояние
+    { wch: 12 }, // Количество
+    { wch: 10 }, // Было
+    { wch: 10 }, // Стало
+    { wch: 30 }  // Причина / Наряд
+  ]
   const workbook = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(workbook, worksheet, 'История')
   const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })
@@ -203,23 +304,100 @@ export async function parseExcelOrCSV(file: File): Promise<Partial<Part>[]> {
         const sheet = workbook.Sheets[firstSheetName]
         const rows: any[] = XLSX.utils.sheet_to_json(sheet)
 
-        const parts: Partial<Part>[] = rows.map(r => {
-          const rawTags = r['Теги'] || r['tags'] || r['Примечание'] || r['notes'] || ''
+        // Группируем строки по ID детали (если есть) или по комбинации (название детали + категория)
+        const partsMap = new Map<string, {
+          id?: number
+          name: string
+          category: string
+          location: string
+          tags: string[]
+          min_stock: number
+          articles: PartArticle[]
+        }>()
+
+        for (const r of rows) {
+          const partName = String(r['Деталь'] || r['Наименование детали'] || r['Наименование'] || r['Название'] || r['name'] || '').trim()
+          const articleCode = String(r['Артикул'] || r['Артикул / Код'] || r['Код'] || r['code'] || '').trim()
+          if (!partName && !articleCode) continue
+
+          const finalPartName = partName || articleCode
+          const category = String(r['Категория'] || r['category'] || '').trim()
+          const partIdRaw = r['ID детали'] || r['ID'] || r['id']
+          const partId = Number(partIdRaw) || undefined
+
+          const groupKey = partId
+            ? `id:${partId}`
+            : `name:${finalPartName.toLowerCase()}::${category.toLowerCase()}`
+
+          const articleName = String(
+            r['Название артикула / Примечание'] ||
+            r['Примечание к артикулу'] ||
+            r['Название артикула'] ||
+            r['articleName'] ||
+            ''
+          ).trim()
+
+          const stockNew = Number(r['Новые (шт)'] || r['Новые'] || r['stock_new'] || 0)
+          const stockUsed = Number(r['Б/У (шт)'] || r['Б/У'] || r['stock_used'] || 0)
+          const minStock = Number(r['Мин. остаток (шт)'] || r['Мин. остаток'] || r['min_stock'] || 0)
+          const priceNew = Number(r['Цена новая (руб)'] || r['Цена новая'] || r['price_new'] || 0)
+          const priceUsed = Number(r['Цена б/у (руб)'] || r['Цена б/у'] || r['price_used'] || 0)
+
+          const rawTags = r['Теги детали'] || r['Теги'] || r['tags'] || r['Примечание'] || r['notes'] || ''
           const tagList = parseTags(rawTags)
-          return {
-            code: String(r['Артикул / Код'] || r['Артикул'] || r['code'] || r['Код'] || '').trim(),
-            name: String(r['Наименование'] || r['Название'] || r['name'] || '').trim(),
-            category: String(r['Категория'] || r['category'] || '').trim(),
+
+          const currentPart = partsMap.get(groupKey) || {
+            id: partId,
+            name: finalPartName,
+            category,
             location: String(r['Ячейка / Место'] || r['Ячейка'] || r['location'] || '').trim(),
-            stock_new: Number(r['Новые (шт)'] || r['Новые'] || r['stock_new'] || 0),
-            stock_used: Number(r['Б/У (шт)'] || r['Б/У'] || r['stock_used'] || 0),
-            min_stock: Number(r['Мин. остаток (шт)'] || r['Мин. остаток'] || r['min_stock'] || 0),
-            price_new: Number(r['Цена новая (руб)'] || r['price_new'] || 0),
-            price_used: Number(r['Цена б/у (руб)'] || r['price_used'] || 0),
-            notes: serializeTags(tagList),
-            tags: tagList
+            tags: tagList,
+            min_stock: minStock,
+            articles: []
           }
-        }).filter(p => p.code && p.name)
+
+          const finalCode = articleCode || finalPartName
+          currentPart.articles.push({
+            id: `art-${Date.now()}-${currentPart.articles.length + 1}`,
+            code: finalCode,
+            name: articleName,
+            stock_new: stockNew,
+            stock_used: stockUsed,
+            min_stock: minStock,
+            price_new: priceNew,
+            price_used: priceUsed
+          })
+
+          if (tagList.length > 0) {
+            const combined = new Set([...currentPart.tags, ...tagList])
+            currentPart.tags = Array.from(combined)
+          }
+
+          partsMap.set(groupKey, currentPart)
+        }
+
+        const parts: Partial<Part>[] = Array.from(partsMap.values()).map(p => {
+          const totalNew = p.articles.reduce((s, a) => s + (Number(a.stock_new) || 0), 0)
+          const totalUsed = p.articles.reduce((s, a) => s + (Number(a.stock_used) || 0), 0)
+          const primaryCode = p.articles[0]?.code || ''
+          const minStockTotal = p.articles.reduce((s, a) => s + (Number(a.min_stock) || 0), 0) || p.min_stock
+
+          return {
+            id: p.id,
+            code: primaryCode,
+            name: p.name,
+            category: p.category,
+            location: p.location,
+            articles: p.articles,
+            stock_new: totalNew,
+            stock_used: totalUsed,
+            min_stock: minStockTotal,
+            price_new: p.articles[0]?.price_new || 0,
+            price_used: p.articles[0]?.price_used || 0,
+            notes: serializeTags(p.tags),
+            tags: p.tags
+          }
+        })
 
         resolve(parts)
       } catch (err) {
@@ -258,6 +436,18 @@ export async function exportLowStockToExcel(items: DeficitArticleExportRow[], fi
   }))
 
   const worksheet = XLSX.utils.json_to_sheet(data)
+  worksheet['!cols'] = [
+    { wch: 5 },  // №
+    { wch: 35 }, // Деталь
+    { wch: 22 }, // Категория
+    { wch: 18 }, // Артикул
+    { wch: 30 }, // Примечание
+    { wch: 12 }, // Новые (шт)
+    { wch: 10 }, // Б/У (шт)
+    { wch: 12 }, // Всего (шт)
+    { wch: 18 }, // Мин. с собой (шт)
+    { wch: 24 }  // Требуется пополнить (шт)
+  ]
   const workbook = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Мало')
   const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })
@@ -278,6 +468,16 @@ export async function exportOutOfStockToExcel(items: { partName: string; categor
   }))
 
   const worksheet = XLSX.utils.json_to_sheet(data)
+  worksheet['!cols'] = [
+    { wch: 5 },  // №
+    { wch: 35 }, // Деталь
+    { wch: 22 }, // Категория
+    { wch: 18 }, // Артикул
+    { wch: 30 }, // Примечание
+    { wch: 16 }, // Текущий остаток
+    { wch: 18 }, // Мин. с собой (шт)
+    { wch: 16 }  // Требуется (шт)
+  ]
   const workbook = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Закончились')
   const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })

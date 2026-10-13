@@ -505,7 +505,7 @@ class DatabaseService {
     return p ? enrichPart(p) : null
   }
 
-  async createPart(data: Omit<Part, 'id' | 'created_at' | 'updated_at'>): Promise<Part> {
+  async createPart(data: Omit<Part, 'id' | 'created_at' | 'updated_at' | 'articles'> & { articles?: PartArticle[] }): Promise<Part> {
     await this.init()
     const now = new Date().toISOString()
     const notesValue = data.tags !== undefined ? serializeTags(data.tags) : (data.notes || '')
@@ -1047,12 +1047,14 @@ class DatabaseService {
           name: p.name,
           category: p.category || '',
           location: p.location || '',
+          articles: p.articles || [],
           stock_new: Number(p.stock_new) || 0,
           stock_used: Number(p.stock_used) || 0,
           min_stock: Number(p.min_stock) || 0,
           price_new: Number(p.price_new) || 0,
           price_used: Number(p.price_used) || 0,
-          notes: p.notes || ''
+          notes: p.notes || '',
+          tags: p.tags
         })
         importedParts++
       }
