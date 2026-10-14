@@ -25,35 +25,24 @@ public class NecoPartsWidgetProvider extends AppWidgetProvider {
         int totalUsed = prefs.getInt("totalUsed", 0);
         int totalStock = prefs.getInt("totalStock", totalNew + totalUsed);
         int lowStockCount = prefs.getInt("lowStockCount", 0);
-        int totalValue = prefs.getInt("totalValue", 0);
 
-        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_neco_parts);
+        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_neco_compact);
 
-        // Set metrics
-        views.setTextViewText(R.id.widget_total_stock, totalStock + " шт");
-        views.setTextViewText(R.id.widget_total_positions, totalPositions + " поз.");
-        views.setTextViewText(R.id.widget_conditions, totalNew + " нов / " + totalUsed + " б/у");
+        views.setTextViewText(R.id.widget_compact_total, totalStock + " шт");
+        views.setTextViewText(R.id.widget_compact_sub, "(" + totalNew + " нов / " + totalUsed + " б/у)");
 
-        if (totalValue > 0) {
-            views.setTextViewText(R.id.widget_valuation, String.format("%,d ₽", totalValue));
-        } else {
-            views.setTextViewText(R.id.widget_valuation, "— ₽");
-        }
-
-        // Deficit indicators
         if (lowStockCount > 0) {
-            views.setTextViewText(R.id.widget_deficit, String.valueOf(lowStockCount));
-            views.setTextColor(R.id.widget_deficit, Color.parseColor("#f59e0b"));
-            views.setTextViewText(R.id.widget_status_text, "ТРЕБУЮТ ЗАКАЗА");
-            views.setTextColor(R.id.widget_status_text, Color.parseColor("#f59e0b"));
+            views.setTextViewText(R.id.widget_compact_deficit, String.valueOf(lowStockCount));
+            views.setTextColor(R.id.widget_compact_deficit, Color.parseColor("#f59e0b"));
+            views.setTextViewText(R.id.widget_compact_deficit_label, "дефицит");
+            views.setTextColor(R.id.widget_compact_deficit_label, Color.parseColor("#f59e0b"));
         } else {
-            views.setTextViewText(R.id.widget_deficit, "0");
-            views.setTextColor(R.id.widget_deficit, Color.parseColor("#10b981"));
-            views.setTextViewText(R.id.widget_status_text, "ДЕФИЦИТА НЕТ");
-            views.setTextColor(R.id.widget_status_text, Color.parseColor("#10b981"));
+            views.setTextViewText(R.id.widget_compact_deficit, "✓");
+            views.setTextColor(R.id.widget_compact_deficit, Color.parseColor("#10b981"));
+            views.setTextViewText(R.id.widget_compact_deficit_label, "норма");
+            views.setTextColor(R.id.widget_compact_deficit_label, Color.parseColor("#10b981"));
         }
 
-        // Tap on widget opens MainActivity
         Intent intent = new Intent(context, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(
@@ -62,7 +51,7 @@ public class NecoPartsWidgetProvider extends AppWidgetProvider {
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
-        views.setOnClickPendingIntent(R.id.widget_root, pendingIntent);
+        views.setOnClickPendingIntent(R.id.widget_compact_root, pendingIntent);
 
         appWidgetManager.updateAppWidget(appWidgetId, views);
     }

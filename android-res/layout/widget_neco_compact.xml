@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_compact_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_bg"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp">
+
+    <!-- Logo & Title -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:layout_marginEnd="10dp">
+
+        <ImageView
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:src="@mipmap/ic_launcher"
+            android:layout_marginEnd="6dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="N.ECO"
+            android:textColor="#ffffff"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Stock Metrics Pill -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:background="@drawable/widget_stat_box"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:layout_marginEnd="6dp">
+
+        <TextView
+            android:id="@+id/widget_compact_total"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0 шт"
+            android:textColor="#38bdf8"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:layout_marginEnd="4dp" />
+
+        <TextView
+            android:id="@+id/widget_compact_sub"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="(0 нов / 0 б/у)"
+            android:textColor="#a1a1aa"
+            android:textSize="10sp" />
+    </LinearLayout>
+
+    <!-- Deficit Status Badge -->
+    <LinearLayout
+        android:id="@+id/widget_compact_deficit_box"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/widget_stat_box"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp">
+
+        <TextView
+            android:id="@+id/widget_compact_deficit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:textColor="#10b981"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:layout_marginEnd="3dp" />
+
+        <TextView
+            android:id="@+id/widget_compact_deficit_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="дефицит"
+            android:textColor="#10b981"
+            android:textSize="9sp" />
+    </LinearLayout>
+</LinearLayout>

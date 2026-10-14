@@ -17,16 +17,29 @@
 </template>
 
 <script setup lang="ts">
+import { watch, onMounted } from 'vue'
 import { Capacitor } from '@capacitor/core'
 import { usePartsStore } from '~/stores/parts'
 import { useAppUpdater } from '~/composables/useAppUpdater'
+import { useNativeWidget } from '~/composables/useNativeWidget'
 
 const partsStore = usePartsStore()
 const { checkForUpdates } = useAppUpdater()
+const { syncWidget } = useNativeWidget()
+
+// Keep native home screen widgets in sync with live inventory
+watch(
+  () => partsStore.stats,
+  () => {
+    syncWidget()
+  },
+  { deep: true }
+)
 
 // Initialize store and database on app start
 onMounted(async () => {
   await partsStore.fetchParts()
+  syncWidget()
 
   // On phone (native Capacitor or mobile browser): check for updates automatically on start
   const isMobile = Capacitor.isNativePlatform() || (typeof navigator !== 'undefined' && /Android|iPhone|iPad/i.test(navigator.userAgent))

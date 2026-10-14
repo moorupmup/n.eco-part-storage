@@ -28,7 +28,8 @@
       <DashboardWidgets
         @filter-stock="selectStockFilter"
         @open-add-part="openAddModal"
-        @open-stock-action="openQuickStockAction"
+        @open-quick-stock="openUniversalQuickStock('OUT')"
+        @open-stock-action="openUniversalQuickStock('OUT')"
       />
 
       <!-- Quick Search Bar (Dark Theme) -->
@@ -36,6 +37,7 @@
         <div class="relative flex items-center">
           <UIcon name="i-lucide-search" class="absolute left-3.5 w-4 h-4 text-zinc-400 pointer-events-none" />
           <input
+            ref="searchInputRef"
             v-model="partsStore.searchQuery"
             type="search"
             inputmode="search"
@@ -433,6 +435,12 @@
       @success="handleMovementSuccess"
     />
 
+    <!-- Universal Quick Stock Modal (Search any article -> In / Out) -->
+    <QuickStockModal
+      v-model="isQuickStockModalOpen"
+      :default-type="quickStockDefaultType"
+    />
+
     <!-- Add / Edit Part Modal -->
     <PartModal
       v-model="isPartModalOpen"
@@ -481,14 +489,20 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted, nextTick } from 'vue'
 import type { Part, PartArticle, MovementType } from '~/types'
 import { usePartsStore } from '~/stores/parts'
+import { useHaptics } from '~/composables/useHaptics'
+import { useClipboardCopy } from '~/composables/useClipboardCopy'
+import { useNativeWidget } from '~/composables/useNativeWidget'
 import { exportLowStockToExcel, exportOutOfStockToExcel, type DeficitArticleExportRow } from '~/utils/exportImport'
 
 const partsStore = usePartsStore()
 const toast = useToast()
 const haptics = useHaptics()
 const { copyToClipboard } = useClipboardCopy()
+const { onWidgetAction } = useNativeWidget()
+const searchInputRef = ref<HTMLInputElement | null>(null)
 
 function selectStockFilter(filterId: any) {
   haptics.lightTap()
@@ -799,6 +813,16 @@ const selectedPart = ref<Part | null>(null)
 const selectedArticle = ref<PartArticle | null>(null)
 const actionType = ref<MovementType>('IN')
 
+// Universal Quick Stock Modal (Search across all articles -> write off or replenish)
+const isQuickStockModalOpen = ref(false)
+const quickStockDefaultType = ref<MovementType>('OUT')
+
+function openUniversalQuickStock(type: MovementType = 'OUT') {
+  haptics.selectionVibe()
+  quickStockDefaultType.value = type
+  isQuickStockModalOpen.value = true
+}
+
 const isPartModalOpen = ref(false)
 const partToEdit = ref<Part | null>(null)
 
@@ -829,12 +853,25 @@ function openReplenishModal(part: Part, article: DeficitArticleItem) {
 }
 
 function openQuickStockAction() {
-  if (partsStore.parts.length > 0) {
-    openStockModal({ part: partsStore.parts[0], type: 'IN' })
-  } else {
-    openAddModal()
-  }
+  openUniversalQuickStock('OUT')
 }
+
+// React to actions triggered from Android home screen widgets or deep links
+onMounted(() => {
+  onWidgetAction((action) => {
+    if (action === 'writeoff') {
+      openUniversalQuickStock('OUT')
+    } else if (action === 'stock_in') {
+      openUniversalQuickStock('IN')
+    } else if (action === 'deficit') {
+      selectStockFilter('low')
+    } else if (action === 'search') {
+      nextTick(() => {
+        searchInputRef.value?.focus()
+      })
+    }
+  })
+})
 
 function openAddModal() {
   partToEdit.value = null
