@@ -338,6 +338,7 @@ const isOpen = computed({
 })
 
 const { sheetStyle, onPointerDown } = useSwipeDismiss({
+  isOpen,
   onDismiss: () => {
     isOpen.value = false
   }
@@ -355,7 +356,8 @@ const searchInputRef = ref<HTMLInputElement | null>(null)
 // Flatten all articles across all parts
 const allItems = computed<SearchableArticleItem[]>(() => {
   const result: SearchableArticleItem[] = []
-  for (const p of partsStore.parts) {
+  const list = partsStore.parts || []
+  for (const p of list) {
     if (!p) continue
     const articles = Array.isArray(p.articles) && p.articles.length > 0
       ? p.articles
@@ -371,13 +373,14 @@ const allItems = computed<SearchableArticleItem[]>(() => {
         }]
 
     for (const a of articles) {
+      if (!a) continue
       result.push({
         partId: p.id,
-        partName: p.name,
-        category: p.category || 'Без категории',
-        articleId: a.id,
-        articleCode: a.code,
-        articleName: a.name || '',
+        partName: String(p.name || 'Без названия'),
+        category: String(p.category || 'Без категории'),
+        articleId: String(a.id || `art-${p.id}`),
+        articleCode: String(a.code || p.code || 'БЕЗ АРТИКУЛА'),
+        articleName: String(a.name || ''),
         stockNew: Number(a.stock_new) || 0,
         stockUsed: Number(a.stock_used) || 0,
         minStock: Number(a.min_stock) || 0,
@@ -391,14 +394,15 @@ const allItems = computed<SearchableArticleItem[]>(() => {
 
 // Search filtered list
 const filteredItems = computed(() => {
-  const q = searchQuery.value.toLowerCase().trim()
+  const q = (searchQuery.value || '').toLowerCase().trim()
   if (!q) return allItems.value.slice(0, 30)
-  return allItems.value.filter(item =>
-    item.articleCode.toLowerCase().includes(q) ||
-    item.partName.toLowerCase().includes(q) ||
-    item.articleName.toLowerCase().includes(q) ||
-    item.category.toLowerCase().includes(q)
-  ).slice(0, 50)
+  return allItems.value.filter(item => {
+    const code = (item.articleCode || '').toLowerCase()
+    const pName = (item.partName || '').toLowerCase()
+    const aName = (item.articleName || '').toLowerCase()
+    const cat = (item.category || '').toLowerCase()
+    return code.includes(q) || pName.includes(q) || aName.includes(q) || cat.includes(q)
+  }).slice(0, 50)
 })
 
 const currentAvailableStock = computed(() => {
@@ -422,12 +426,12 @@ watch(() => props.modelValue, (open) => {
 })
 
 function setOperationType(type: MovementType) {
-  haptics.selectionVibe()
+  try { haptics.lightTap() } catch {}
   operationType.value = type
 }
 
 function selectItem(item: SearchableArticleItem) {
-  haptics.lightTap()
+  try { haptics.lightTap() } catch {}
   selectedItem.value = item
   quantity.value = 1
   if (operationType.value === 'OUT' && item.stockNew === 0 && item.stockUsed > 0) {
@@ -445,24 +449,24 @@ function clearSelection() {
 }
 
 function setCondition(cond: PartCondition) {
-  haptics.selectionVibe()
+  try { haptics.lightTap() } catch {}
   condition.value = cond
 }
 
 function increaseQty() {
-  haptics.selectionVibe()
+  try { haptics.lightTap() } catch {}
   quantity.value++
 }
 
 function decreaseQty() {
   if (quantity.value > 1) {
-    haptics.selectionVibe()
+    try { haptics.lightTap() } catch {}
     quantity.value--
   }
 }
 
 function setQuantity(amt: number) {
-  haptics.selectionVibe()
+  try { haptics.lightTap() } catch {}
   quantity.value = amt
 }
 

@@ -66,9 +66,22 @@ export function useHaptics() {
     }
   }
 
+  /**
+   * Selection / picker vibration
+   */
+  async function selectionVibe() {
+    try {
+      await Haptics.selectionStart()
+      await Haptics.selectionChanged()
+    } catch {
+      await lightTap()
+    }
+  }
+
   return {
     lightTap,
     mediumTap,
+    selectionVibe,
     successVibe,
     warningVibe,
     errorVibe

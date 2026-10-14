@@ -818,7 +818,9 @@ const isQuickStockModalOpen = ref(false)
 const quickStockDefaultType = ref<MovementType>('OUT')
 
 function openUniversalQuickStock(type: MovementType = 'OUT') {
-  haptics.selectionVibe()
+  try {
+    haptics.lightTap()
+  } catch {}
   quickStockDefaultType.value = type
   isQuickStockModalOpen.value = true
 }
