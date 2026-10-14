@@ -127,15 +127,24 @@ export const usePartsStore = defineStore('parts', {
     lowStockParts: (state): (Part & { deficit: number; totalStock: number })[] => {
       return state.parts
         .map(p => {
-          const totalStock = p.stock_new + p.stock_used
-          const deficit = Math.max(0, p.min_stock - totalStock)
+          let minStock = 0
+          const totalStock = (Number(p.stock_new) || 0) + (Number(p.stock_used) || 0)
+          if (Array.isArray(p.articles) && p.articles.length > 0) {
+            minStock = p.articles.reduce((sum, a) => {
+              const aMin = Number(a.min_stock) || 0
+              return aMin > 0 ? sum + aMin : sum
+            }, 0)
+          } else {
+            minStock = Number(p.min_stock) || 0
+          }
+          const deficit = (minStock > 0 && totalStock < minStock) ? (minStock - totalStock) : 0
           return {
             ...p,
             totalStock,
-            deficit: (totalStock <= p.min_stock && p.min_stock > 0) || totalStock === 0 ? Math.max(1, p.min_stock - totalStock) : 0
+            deficit
           }
         })
-        .filter(p => (p.totalStock <= p.min_stock && p.min_stock > 0) || p.totalStock === 0)
+        .filter(p => p.deficit > 0)
         .sort((a, b) => b.deficit - a.deficit)
     },
 
@@ -151,9 +160,23 @@ export const usePartsStore = defineStore('parts', {
         if (!p) continue
         totalNewQuantity += p.stock_new || 0
         totalUsedQuantity += p.stock_used || 0
-        const totalStock = (p.stock_new || 0) + (p.stock_used || 0)
-        if ((p.min_stock > 0 && totalStock <= p.min_stock) || totalStock === 0) {
-          lowStockPositions++
+
+        // Deficit: ONLY count if min_stock is specified AND > 0, AND totalStock < min_stock!
+        // Parts with empty or 0 min_stock are NOT in deficit (do not need to be in backpack).
+        if (Array.isArray(p.articles) && p.articles.length > 0) {
+          for (const a of p.articles) {
+            const aMin = Number(a.min_stock) || 0
+            const aTotal = (Number(a.stock_new) || 0) + (Number(a.stock_used) || 0)
+            if (aMin > 0 && aTotal < aMin) {
+              lowStockPositions++
+            }
+          }
+        } else {
+          const pMin = Number(p.min_stock) || 0
+          const pTotal = (Number(p.stock_new) || 0) + (Number(p.stock_used) || 0)
+          if (pMin > 0 && pTotal < pMin) {
+            lowStockPositions++
+          }
         }
 
         if (Array.isArray(p.articles) && p.articles.length > 0) {
