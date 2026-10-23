@@ -13,20 +13,29 @@
 
     <!-- Automatic App Update Modal -->
     <AppUpdateModal />
+
+    <!-- Authentication & License Modals -->
+    <AuthModal />
+    <PaywallModal />
   </div>
 </template>
 
 <script setup lang="ts">
 import { Capacitor } from '@capacitor/core'
 import { usePartsStore } from '~/stores/parts'
+import { useAuthStore } from '~/stores/auth'
 import { useAppUpdater } from '~/composables/useAppUpdater'
 
 const partsStore = usePartsStore()
+const authStore = useAuthStore()
 const { checkForUpdates } = useAppUpdater()
 
 // Initialize store and database on app start
 onMounted(async () => {
-  await partsStore.fetchParts()
+  await Promise.all([
+    partsStore.fetchParts(),
+    authStore.init()
+  ])
 
   // On phone (native Capacitor or mobile browser): check for updates automatically on start
   const isMobile = Capacitor.isNativePlatform() || (typeof navigator !== 'undefined' && /Android|iPhone|iPad/i.test(navigator.userAgent))

@@ -46,9 +46,14 @@ def main():
         perm = '<uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />'
         if 'REQUEST_INSTALL_PACKAGES' not in code:
             code = code.replace('</manifest>', f'    {perm}\n</manifest>')
-            with open(manifest_path, 'w', encoding='utf-8') as f:
-                f.write(code)
             print(f"[CI] Added REQUEST_INSTALL_PACKAGES permission to {manifest_path}")
+
+        if 'android:usesCleartextTraffic="true"' not in code:
+            code = code.replace('<application', '<application android:usesCleartextTraffic="true"')
+            print(f"[CI] Enabled android:usesCleartextTraffic='true' in {manifest_path}")
+
+        with open(manifest_path, 'w', encoding='utf-8') as f:
+            f.write(code)
     else:
         print(f"[CI] Warning: {manifest_path} not found")
 
