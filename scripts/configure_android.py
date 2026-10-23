@@ -88,8 +88,11 @@ def main():
             print(f"[CI] Added REQUEST_INSTALL_PACKAGES permission to {manifest_path}")
 
         if 'android:usesCleartextTraffic="true"' not in code:
-            code = code.replace('<application', '<application android:usesCleartextTraffic="true"')
-            print(f"[CI] Enabled android:usesCleartextTraffic='true' in {manifest_path}")
+            code = code.replace('<application', '<application android:usesCleartextTraffic="true" android:networkSecurityConfig="@xml/network_security_config"')
+            print(f"[CI] Enabled android:usesCleartextTraffic='true' and networkSecurityConfig in {manifest_path}")
+        elif 'android:networkSecurityConfig' not in code:
+            code = code.replace('<application', '<application android:networkSecurityConfig="@xml/network_security_config"')
+            print(f"[CI] Enabled networkSecurityConfig in {manifest_path}")
 
         # Ensure minSdkVersion in manifest does not conflict with libraries requiring 23
         if '<uses-sdk' not in code:
@@ -170,6 +173,12 @@ def main():
     public void onCreate(android.os.Bundle savedInstanceState) {
         registerPlugin(NecoWidgetPlugin.class);
         super.onCreate(savedInstanceState);
+        try {
+            android.webkit.WebView wv = getBridge().getWebView();
+            if (wv != null) {
+                wv.getSettings().setMixedContentMode(android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+            }
+        } catch (Exception ignored) {}
         handleWidgetIntent(getIntent());
     }
 

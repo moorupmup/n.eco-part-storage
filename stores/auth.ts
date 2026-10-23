@@ -28,7 +28,7 @@ function parsePocketBaseError(err: any, defaultMsg: string): string {
   if (!err) return defaultMsg
   // Network blocked or server unreachable (Android cleartext or offline)
   if (err.status === 0 || err.isAbort) {
-    return 'Нет связи с сервером (HTTP заблокирован Android или нет интернета). Установите обновленный APK v1.1.3.'
+    return 'Нет связи с сервером (проверьте интернет или отключите VPN). Не удается связаться с PocketBase.'
   }
   // Field validation errors
   if (err.data?.data && typeof err.data.data === 'object') {
