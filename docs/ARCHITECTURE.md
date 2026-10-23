@@ -105,7 +105,7 @@
 * **URL:** `http://195.209.213.115:8090` (Админка: `http://195.209.213.115:8090/_/`).
 * **Структура коллекций:**
   * `users` (Auth-коллекция):
-    * `id`, `email`, `name`, `company_name`
+    * `id`, `email`, `name`
     * `valid_until` (Date) — дата окончания лицензии/триала
     * `license_status` (Select: `trial`, `active`, `expired`)
     * `device_id` (Text)

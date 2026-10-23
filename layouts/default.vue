@@ -16,6 +16,7 @@
 
     <!-- Authentication & License Modals -->
     <AuthModal />
+    <AccountModal />
     <PaywallModal />
   </div>
 </template>

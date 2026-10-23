@@ -2,24 +2,53 @@
   <div class="space-y-2">
     <!-- Compact Informative Strip + Quick Actions Bar -->
     <div class="p-3 sm:p-3.5 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm space-y-2.5">
-      <!-- 1. Compact Informative Metrics Row (Запас, Дефицит, Оценка равной ширины на всю ширину) -->
-      <div class="grid grid-cols-3 gap-2 w-full text-xs">
+      <!-- 1. Header: Быстрая сводка -->
+      <div class="flex items-center justify-between px-0.5">
+        <h3 class="text-xs font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
+          <UIcon name="i-lucide-activity" class="w-3.5 h-3.5 text-emerald-400" />
+          <span>Быстрая сводка</span>
+        </h3>
+        <span class="text-[11px] font-mono text-zinc-500">
+          {{ stats.totalPositions }} поз.
+        </span>
+      </div>
+
+      <!-- 2. Full-Width Valuation Row (без фона и бордюра, слева иконка + заголовок, справа стоимость) -->
+      <div class="flex items-center justify-between px-1 py-0.5">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+            <UIcon name="i-lucide-wallet" class="w-3.5 h-3.5" />
+          </div>
+          <span class="text-xs sm:text-sm font-semibold text-zinc-300">Оценка склада</span>
+        </div>
+
+        <div class="flex items-baseline gap-1 font-mono">
+          <span class="font-extrabold text-base sm:text-lg text-zinc-100 tracking-tight">
+            {{ formatMoney(stats.totalValuation) }}
+          </span>
+          <span class="text-xs sm:text-sm font-bold text-emerald-400">₽</span>
+        </div>
+      </div>
+
+      <!-- 3. Two Metrics: Stock Quantity & Deficit (по 50% ширины) -->
+      <div class="grid grid-cols-2 gap-2 w-full text-xs">
         <!-- Stock count pill -->
         <button
           type="button"
-          class="h-12 flex items-center gap-2 px-2.5 rounded-xl bg-zinc-950 border border-zinc-800 hover:border-zinc-700 active:scale-95 transition-all text-left w-full min-w-0 cursor-pointer shadow-sm"
+          class="h-14 flex items-center gap-2.5 px-3 rounded-xl bg-zinc-950 border border-zinc-800 hover:border-zinc-700 active:scale-95 transition-all text-left w-full min-w-0 cursor-pointer shadow-sm"
           title="Нажмите, чтобы сбросить фильтры"
           @click="$emit('filter-stock', 'all')"
         >
-          <div class="w-6 h-6 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
-            <UIcon name="i-lucide-boxes" class="w-3.5 h-3.5" />
+          <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+            <UIcon name="i-lucide-boxes" class="w-4 h-4" />
           </div>
           <div class="min-w-0 flex-1 truncate">
             <div class="flex items-baseline gap-1">
               <span class="font-mono font-bold text-zinc-100 text-sm leading-none">{{ totalUnits }}</span>
               <span class="text-[10px] text-zinc-500">шт</span>
+              <span class="text-[10px] text-zinc-400 font-normal ml-0.5">запас</span>
             </div>
-            <div class="text-[10px] text-zinc-400 flex items-center gap-1 font-mono truncate">
+            <div class="text-[10px] text-zinc-400 flex items-center gap-1.5 font-mono mt-0.5 truncate">
               <span class="text-blue-400">нов: {{ stats.totalNewQuantity }}</span>
               <span class="text-zinc-600">·</span>
               <span class="text-amber-400">б/у: {{ stats.totalUsedQuantity }}</span>
@@ -30,52 +59,35 @@
         <!-- Deficit status pill -->
         <button
           type="button"
-          class="h-12 flex items-center gap-2 px-2.5 rounded-xl border active:scale-95 transition-all text-left w-full min-w-0 cursor-pointer shadow-sm"
+          class="h-14 flex items-center gap-2.5 px-3 rounded-xl border active:scale-95 transition-all text-left w-full min-w-0 cursor-pointer shadow-sm"
           :class="stats.lowStockPositions > 0
-            ? 'bg-amber-950/25 border-amber-800/60 hover:border-amber-600/80 text-amber-300'
+            ? 'bg-amber-950/20 border-amber-800/60 hover:border-amber-600/80 text-amber-300'
             : 'bg-zinc-950 border-zinc-800 hover:border-zinc-700 text-zinc-400'"
           title="Нажмите, чтобы открыть позиции в дефиците"
           @click="$emit('filter-stock', 'low')"
         >
           <div
-            class="w-6 h-6 rounded-lg border flex items-center justify-center shrink-0"
+            class="w-8 h-8 rounded-lg border flex items-center justify-center shrink-0"
             :class="stats.lowStockPositions > 0
               ? 'bg-amber-500/10 border-amber-500/30 text-amber-400 animate-pulse'
               : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'"
           >
-            <UIcon :name="stats.lowStockPositions > 0 ? 'i-lucide-alert-triangle' : 'i-lucide-check-circle-2'" class="w-3.5 h-3.5" />
+            <UIcon :name="stats.lowStockPositions > 0 ? 'i-lucide-alert-triangle' : 'i-lucide-check-circle-2'" class="w-4 h-4" />
           </div>
           <div class="min-w-0 flex-1 truncate">
             <div class="flex items-baseline gap-1">
               <span class="font-mono font-bold text-sm leading-none" :class="stats.lowStockPositions > 0 ? 'text-amber-400' : 'text-emerald-400'">
-                {{ stats.lowStockPositions > 0 ? stats.lowStockPositions : 'Норма' }}
+                {{ stats.lowStockPositions > 0 ? stats.lowStockPositions : '0' }}
               </span>
-              <span class="text-[10px]" :class="stats.lowStockPositions > 0 ? 'text-amber-400/80' : 'text-zinc-500'">
-                {{ stats.lowStockPositions > 0 ? 'дефицит' : '' }}
+              <span class="text-[10px]" :class="stats.lowStockPositions > 0 ? 'text-amber-400/90 font-medium' : 'text-zinc-500'">
+                дефицит
               </span>
             </div>
-            <div class="text-[10px] truncate" :class="stats.lowStockPositions > 0 ? 'text-amber-400/90 font-medium' : 'text-zinc-500'">
+            <div class="text-[10px] mt-0.5 truncate" :class="stats.lowStockPositions > 0 ? 'text-amber-400/90 font-medium' : 'text-zinc-500'">
               {{ stats.lowStockPositions > 0 ? 'Требуют заказа →' : 'Запас обеспечен' }}
             </div>
           </div>
         </button>
-
-        <!-- Valuation pill -->
-        <div
-          class="h-12 flex items-center gap-2 px-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-left w-full min-w-0 shadow-sm"
-        >
-          <div class="w-6 h-6 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 shrink-0">
-            <UIcon name="i-lucide-wallet" class="w-3.5 h-3.5" />
-          </div>
-          <div class="min-w-0 flex-1 truncate">
-            <div class="font-mono font-bold text-zinc-200 text-xs leading-none truncate">
-              {{ formatMoney(stats.totalValuation) }} ₽
-            </div>
-            <div class="text-[10px] text-zinc-500 truncate">
-              Оценка склада
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- 2. Quick Access Buttons Row (Деталь / Приход и Расход) -->

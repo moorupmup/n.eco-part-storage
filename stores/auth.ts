@@ -6,7 +6,6 @@ export interface UserProfile {
   id: string
   email: string
   name?: string
-  company_name?: string
   device_id?: string
   valid_until?: string
   license_status?: 'trial' | 'active' | 'expired'
@@ -20,6 +19,7 @@ interface AuthState {
   isLoading: boolean
   isInitialized: boolean
   isAuthModalOpen: boolean
+  isAccountModalOpen: boolean
   isPaywallModalOpen: boolean
   timeTampered: boolean
 }
@@ -52,6 +52,7 @@ export const useAuthStore = defineStore('auth', {
     isLoading: false,
     isInitialized: false,
     isAuthModalOpen: false,
+    isAccountModalOpen: false,
     isPaywallModalOpen: false,
     timeTampered: false
   }),
@@ -168,7 +169,7 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    async register(payload: { email: string; password: string; name?: string; company_name?: string }) {
+    async register(payload: { email: string; password: string }) {
       this.isLoading = true
       const pb = usePocketBase()
 
@@ -180,8 +181,6 @@ export const useAuthStore = defineStore('auth', {
           email: payload.email.trim().toLowerCase(),
           password: payload.password,
           passwordConfirm: payload.password,
-          name: payload.name?.trim() || '',
-          company_name: payload.company_name?.trim() || '',
           device_id: deviceId,
           valid_until: trialEndDate,
           license_status: 'trial'
@@ -236,6 +235,22 @@ export const useAuthStore = defineStore('auth', {
 
     closeAuthModal() {
       this.isAuthModalOpen = false
+    },
+
+    openAccountModal() {
+      this.isAccountModalOpen = true
+    },
+
+    closeAccountModal() {
+      this.isAccountModalOpen = false
+    },
+
+    openProfileOrAuth() {
+      if (this.isAuthenticated) {
+        this.isAccountModalOpen = true
+      } else {
+        this.isAuthModalOpen = true
+      }
     },
 
     openPaywall() {

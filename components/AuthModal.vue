@@ -38,14 +38,11 @@
         </button>
         <button
           type="button"
-          class="py-2 rounded-lg transition-all text-center flex items-center justify-center gap-1.5"
+          class="py-2 rounded-lg transition-all text-center"
           :class="mode === 'register' ? 'bg-zinc-800 text-zinc-100 shadow-sm' : 'text-zinc-400 hover:text-zinc-200'"
           @click="mode = 'register'; error = ''"
         >
-          <span>Регистрация</span>
-          <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-            30 дней
-          </span>
+          Регистрация
         </button>
       </div>
 
@@ -76,17 +73,6 @@
 
       <!-- Form -->
       <form class="space-y-3" @submit.prevent="handleSubmit">
-        <div v-if="mode === 'register'" class="space-y-1">
-          <label class="text-[11px] font-semibold text-zinc-300">Ваше имя или название склада</label>
-          <UInput
-            v-model="form.name"
-            placeholder="Склад АвтоЗапчасти"
-            icon="i-lucide-building"
-            color="gray"
-            size="md"
-          />
-        </div>
-
         <div class="space-y-1">
           <label class="text-[11px] font-semibold text-zinc-300">Электронная почта (Email) *</label>
           <UInput
@@ -143,7 +129,7 @@
               class="w-4 h-4 stroke-[2.5]"
             />
             <span>
-              {{ authStore.isLoading ? 'Обработка...' : (mode === 'login' ? 'Войти' : 'Создать аккаунт и начать триал') }}
+              {{ authStore.isLoading ? 'Обработка...' : (mode === 'login' ? 'Войти' : 'Создать аккаунт') }}
             </span>
           </button>
         </div>
@@ -171,7 +157,6 @@ const showPassword = ref(false)
 const error = ref('')
 
 const form = ref({
-  name: '',
   email: '',
   password: ''
 })
@@ -182,8 +167,7 @@ async function handleSubmit() {
     if (mode.value === 'register') {
       await authStore.register({
         email: form.value.email,
-        password: form.value.password,
-        name: form.value.name
+        password: form.value.password
       })
       toast.add({
         title: 'Регистрация успешна!',

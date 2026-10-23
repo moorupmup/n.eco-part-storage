@@ -1,17 +1,17 @@
 {
   "name": "neco-part-storage",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
-    "generate": "nuxt generate",
+    "generate": "nuxt build --preset static",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "cap:sync": "nuxt generate && npx cap sync",
-    "cap:android": "nuxt generate && npx cap open android",
-    "cap:build": "nuxt generate && npx cap sync android",
+    "cap:sync": "npm run generate && npx cap sync",
+    "cap:android": "npm run generate && npx cap open android",
+    "cap:build": "npm run generate && npx cap sync android",
     "deploy:ota": "node scripts/deploy_ota.mjs"
   },
   "dependencies": {

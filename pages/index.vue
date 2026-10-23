@@ -1,16 +1,22 @@
 <template>
   <div class="pb-28">
     <!-- Top Header -->
-    <AppHeader title="PARTPOCKET" :subtitle="`${partsStore.stats.totalPositions} позиций · Новые: ${partsStore.stats.totalNewQuantity} · Б/У: ${partsStore.stats.totalUsedQuantity}`">
+    <AppHeader title="PARTPOCKET" subtitle="Учет и хранение">
       <template #actions>
+        <!-- Account / Profile / Auth Button -->
         <button
           type="button"
-          class="flex items-center justify-center w-9 h-9 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-emerald-400 active:scale-95 transition-all shadow-sm"
-          :class="{ 'opacity-50 pointer-events-none': partsStore.isLoading }"
-          title="Обновить список"
-          @click="refreshData"
+          class="relative flex items-center justify-center w-9 h-9 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-emerald-400 active:scale-95 transition-all shadow-sm cursor-pointer"
+          :title="authStore.isAuthenticated ? 'Мой аккаунт' : 'Войти в аккаунт'"
+          @click="authStore.openProfileOrAuth()"
         >
-          <UIcon name="i-lucide-refresh-cw" class="w-4 h-4" :class="{ 'animate-spin': partsStore.isLoading }" />
+          <template v-if="authStore.isAuthenticated">
+            <UIcon name="i-lucide-user-check" class="w-4 h-4 text-emerald-400" />
+            <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-zinc-900" />
+          </template>
+          <template v-else>
+            <UIcon name="i-lucide-user" class="w-4 h-4" />
+          </template>
         </button>
 
         <NuxtLink
