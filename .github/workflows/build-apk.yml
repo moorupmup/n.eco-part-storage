@@ -10,10 +10,10 @@ on:
         type: boolean
         default: true
       tag_name:
-        description: 'Имя версии/тега (например: v1.0.14)'
+        description: 'Имя версии/тега (например: v1.1.0)'
         required: false
         type: string
-        default: 'v1.0.14'
+        default: 'v1.1.0'
 
   # 2. Запуск, когда вы САМИ создаете релиз через интерфейс GitHub (Releases -> Draft a new release -> Publish)
   release:
@@ -35,10 +35,10 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
 
       - name: Setup Java 17
@@ -83,7 +83,7 @@ jobs:
           mkdir -p android/app/keystore
           cp keystore/release.keystore android/app/keystore/release.keystore
 
-      - name: Configure Android Project (Version, Signing, Permissions)
+      - name: Configure Android Project (Version, Signing, Permissions, SDK 35)
         run: |
           RAW_TAG="${{ inputs.tag_name || github.ref_name }}"
           CLEAN_VER=$(echo "$RAW_TAG" | sed 's/^v//')

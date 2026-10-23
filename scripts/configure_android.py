@@ -4,6 +4,33 @@ import re
 
 def main():
     version = sys.argv[1] if len(sys.argv) > 1 else ''
+
+    # 0. Configure variables.gradle for compileSdkVersion = 35 and targetSdkVersion = 35
+    variables_path = 'android/variables.gradle'
+    if os.path.exists(variables_path):
+        with open(variables_path, 'r', encoding='utf-8') as f:
+            v_code = f.read()
+        v_code = re.sub(r'compileSdkVersion\s*=\s*\d+', 'compileSdkVersion = 35', v_code)
+        v_code = re.sub(r'targetSdkVersion\s*=\s*\d+', 'targetSdkVersion = 35', v_code)
+        with open(variables_path, 'w', encoding='utf-8') as f:
+            f.write(v_code)
+        print(f"[CI] Updated compileSdkVersion and targetSdkVersion to 35 in {variables_path}")
+
+    # 0.1 Configure gradle.properties to disable strict minCompileSdk check
+    props_path = 'android/gradle.properties'
+    if os.path.exists(props_path):
+        with open(props_path, 'r', encoding='utf-8') as f:
+            p_code = f.read()
+        lines_to_add = [
+            'android.disableMinCompileSdkCheck=true',
+            'android.suppressUnsupportedCompileSdk=35'
+        ]
+        for line in lines_to_add:
+            if line not in p_code:
+                p_code += f'\n{line}\n'
+        with open(props_path, 'w', encoding='utf-8') as f:
+            f.write(p_code)
+        print(f"[CI] Injected android.disableMinCompileSdkCheck=true into {props_path}")
     
     # 1. Inject version & signingConfigs into android/app/build.gradle
     gradle_path = 'android/app/build.gradle'
@@ -14,6 +41,12 @@ def main():
         if version and version != 'main':
             code = re.sub(r'versionName\s+["\'].*?["\']', f'versionName "{version}"', code)
             print(f"[CI] Injected versionName '{version}' into {gradle_path}")
+
+        # Ensure compileSdk and targetSdk are 35
+        code = re.sub(r'compileSdkVersion\s+rootProject\.ext\.compileSdkVersion', 'compileSdkVersion 35', code)
+        code = re.sub(r'compileSdkVersion\s+\d+', 'compileSdkVersion 35', code)
+        code = re.sub(r'targetSdkVersion\s+rootProject\.ext\.targetSdkVersion', 'targetSdkVersion 35', code)
+        code = re.sub(r'targetSdkVersion\s+\d+', 'targetSdkVersion 35', code)
 
         signing_block = """
     signingConfigs {
