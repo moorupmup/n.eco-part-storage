@@ -24,6 +24,27 @@ interface AuthState {
   timeTampered: boolean
 }
 
+function parsePocketBaseError(err: any, defaultMsg: string): string {
+  if (!err) return defaultMsg
+  // Network blocked or server unreachable (Android cleartext or offline)
+  if (err.status === 0 || err.isAbort) {
+    return 'Нет связи с сервером (HTTP заблокирован Android или нет интернета). Установите обновленный APK v1.1.3.'
+  }
+  // Field validation errors
+  if (err.data?.data && typeof err.data.data === 'object') {
+    const details: string[] = []
+    for (const [field, val] of Object.entries<any>(err.data.data)) {
+      if (val?.message) {
+        details.push(`${field}: ${val.message}`)
+      }
+    }
+    if (details.length > 0) {
+      return details.join('; ')
+    }
+  }
+  return err.data?.message || err.message || defaultMsg
+}
+
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => ({
     user: null,
@@ -131,11 +152,9 @@ export const useAuthStore = defineStore('auth', {
           this.token = authData.token
           this.user = { ...(authData.record as any) }
         } catch (err: any) {
-          // If token expired on server or user deleted
           if (err.status === 401 || err.status === 403) {
             this.logout()
           }
-          // If offline / network error, silently keep cached local auth!
         }
       }
     },
@@ -155,7 +174,6 @@ export const useAuthStore = defineStore('auth', {
 
       try {
         const deviceId = await this.getDeviceId()
-        // 30 days trial period
         const trialEndDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
 
         await pb.collection('users').create({
@@ -173,7 +191,7 @@ export const useAuthStore = defineStore('auth', {
         await this.login(payload.email, payload.password)
         this.isAuthModalOpen = false
       } catch (err: any) {
-        const message = err?.data?.message || err?.message || 'Ошибка при регистрации'
+        const message = parsePocketBaseError(err, 'Ошибка при регистрации')
         throw new Error(message)
       } finally {
         this.isLoading = false
@@ -198,7 +216,7 @@ export const useAuthStore = defineStore('auth', {
           localStorage.setItem('neco_last_seen_ts', String(Date.now()))
         }
       } catch (err: any) {
-        const message = err?.data?.message || err?.message || 'Неверный логин или пароль'
+        const message = parsePocketBaseError(err, 'Неверный логин или пароль')
         throw new Error(message)
       } finally {
         this.isLoading = false
