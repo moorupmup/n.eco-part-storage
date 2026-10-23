@@ -2,11 +2,11 @@ import type { CapacitorConfig } from '@capacitor/cli'
 
 const config: CapacitorConfig = {
   appId: 'com.necopart.storage',
-  appName: 'N.ECO PART STORAGE',
+  appName: 'PARTPOCKET',
   webDir: 'dist',
   bundledWebRuntime: false,
   server: {
-    androidScheme: 'http',
+    androidScheme: 'https',
     cleartext: true
   },
   plugins: {
@@ -20,7 +20,7 @@ const config: CapacitorConfig = {
     },
     CapacitorUpdater: {
       autoUpdate: false,
-      resetWhenUpdate: false
+      resetWhenUpdate: true
     }
   }
 }

@@ -48,7 +48,7 @@ export default defineNuxtConfig({
       bodyAttrs: {
         class: 'dark bg-zinc-950 text-zinc-100'
       },
-      title: 'N.ECO PART STORAGE',
+      title: 'PARTPOCKET',
       meta: [
         { charset: 'utf-8' },
         {

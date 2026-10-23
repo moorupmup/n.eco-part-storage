@@ -90,7 +90,7 @@
             <p class="leading-relaxed text-zinc-400">
               • Файлы скачиваются в системную папку <strong>«Загрузки» (Downloads)</strong> на вашем устройстве.<br />
               • В мобильном приложении файл также пишется в системную папку <strong>«Документы»</strong>.<br />
-              • Название файла бэкапа: <span class="font-mono text-amber-300 text-[10px]">backup_neco_ГГГГ-ММ-ДД.json</span>.<br />
+              • Название файла бэкапа: <span class="font-mono text-amber-300 text-[10px]">backup_partpocket_ГГГГ-ММ-ДД.json</span>.<br />
               • Кнопка «Отправить бэкап» позволяет сразу переслать файл в Telegram (в «Избранное») или на Google Диск.
             </p>
           </div>
@@ -245,7 +245,7 @@ async function exportJSON() {
 
 async function shareJSON() {
   const { parts, transactions } = await dbService.exportAllData()
-  const filename = `backup_neco_${new Date().toISOString().slice(0, 10)}.json`
+  const filename = `backup_partpocket_${new Date().toISOString().slice(0, 10)}.json`
   const jsonStr = JSON.stringify({
     exportedAt: new Date().toISOString(),
     version: '1.0',
@@ -253,7 +253,7 @@ async function shareJSON() {
     transactions
   }, null, 2)
 
-  const shared = await shareFile(jsonStr, filename, 'application/json', 'Бэкап базы N.ECO')
+  const shared = await shareFile(jsonStr, filename, 'application/json', 'Бэкап базы PARTPOCKET')
   if (!shared) {
     await exportJSON()
   } else {

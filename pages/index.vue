@@ -1,7 +1,7 @@
 <template>
   <div class="pb-28">
     <!-- Top Header -->
-    <AppHeader title="N.ECO PART STORAGE" :subtitle="`${partsStore.stats.totalPositions} позиций · Новые: ${partsStore.stats.totalNewQuantity} · Б/У: ${partsStore.stats.totalUsedQuantity}`">
+    <AppHeader title="PARTPOCKET" :subtitle="`${partsStore.stats.totalPositions} позиций · Новые: ${partsStore.stats.totalNewQuantity} · Б/У: ${partsStore.stats.totalUsedQuantity}`">
       <template #actions>
         <button
           type="button"

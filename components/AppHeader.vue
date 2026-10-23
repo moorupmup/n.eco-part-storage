@@ -16,7 +16,10 @@
         <div class="min-w-0">
           <h1 class="text-sm sm:text-base font-extrabold text-zinc-100 leading-none tracking-tight truncate">
             <slot name="title">
-              <template v-if="title && title.includes('N.ECO')">
+              <template v-if="title && title.includes('PARTPOCKET')">
+                <span class="text-emerald-400 font-black">PART</span><span class="text-zinc-100 font-black">POCKET</span>{{ title.replace('PARTPOCKET', '') }}
+              </template>
+              <template v-else-if="title && title.includes('N.ECO')">
                 <span class="text-emerald-400 font-black">N.ECO</span>{{ title.replace('N.ECO', '') }}
               </template>
               <template v-else>

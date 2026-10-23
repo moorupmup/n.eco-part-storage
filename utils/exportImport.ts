@@ -99,7 +99,7 @@ export async function shareFile(
   content: Blob | string,
   filename: string,
   mimeType: string = 'application/octet-stream',
-  title = 'Экспорт данных N.ECO'
+  title = 'Экспорт данных PARTPOCKET'
 ): Promise<boolean> {
   if (typeof navigator === 'undefined' || !navigator.share) {
     return false
@@ -126,7 +126,7 @@ export async function shareFile(
   return false
 }
 
-export async function exportPartsToExcel(parts: Part[], filename = 'neco_parts_backpack.xlsx'): Promise<SaveFileResult> {
+export async function exportPartsToExcel(parts: Part[], filename = 'partpocket_parts.xlsx'): Promise<SaveFileResult> {
   // 1. Детальная таблица по всем артикулам (каждый артикул внутри детали - отдельная строка)
   const articleRows: any[] = []
   let rowNumber = 1
@@ -280,7 +280,7 @@ export async function exportTransactionsToExcel(transactions: Transaction[], fil
 }
 
 export async function exportFullBackupJSON(parts: Part[], transactions: Transaction[], filename?: string): Promise<SaveFileResult> {
-  const finalFilename = filename || `backup_neco_${new Date().toISOString().slice(0, 10)}.json`
+  const finalFilename = filename || `backup_partpocket_${new Date().toISOString().slice(0, 10)}.json`
   const backup = {
     exportedAt: new Date().toISOString(),
     version: '1.0',

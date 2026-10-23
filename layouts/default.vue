@@ -30,7 +30,7 @@ import { useNativeWidget } from '~/composables/useNativeWidget'
 
 const partsStore = usePartsStore()
 const authStore = useAuthStore()
-const { checkForUpdates } = useAppUpdater()
+const { checkForUpdates, initVersion } = useAppUpdater()
 const { syncWidget } = useNativeWidget()
 
 // Keep native home screen widgets in sync with live inventory
@@ -44,7 +44,9 @@ watch(
 
 // Initialize store and database on app start
 onMounted(async () => {
-  await Promise.all([
+  initVersion()
+
+  await Promise.allSettled([
     partsStore.fetchParts(),
     authStore.init()
   ])

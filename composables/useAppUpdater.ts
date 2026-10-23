@@ -57,15 +57,12 @@ export function useAppUpdater() {
   })
 
   async function initVersion() {
-    // 0. Notify Capgo that current web bundle loaded safely (prevents rollback)
+    // 0. Notify Capgo that current web bundle loaded safely and reset any bad OTA cache
     if (Capacitor.isNativePlatform()) {
       try {
         await CapacitorUpdater.notifyAppReady()
-        const currentBundle = await CapacitorUpdater.current()
-        if (currentBundle?.bundle?.version) {
-          const v = currentBundle.bundle.version
-          currentVersion.value = v.startsWith('v') ? v : `v${v}`
-        }
+        // Reset any stale/corrupted OTA bundles back to APK built-in version
+        await CapacitorUpdater.reset()
       } catch {
         // Fallback if not on native
       }
@@ -119,20 +116,18 @@ export function useAppUpdater() {
         if (records?.items?.length > 0) {
           const item = records.items[0]
           const recVer = (item.version || '').replace(/^v/, '')
-          if (recVer && compareVersions(recVer, cleanCurrent) > 0) {
-            const hasBundle = Boolean(item.bundle_zip)
-            const bundleUrl = hasBundle ? pb.files.getUrl(item, item.bundle_zip) : ''
-            const apkUrl = item.apk_file ? pb.files.getUrl(item, item.apk_file) : ''
+          if (recVer && compareVersions(recVer, cleanCurrent) > 0 && item.apk_file) {
+            const apkUrl = pb.files.getUrl(item, item.apk_file)
 
             foundPbRelease = {
               version: item.version.startsWith('v') ? item.version : `v${item.version}`,
-              name: hasBundle ? `OTA Быстрое обновление ${item.version}` : `Обновление ${item.version}`,
+              name: `Обновление ${item.version}`,
               body: item.changelog || 'Улучшения производительности и исправление ошибок',
               published_at: item.created || new Date().toISOString(),
-              is_ota: hasBundle,
-              download_url: apkUrl || bundleUrl,
-              bundle_url: bundleUrl,
-              size: hasBundle ? 2000000 : 35000000
+              is_ota: false,
+              download_url: apkUrl,
+              bundle_url: '',
+              size: 35000000
             }
           }
         }
@@ -213,47 +208,7 @@ export function useAppUpdater() {
     installError.value = ''
     downloadStatus.value = 'Подготовка к загрузке...'
 
-    // A. OTA Live Update via Capgo (Instant without APK install)
-    if (release.is_ota && release.bundle_url && Capacitor.isNativePlatform()) {
-      try {
-        downloadStatus.value = 'Загрузка Live-обновления (OTA)...'
-        downloadProgress.value = 35
-
-        const bundle = await CapacitorUpdater.download({
-          url: release.bundle_url,
-          version: release.version
-        })
-
-        downloadProgress.value = 85
-        downloadStatus.value = 'Применение обновления...'
-
-        await CapacitorUpdater.set(bundle)
-
-        downloadProgress.value = 100
-        isOtaReady.value = true
-        downloadStatus.value = 'Обновление установлено! Перезапуск...'
-
-        if (typeof localStorage !== 'undefined') {
-          localStorage.setItem('neco_installed_update_tag', release.version)
-        }
-        currentVersion.value = release.version
-        hasUpdate.value = false
-
-        // Reload the webview with the new version after 1 second
-        setTimeout(async () => {
-          await CapacitorUpdater.reload()
-        }, 800)
-      } catch (err: any) {
-        console.error('OTA update error:', err)
-        installError.value = err.message || 'Ошибка применения OTA обновления'
-        downloadStatus.value = 'Сбой OTA'
-      } finally {
-        isDownloading.value = false
-      }
-      return
-    }
-
-    // B. Full APK Update (Standard Native Flow)
+    // Full APK Update (Standard Native Flow)
     const url = apkDownloadUrl.value
     if (!url) return
 

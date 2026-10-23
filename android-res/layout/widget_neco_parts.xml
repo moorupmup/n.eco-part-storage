@@ -25,7 +25,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="N.ECO PART STORAGE"
+            android:text="PARTPOCKET"
             android:textColor="#ffffff"
             android:textSize="12sp"
             android:textStyle="bold" />

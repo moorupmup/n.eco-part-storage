@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="widget_compact_name">N.ECO — Сводка склада</string>
+    <string name="widget_compact_name">PARTPOCKET — Сводка склада</string>
     <string name="widget_compact_desc">Компактная сводка наличия и дефицита запчастей</string>
-    <string name="widget_functional_name">N.ECO — Быстрый склад и списание</string>
+    <string name="widget_functional_name">PARTPOCKET — Быстрый склад и списание</string>
     <string name="widget_functional_desc">Быстрый поиск, списание и оприходование запчастей</string>
 </resources>

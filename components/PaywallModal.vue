@@ -100,7 +100,7 @@ const isExpired = computed(() => authStore.isExpired)
 function handleContact() {
   // You can link to your payment page, telegram bot or phone number
   const email = authStore.user?.email || 'клиент'
-  const subject = encodeURIComponent(`Продление подписки N.ECO Storage (${email})`)
+  const subject = encodeURIComponent(`Продление подписки PARTPOCKET (${email})`)
   window.open(`mailto:pumpuroom@gmail.com?subject=${subject}`, '_blank')
   toast.add({
     title: 'Запрос на продление',
