@@ -3,7 +3,6 @@ import { Capacitor } from '@capacitor/core'
 import { Filesystem, Directory } from '@capacitor/filesystem'
 import { FileOpener } from '@capacitor-community/file-opener'
 import { App } from '@capacitor/app'
-import { CapacitorUpdater } from '@capgo/capacitor-updater'
 import { usePocketBase } from '~/composables/usePocketBase'
 import pkg from '~/package.json'
 
@@ -57,17 +56,6 @@ export function useAppUpdater() {
   })
 
   async function initVersion() {
-    // 0. Notify Capgo that current web bundle loaded safely and reset any bad OTA cache
-    if (Capacitor.isNativePlatform()) {
-      try {
-        await CapacitorUpdater.notifyAppReady()
-        // Reset any stale/corrupted OTA bundles back to APK built-in version
-        await CapacitorUpdater.reset()
-      } catch {
-        // Fallback if not on native
-      }
-    }
-
     // 1. Check if user already installed an update through the in-app updater
     if (typeof localStorage !== 'undefined') {
       const lastInstalled = localStorage.getItem('neco_installed_update_tag')

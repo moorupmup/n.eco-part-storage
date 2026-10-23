@@ -17,10 +17,6 @@ const config: CapacitorConfig = {
       iosDatabaseLocation: 'Library/CapacitorDatabase',
       iosIsEncryption: false,
       androidIsEncryption: false
-    },
-    CapacitorUpdater: {
-      autoUpdate: false,
-      resetWhenUpdate: true
     }
   }
 }
