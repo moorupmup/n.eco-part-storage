@@ -23,6 +23,9 @@
       </template>
     </AppHeader>
 
+    <!-- License & Trial Status Banner -->
+    <LicenseBanner />
+
     <div class="px-4 sm:px-6 md:px-8 py-3 sm:py-4 space-y-3 sm:space-y-4">
       <!-- Live Dashboard Widgets -->
       <DashboardWidgets
@@ -495,9 +498,11 @@ import { usePartsStore } from '~/stores/parts'
 import { useHaptics } from '~/composables/useHaptics'
 import { useClipboardCopy } from '~/composables/useClipboardCopy'
 import { useNativeWidget } from '~/composables/useNativeWidget'
+import { useAuthStore } from '~/stores/auth'
 import { exportLowStockToExcel, exportOutOfStockToExcel, type DeficitArticleExportRow } from '~/utils/exportImport'
 
 const partsStore = usePartsStore()
+const authStore = useAuthStore()
 const toast = useToast()
 const haptics = useHaptics()
 const { copyToClipboard } = useClipboardCopy()
@@ -818,6 +823,7 @@ const isQuickStockModalOpen = ref(false)
 const quickStockDefaultType = ref<MovementType>('OUT')
 
 function openUniversalQuickStock(type: MovementType = 'OUT') {
+  if (!checkWritePermission()) return
   try {
     haptics.lightTap()
   } catch {}
@@ -831,7 +837,26 @@ const partToEdit = ref<Part | null>(null)
 const isDeleteConfirmOpen = ref(false)
 const partToDelete = ref<Part | null>(null)
 
+function checkWritePermission(): boolean {
+  if (authStore.isReadOnly) {
+    if (!authStore.isAuthenticated) {
+      authStore.openAuthModal()
+      toast.add({
+        title: 'Требуется регистрация',
+        description: 'Зарегистрируйтесь, чтобы получить 30 дней бесплатного учета.',
+        color: 'emerald',
+        icon: 'i-lucide-sparkles'
+      })
+    } else {
+      authStore.openPaywall()
+    }
+    return false
+  }
+  return true
+}
+
 function openStockModal({ part, type }: { part: Part; type: MovementType }) {
+  if (!checkWritePermission()) return
   selectedPart.value = part
   selectedArticle.value = null
   actionType.value = type
@@ -839,6 +864,7 @@ function openStockModal({ part, type }: { part: Part; type: MovementType }) {
 }
 
 function openReplenishModal(part: Part, article: DeficitArticleItem) {
+  if (!checkWritePermission()) return
   haptics.lightTap()
   selectedPart.value = part
   const fullArticle = part.articles?.find(a => a.id === article.id || a.code === article.code) || {
@@ -876,16 +902,19 @@ onMounted(() => {
 })
 
 function openAddModal() {
+  if (!checkWritePermission()) return
   partToEdit.value = null
   isPartModalOpen.value = true
 }
 
 function openEditModal(part: Part) {
+  if (!checkWritePermission()) return
   partToEdit.value = part
   isPartModalOpen.value = true
 }
 
 function confirmDeletePart(part: Part) {
+  if (!checkWritePermission()) return
   partToDelete.value = part
   isDeleteConfirmOpen.value = true
 }

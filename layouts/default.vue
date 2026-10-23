@@ -13,6 +13,10 @@
 
     <!-- Automatic App Update Modal -->
     <AppUpdateModal />
+
+    <!-- Authentication & License Modals -->
+    <AuthModal />
+    <PaywallModal />
   </div>
 </template>
 
@@ -20,10 +24,12 @@
 import { watch, onMounted } from 'vue'
 import { Capacitor } from '@capacitor/core'
 import { usePartsStore } from '~/stores/parts'
+import { useAuthStore } from '~/stores/auth'
 import { useAppUpdater } from '~/composables/useAppUpdater'
 import { useNativeWidget } from '~/composables/useNativeWidget'
 
 const partsStore = usePartsStore()
+const authStore = useAuthStore()
 const { checkForUpdates } = useAppUpdater()
 const { syncWidget } = useNativeWidget()
 
@@ -38,7 +44,10 @@ watch(
 
 // Initialize store and database on app start
 onMounted(async () => {
-  await partsStore.fetchParts()
+  await Promise.all([
+    partsStore.fetchParts(),
+    authStore.init()
+  ])
   syncWidget()
 
   // On phone (native Capacitor or mobile browser): check for updates automatically on start

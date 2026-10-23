@@ -37,7 +37,7 @@ def main():
     else:
         print(f"[CI] Warning: {gradle_path} not found")
 
-    # 2. Configure Android Permissions for In-App Updates in AndroidManifest.xml
+    # 2. Configure Android Permissions & Options in AndroidManifest.xml
     manifest_path = 'android/app/src/main/AndroidManifest.xml'
     if os.path.exists(manifest_path):
         with open(manifest_path, 'r', encoding='utf-8') as f:
@@ -47,6 +47,10 @@ def main():
         if 'REQUEST_INSTALL_PACKAGES' not in code:
             code = code.replace('</manifest>', f'    {perm}\n</manifest>')
             print(f"[CI] Added REQUEST_INSTALL_PACKAGES permission to {manifest_path}")
+
+        if 'android:usesCleartextTraffic="true"' not in code:
+            code = code.replace('<application', '<application android:usesCleartextTraffic="true"')
+            print(f"[CI] Enabled android:usesCleartextTraffic='true' in {manifest_path}")
 
         # 3. Configure Android Home Screen Widget receivers in AndroidManifest.xml
         receiver_tags = """

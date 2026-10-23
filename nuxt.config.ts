@@ -8,6 +8,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
+      pocketbaseUrl: process.env.NUXT_PUBLIC_POCKETBASE_URL || 'http://195.209.213.115:8090',
       aptabaseAppKey: process.env.NUXT_PUBLIC_APTABASE_APP_KEY || 'A-US-6174154603'
     }
   },

@@ -30,6 +30,88 @@
     </header>
 
     <div class="px-4 sm:px-6 md:px-8 py-4 sm:py-6 space-y-4 max-w-4xl mx-auto">
+      <!-- License & Account Management Card -->
+      <div class="p-4 rounded-2xl bg-zinc-900/90 border border-zinc-800 space-y-4 shadow-sm">
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div
+              class="flex items-center justify-center w-12 h-12 rounded-xl border shrink-0 transition-colors shadow-md"
+              :class="authStore.isAuthenticated
+                ? (authStore.isPro ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 shadow-emerald-950/40' : (authStore.isExpired ? 'bg-rose-500/10 border-rose-500/30 text-rose-400 shadow-rose-950/40' : 'bg-sky-500/10 border-sky-500/30 text-sky-400 shadow-sky-950/40'))
+                : 'bg-zinc-800/60 border-zinc-700/50 text-zinc-400'"
+            >
+              <UIcon :name="authStore.statusBadge.icon" class="w-6 h-6" />
+            </div>
+            <div>
+              <h2 class="text-sm font-extrabold text-zinc-100 tracking-tight">
+                {{ authStore.isAuthenticated ? (authStore.user?.name || authStore.user?.email) : 'Учётная запись склада' }}
+              </h2>
+              <p class="text-xs text-zinc-400 mt-0.5">
+                {{ authStore.isAuthenticated ? authStore.user?.email : 'Синхронизация лицензии и 30-дневный триал' }}
+              </p>
+            </div>
+          </div>
+
+          <span
+            class="text-[11px] px-2.5 py-1 rounded-full font-semibold border"
+            :class="{
+              'bg-emerald-500/15 text-emerald-300 border-emerald-500/30': authStore.statusBadge.color === 'emerald',
+              'bg-sky-500/15 text-sky-300 border-sky-500/30': authStore.statusBadge.color === 'sky',
+              'bg-amber-500/15 text-amber-300 border-amber-500/30': authStore.statusBadge.color === 'amber',
+              'bg-rose-500/15 text-rose-300 border-rose-500/30': authStore.statusBadge.color === 'rose',
+              'bg-zinc-800 text-zinc-400 border-zinc-700': authStore.statusBadge.color === 'gray'
+            }"
+          >
+            {{ authStore.statusBadge.label }}
+          </span>
+        </div>
+
+        <!-- Authenticated Details -->
+        <div v-if="authStore.isAuthenticated" class="space-y-3 pt-1">
+          <div class="p-3 rounded-xl bg-zinc-950/70 border border-zinc-800/80 flex items-center justify-between text-xs">
+            <span class="text-zinc-400">Срок действия доступа:</span>
+            <span class="font-mono font-semibold" :class="authStore.isExpired ? 'text-rose-400' : 'text-zinc-200'">
+              {{ authStore.validUntilDate ? formatDate(authStore.validUntilDate.toISOString()) : 'Бессрочно' }}
+            </span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button
+              v-if="!authStore.isPro || authStore.isExpired"
+              type="button"
+              class="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-zinc-950 font-bold text-xs shadow-md shadow-amber-500/20 active:scale-[0.98] transition-all cursor-pointer"
+              @click="authStore.openPaywall()"
+            >
+              <UIcon name="i-lucide-crown" class="w-4 h-4" />
+              <span>Продлить PRO</span>
+            </button>
+
+            <button
+              type="button"
+              class="py-2.5 px-4 rounded-xl bg-zinc-950 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-xs font-semibold text-rose-400 hover:text-rose-300 transition-all active:scale-[0.98]"
+              @click="handleLogout"
+            >
+              Выйти
+            </button>
+          </div>
+        </div>
+
+        <!-- Unauthenticated Prompt -->
+        <div v-else class="space-y-2.5 pt-1">
+          <p class="text-xs text-zinc-400">
+            Войдите в аккаунт или зарегистрируйтесь, чтобы получить 30 дней бесплатного полного учета автозапчастей.
+          </p>
+          <button
+            type="button"
+            class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-zinc-950 font-bold text-xs shadow-md shadow-emerald-500/20 transition-all cursor-pointer"
+            @click="authStore.openAuthModal()"
+          >
+            <UIcon name="i-lucide-log-in" class="w-4 h-4" />
+            <span>Войти / Зарегистрироваться (30 дней бесплатно)</span>
+          </button>
+        </div>
+      </div>
+
       <!-- Unified App Brand & Update Card -->
       <div class="p-4 rounded-2xl bg-zinc-900/90 border border-zinc-800 space-y-4 shadow-sm">
         <div class="flex items-start justify-between gap-3">
@@ -174,7 +256,20 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
+import { useAuthStore } from '~/stores/auth'
 import { useAppUpdater } from '~/composables/useAppUpdater'
+
+const authStore = useAuthStore()
+const toast = useToast()
+
+function handleLogout() {
+  authStore.logout()
+  toast.add({
+    title: 'Вы вышли из аккаунта',
+    color: 'gray',
+    icon: 'i-lucide-log-out'
+  })
+}
 
 const {
   currentVersion,
