@@ -44,10 +44,10 @@
             </div>
             <div>
               <h2 class="text-sm font-extrabold text-zinc-100 tracking-tight">
-                {{ authStore.isAuthenticated ? (authStore.user?.name || authStore.user?.email) : 'Учётная запись склада' }}
+                {{ authStore.isAuthenticated ? authStore.user?.email : 'Учётная запись склада' }}
               </h2>
               <p class="text-xs text-zinc-400 mt-0.5">
-                {{ authStore.isAuthenticated ? authStore.user?.email : 'Синхронизация лицензии и 30-дневный триал' }}
+                {{ authStore.isAuthenticated ? 'Учётная запись PARTPOCKET' : 'Синхронизация лицензии и 30-дневный триал' }}
               </p>
             </div>
           </div>

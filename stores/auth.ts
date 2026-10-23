@@ -5,7 +5,6 @@ import { usePocketBase } from '~/composables/usePocketBase'
 export interface UserProfile {
   id: string
   email: string
-  name?: string
   device_id?: string
   valid_until?: string
   license_status?: 'trial' | 'active' | 'expired'

@@ -120,9 +120,9 @@ const isOpen = computed({
 })
 
 const userInitials = computed(() => {
-  const name = authStore.user?.name || authStore.user?.email || ''
-  if (!name) return ''
-  return name.slice(0, 2)
+  const email = authStore.user?.email || ''
+  if (!email) return ''
+  return email.slice(0, 2).toUpperCase()
 })
 
 const formattedValidUntil = computed(() => {
