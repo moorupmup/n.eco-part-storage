@@ -10,10 +10,10 @@ on:
         type: boolean
         default: true
       tag_name:
-        description: 'Имя версии/тега (например: v1.1.0)'
+        description: 'Имя версии/тега (например: v1.1.2)'
         required: false
         type: string
-        default: 'v1.1.0'
+        default: 'v1.1.2'
 
   # 2. Запуск, когда вы САМИ создаете релиз через интерфейс GitHub (Releases -> Draft a new release -> Publish)
   release:
@@ -51,7 +51,7 @@ jobs:
         uses: android-actions/setup-android@v4
 
       - name: Install Node Dependencies
-        run: npm ci || npm install
+        run: npm install
 
       - name: Sync App Version from Tag
         run: |
@@ -83,7 +83,7 @@ jobs:
           mkdir -p android/app/keystore
           cp keystore/release.keystore android/app/keystore/release.keystore
 
-      - name: Configure Android Project (Version, Signing, Permissions, SDK 35)
+      - name: Configure Android Project (Version, Signing, Permissions, SDK 35, MinSdk 23)
         run: |
           RAW_TAG="${{ inputs.tag_name || github.ref_name }}"
           CLEAN_VER=$(echo "$RAW_TAG" | sed 's/^v//')

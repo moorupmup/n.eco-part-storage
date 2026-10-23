@@ -5,16 +5,17 @@ import re
 def main():
     version = sys.argv[1] if len(sys.argv) > 1 else ''
 
-    # 0. Configure variables.gradle for compileSdkVersion = 35 and targetSdkVersion = 35
+    # 0. Configure variables.gradle for minSdkVersion = 23, compileSdkVersion = 35 and targetSdkVersion = 35
     variables_path = 'android/variables.gradle'
     if os.path.exists(variables_path):
         with open(variables_path, 'r', encoding='utf-8') as f:
             v_code = f.read()
+        v_code = re.sub(r'minSdkVersion\s*=\s*\d+', 'minSdkVersion = 23', v_code)
         v_code = re.sub(r'compileSdkVersion\s*=\s*\d+', 'compileSdkVersion = 35', v_code)
         v_code = re.sub(r'targetSdkVersion\s*=\s*\d+', 'targetSdkVersion = 35', v_code)
         with open(variables_path, 'w', encoding='utf-8') as f:
             f.write(v_code)
-        print(f"[CI] Updated compileSdkVersion and targetSdkVersion to 35 in {variables_path}")
+        print(f"[CI] Updated minSdkVersion to 23, compileSdkVersion and targetSdkVersion to 35 in {variables_path}")
 
     # 0.1 Configure gradle.properties to disable strict minCompileSdk check
     props_path = 'android/gradle.properties'
@@ -42,7 +43,9 @@ def main():
             code = re.sub(r'versionName\s+["\'].*?["\']', f'versionName "{version}"', code)
             print(f"[CI] Injected versionName '{version}' into {gradle_path}")
 
-        # Ensure compileSdk and targetSdk are 35
+        # Ensure minSdkVersion is at least 23, compileSdk and targetSdk are 35
+        code = re.sub(r'minSdkVersion\s+rootProject\.ext\.minSdkVersion', 'minSdkVersion 23', code)
+        code = re.sub(r'minSdkVersion\s+\d+', 'minSdkVersion 23', code)
         code = re.sub(r'compileSdkVersion\s+rootProject\.ext\.compileSdkVersion', 'compileSdkVersion 35', code)
         code = re.sub(r'compileSdkVersion\s+\d+', 'compileSdkVersion 35', code)
         code = re.sub(r'targetSdkVersion\s+rootProject\.ext\.targetSdkVersion', 'targetSdkVersion 35', code)
@@ -76,6 +79,9 @@ def main():
         with open(manifest_path, 'r', encoding='utf-8') as f:
             code = f.read()
 
+        if 'xmlns:tools="http://schemas.android.com/tools"' not in code:
+            code = code.replace('<manifest', '<manifest xmlns:tools="http://schemas.android.com/tools"')
+
         perm = '<uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />'
         if 'REQUEST_INSTALL_PACKAGES' not in code:
             code = code.replace('</manifest>', f'    {perm}\n</manifest>')
@@ -84,6 +90,12 @@ def main():
         if 'android:usesCleartextTraffic="true"' not in code:
             code = code.replace('<application', '<application android:usesCleartextTraffic="true"')
             print(f"[CI] Enabled android:usesCleartextTraffic='true' in {manifest_path}")
+
+        # Ensure minSdkVersion in manifest does not conflict with libraries requiring 23
+        if '<uses-sdk' not in code:
+            code = code.replace('<application', '<uses-sdk android:minSdkVersion="23" tools:overrideLibrary="com.google.android.gms.tasks" />\n    <application')
+        else:
+            code = re.sub(r'android:minSdkVersion="\d+"', 'android:minSdkVersion="23"', code)
 
         # 3. Configure Android Home Screen Widget receivers in AndroidManifest.xml
         receiver_tags = """
