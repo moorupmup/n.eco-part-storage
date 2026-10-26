@@ -1,3 +1,4 @@
+import { idbStore } from '~/services/idbStore'
 import { Capacitor } from '@capacitor/core'
 import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite'
 import type { Part, PartArticle, Transaction, MovementType, PartCondition, Category } from '~/types'
@@ -233,28 +234,40 @@ class DatabaseService {
       this.isWeb = !Capacitor.isNativePlatform()
 
       if (this.isWeb) {
-        // Initialize jeep-sqlite web component if in browser
         if (typeof window !== 'undefined') {
           await this.initWebStore()
         }
       } else {
         this.sqlite = new SQLiteConnection(CapacitorSQLite)
-        const ret = await this.sqlite.checkConnectionsConsistency()
-        const isConn = (await this.sqlite.isConnection(DB_NAME, false)).result
-
-        if (ret.result && isConn) {
-          this.db = await this.sqlite.retrieveConnection(DB_NAME, false)
-        } else {
-          this.db = await this.sqlite.createConnection(DB_NAME, false, 'no-encryption', 1, false)
+        let isConn = false
+        try {
+          const ret = await this.sqlite.checkConnectionsConsistency()
+          const check = await this.sqlite.isConnection(DB_NAME, false)
+          isConn = Boolean(ret?.result && check?.result)
+        } catch {
+          isConn = false
         }
 
-        await this.db.open()
+        if (isConn) {
+          this.db = await this.sqlite.retrieveConnection(DB_NAME, false)
+        } else {
+          try {
+            this.db = await this.sqlite.retrieveConnection(DB_NAME, false)
+          } catch {
+            this.db = await this.sqlite.createConnection(DB_NAME, false, 'no-encryption', 1, false)
+          }
+        }
+
+        const isOpened = (await this.db.isDBOpen()).result
+        if (!isOpened) {
+          await this.db.open()
+        }
         await this.createTablesNative()
       }
 
       this.isInitialized = true
     } catch (err) {
-      console.warn('SQLite native connection init failed, falling back to WebStore:', err)
+      console.warn('SQLite native connection init failed, falling back to WebStore (IndexedDB):', err)
       this.isWeb = true
       await this.initWebStore()
       this.isInitialized = true
@@ -386,31 +399,31 @@ class DatabaseService {
     )
   }
 
-  // Web / Dev Fallback (IndexedDB / LocalStorage)
+  // Web / Dev Fallback (IndexedDB with automatic localStorage migration)
   private async initWebStore() {
-    const savedParts = localStorage.getItem('neco_parts')
-    const savedTrans = localStorage.getItem('neco_transactions')
-    const savedCategories = localStorage.getItem('neco_categories')
+    let savedParts = await idbStore.migrateFromLocalStorage('neco_parts')
+    let savedTrans = await idbStore.migrateFromLocalStorage('neco_transactions')
+    let savedCategories = await idbStore.migrateFromLocalStorage('neco_categories')
 
     if (savedParts) {
-      try {
-        this.webParts = JSON.parse(savedParts)
-      } catch {
-        this.webParts = []
+      if (typeof savedParts === 'string') {
+        try { this.webParts = JSON.parse(savedParts) } catch { this.webParts = [] }
+      } else if (Array.isArray(savedParts)) {
+        this.webParts = savedParts
       }
     }
     if (savedTrans) {
-      try {
-        this.webTransactions = JSON.parse(savedTrans)
-      } catch {
-        this.webTransactions = []
+      if (typeof savedTrans === 'string') {
+        try { this.webTransactions = JSON.parse(savedTrans) } catch { this.webTransactions = [] }
+      } else if (Array.isArray(savedTrans)) {
+        this.webTransactions = savedTrans
       }
     }
     if (savedCategories) {
-      try {
-        this.webCategories = JSON.parse(savedCategories)
-      } catch {
-        this.webCategories = []
+      if (typeof savedCategories === 'string') {
+        try { this.webCategories = JSON.parse(savedCategories) } catch { this.webCategories = [] }
+      } else if (Array.isArray(savedCategories)) {
+        this.webCategories = savedCategories
       }
     }
 
@@ -441,25 +454,6 @@ class DatabaseService {
       ]
       this.persistWebStore()
     } else {
-      // Upgrade existing web store demo parts to rich articles with low-stock test positions
-      const lowStockSeedApplied = typeof localStorage !== 'undefined' ? localStorage.getItem('neco_sample_v2_low_stock') : null
-      if (!lowStockSeedApplied) {
-        const sampleMap = new Map(SAMPLE_PARTS_DATA.map(s => [s.code, s]))
-        for (const p of this.webParts) {
-          const sampleMatch = sampleMap.get(p.code)
-          if (sampleMatch) {
-            p.articles = [...sampleMatch.articles]
-            p.stock_new = sampleMatch.stock_new
-            p.stock_used = sampleMatch.stock_used
-            p.min_stock = sampleMatch.min_stock
-          }
-        }
-        if (typeof localStorage !== 'undefined') {
-          localStorage.setItem('neco_sample_v2_low_stock', '1')
-        }
-        this.persistWebStore()
-      }
-
       // Clear any leftover warehouse locations from previous demo data
       let cleaned = false
       for (const p of this.webParts) {
@@ -475,10 +469,22 @@ class DatabaseService {
   }
 
   private persistWebStore() {
+    // 1. Asynchronously persist to IndexedDB (virtually unlimited quota for high-res photos and thousands of parts)
+    idbStore.set('neco_parts', this.webParts).catch(err => {
+      console.error('[Database] Failed to persist parts to IndexedDB:', err)
+    })
+    idbStore.set('neco_transactions', this.webTransactions).catch(err => {
+      console.error('[Database] Failed to persist transactions to IndexedDB:', err)
+    })
+    idbStore.set('neco_categories', this.webCategories).catch(err => {
+      console.error('[Database] Failed to persist categories to IndexedDB:', err)
+    })
+
+    // 2. Safe fallback: save small categories list to localStorage, catching any quota errors
     if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('neco_parts', JSON.stringify(this.webParts))
-      localStorage.setItem('neco_transactions', JSON.stringify(this.webTransactions))
-      localStorage.setItem('neco_categories', JSON.stringify(this.webCategories))
+      try {
+        localStorage.setItem('neco_categories', JSON.stringify(this.webCategories))
+      } catch {}
     }
   }
 

@@ -787,7 +787,7 @@ async function handlePhotoSelected(event: Event) {
 
   isUploadingPhoto.value = true
   try {
-    const base64 = await compressImage(file, 1200, 1200, 0.82)
+    const base64 = await compressImage(file, 800, 800, 0.72)
     await partsStore.updatePartImage(part.value.id, base64)
     toast.add({
       title: 'Фото обновлено',
@@ -869,7 +869,7 @@ async function handleDirectPhotoSelected(event: Event) {
 
   uploadingArticleId.value = articleId
   try {
-    const base64 = await compressImage(file, 1200, 1200, 0.82)
+    const base64 = await compressImage(file, 800, 800, 0.72)
     await partsStore.updateArticleImage(part.value.id, articleId, base64)
     haptics.successVibe()
     toast.add({
@@ -964,7 +964,7 @@ async function handleArticleModalPhotoSelected(event: Event) {
 
   isCompressingModalPhoto.value = true
   try {
-    const base64 = await compressImage(file, 1200, 1200, 0.82)
+    const base64 = await compressImage(file, 800, 800, 0.72)
     articleForm.image = base64
   } catch (err: any) {
     toast.add({

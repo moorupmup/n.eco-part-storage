@@ -4,9 +4,9 @@
 
 export async function compressImage(
   file: File,
-  maxWidth = 1200,
-  maxHeight = 1200,
-  quality = 0.82
+  maxWidth = 800,
+  maxHeight = 800,
+  quality = 0.72
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -42,6 +42,26 @@ export async function compressImage(
         if (!dataUrl.startsWith('data:image/webp')) {
           dataUrl = canvas.toDataURL('image/jpeg', quality)
         }
+
+        // Secondary compression pass if image is still large (> 250KB in base64)
+        if (dataUrl.length > 250000) {
+          const secondCanvas = document.createElement('canvas')
+          const scale = 0.75
+          secondCanvas.width = Math.round(width * scale)
+          secondCanvas.height = Math.round(height * scale)
+          const secondCtx = secondCanvas.getContext('2d')
+          if (secondCtx) {
+            secondCtx.drawImage(canvas, 0, 0, secondCanvas.width, secondCanvas.height)
+            let secondUrl = secondCanvas.toDataURL('image/webp', 0.65)
+            if (!secondUrl.startsWith('data:image/webp')) {
+              secondUrl = secondCanvas.toDataURL('image/jpeg', 0.65)
+            }
+            if (secondUrl.length < dataUrl.length) {
+              dataUrl = secondUrl
+            }
+          }
+        }
+
         resolve(dataUrl)
       }
       img.onerror = () => reject(new Error('Не удалось прочитать изображение'))
