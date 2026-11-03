@@ -8,6 +8,7 @@ export interface UserProfile {
   device_id?: string
   valid_until?: string
   license_status?: 'trial' | 'active' | 'expired'
+  last_login?: string
   created?: string
   updated?: string
 }
@@ -151,6 +152,7 @@ export const useAuthStore = defineStore('auth', {
           const authData = await pb.collection('users').authRefresh()
           this.token = authData.token
           this.user = { ...(authData.record as any) }
+          await this.recordLastLogin()
         } catch (err: any) {
           if (err.status === 401 || err.status === 403) {
             this.logout()
@@ -175,6 +177,7 @@ export const useAuthStore = defineStore('auth', {
       try {
         const deviceId = await this.getDeviceId()
         const trialEndDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        const now = new Date().toISOString()
 
         await pb.collection('users').create({
           email: payload.email.trim().toLowerCase(),
@@ -182,7 +185,8 @@ export const useAuthStore = defineStore('auth', {
           passwordConfirm: payload.password,
           device_id: deviceId,
           valid_until: trialEndDate,
-          license_status: 'trial'
+          license_status: 'trial',
+          last_login: now
         })
 
         // Auto login right after registration
@@ -213,11 +217,37 @@ export const useAuthStore = defineStore('auth', {
         if (typeof localStorage !== 'undefined') {
           localStorage.setItem('neco_last_seen_ts', String(Date.now()))
         }
+
+        // Обновляем дату последнего входа
+        await this.recordLastLogin(true)
       } catch (err: any) {
         const message = parsePocketBaseError(err, 'Неверный логин или пароль')
         throw new Error(message)
       } finally {
         this.isLoading = false
+      }
+    },
+
+    async recordLastLogin(force = false) {
+      if (!this.user?.id) return
+      const pb = usePocketBase()
+
+      // Троттлинг: если дата уже обновлялась менее 5 минут назад, не спамим сервер
+      if (!force && this.user.last_login) {
+        const lastLoginTime = new Date(this.user.last_login).getTime()
+        if (!isNaN(lastLoginTime) && Date.now() - lastLoginTime < 5 * 60 * 1000) {
+          return
+        }
+      }
+
+      try {
+        const now = new Date().toISOString()
+        const updated = await pb.collection('users').update(this.user.id, {
+          last_login: now
+        })
+        this.user = { ...(updated as any) }
+      } catch (err: any) {
+        console.warn('Не удалось обновить дату последнего входа:', err)
       }
     },
 

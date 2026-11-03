@@ -109,6 +109,7 @@
     * `valid_until` (Date) — дата окончания лицензии/триала
     * `license_status` (Select: `trial`, `active`, `expired`)
     * `device_id` (Text)
+    * `last_login` (Date) — дата и время последнего захода/активности в приложении
     * `createRule = ""` (публичная регистрация разрешена).
   * `app_updates` (Base-коллекция):
     * `version` (Text, например `v1.1.4`)

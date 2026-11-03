@@ -88,6 +88,17 @@
             {{ formatDeviceId(authStore.user?.device_id) }}
           </span>
         </div>
+
+        <!-- Last Login -->
+        <div v-if="authStore.user?.last_login" class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-950/60 border border-zinc-800/60">
+          <div class="flex items-center gap-2 text-zinc-400">
+            <UIcon name="i-lucide-clock" class="w-4 h-4 text-zinc-400" />
+            <span>Последний вход</span>
+          </div>
+          <span class="font-mono text-[11px] text-zinc-300">
+            {{ formatLastLogin(authStore.user.last_login) }}
+          </span>
+        </div>
       </div>
 
       <!-- Logout Action -->
@@ -150,6 +161,19 @@ function formatDeviceId(id?: string): string {
   if (!id) return 'Привязано'
   if (id.length <= 16) return id
   return `${id.slice(0, 8)}...${id.slice(-6)}`
+}
+
+function formatLastLogin(iso?: string): string {
+  if (!iso) return 'Не зафиксирован'
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return iso
+  return d.toLocaleString('ru-RU', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
 }
 
 function handleOpenPaywall() {

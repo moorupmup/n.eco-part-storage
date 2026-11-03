@@ -75,6 +75,13 @@
             </span>
           </div>
 
+          <div v-if="authStore.user?.last_login" class="p-3 rounded-xl bg-zinc-950/70 border border-zinc-800/80 flex items-center justify-between text-xs">
+            <span class="text-zinc-400">Последний вход:</span>
+            <span class="font-mono font-medium text-zinc-300">
+              {{ formatLastLogin(authStore.user.last_login) }}
+            </span>
+          </div>
+
           <div class="flex items-center gap-2">
             <button
               v-if="!authStore.isPro || authStore.isExpired"
@@ -261,6 +268,19 @@ import { useAppUpdater } from '~/composables/useAppUpdater'
 
 const authStore = useAuthStore()
 const toast = useToast()
+
+function formatLastLogin(iso?: string): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return iso
+  return d.toLocaleString('ru-RU', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
 
 function handleLogout() {
   authStore.logout()

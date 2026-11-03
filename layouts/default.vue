@@ -24,6 +24,7 @@
 <script setup lang="ts">
 import { watch, onMounted } from 'vue'
 import { Capacitor } from '@capacitor/core'
+import { App } from '@capacitor/app'
 import { usePartsStore } from '~/stores/parts'
 import { useAuthStore } from '~/stores/auth'
 import { useAppUpdater } from '~/composables/useAppUpdater'
@@ -57,6 +58,15 @@ onMounted(async () => {
     setTimeout(async () => {
       await checkForUpdates(false)
     }, 1500)
+  }
+
+  // Record last login when app returns to foreground
+  if (Capacitor.isNativePlatform()) {
+    App.addListener('appStateChange', (state) => {
+      if (state.isActive && authStore.isAuthenticated) {
+        authStore.recordLastLogin()
+      }
+    })
   }
 })
 </script>
