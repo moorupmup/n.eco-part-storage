@@ -40,50 +40,51 @@
 
 ---
 
-## 3. Двухуровневая система обновлений
+## 3. Система выпуска и доставки обновлений
 
-Архитектура разделяет обновления на **легковесные Live OTA** и **нативные APK-релизы**:
+> [!IMPORTANT]
+> **Статус OTA:** В версии v1.1.6 плагин `@capgo/capacitor-updater` был удален из-за бага бесконечной перезагрузки Android. Все обновления приложения в настоящее время осуществляются через **In-App APK Update** (сборка в GitHub Actions + скачивание APK внутри приложения).  
+> Подробная история, анализ причин и статус: см. отдельный документ [`docs/OTA_UPDATES_STATUS_AND_POSTMORTEM.md`](file:///c:/Users/pumpu/Desktop/n.eco-part-storage/docs/OTA_UPDATES_STATUS_AND_POSTMORTEM.md).
 
 ```
-                              ┌─────────────────────────────────────────┐
-                              │            Внесение изменений           │
-                              └────────────────────┬────────────────────┘
-                                                   │
-                         ┌─────────────────────────┴─────────────────────────┐
-                         ▼                                                   ▼
-         [Изменения UI / JS / Vue / стилей]                  [Системные изменения Android]
-                         │                                                   │
-                         ▼                                                   ▼
-             npm run deploy:ota                                 git tag vX.Y.Z && git push
-                         │                                                   │
-                         ▼                                                   ▼
-            Сборка dist.zip (~1.7 МБ)                                GitHub Actions CI
-                         │                                                   │
-                         ▼                                                   ▼
-          Загрузка в PocketBase app_updates                    Сборка и подпись APK-файла
-                         │                                                   │
-                         ▼                                                   ▼
-         Мгновенное обновление у клиентов                     Релиз APK на GitHub Releases
-           по воздуху без переустановки
+                               ┌─────────────────────────────────────────┐
+                               │            Внесение изменений           │
+                               │        (в UI, базу, логику или Android) │
+                               └────────────────────┬────────────────────┘
+                                                    │
+                                                    ▼
+                                         git tag vX.Y.Z && git push
+                                                    │
+                                                    ▼
+                                            GitHub Actions CI
+                                    (.github/workflows/build-apk.yml)
+                                                    │
+                                                    ▼
+                                       Сборка и подпись APK-файла
+                                                    │
+                                                    ▼
+                                       Релиз APK на GitHub Releases
+                                                    │
+                                                    ▼
+                                     Загрузка APK в PocketBase (VPS)
+                                                    │
+                                                    ▼
+                                   Обновление в 1 клик внутри приложения
+                                        (с сохранением всех данных)
 ```
 
-### 3.1. Уровень 1: Live OTA Updates (по воздуху, 99% случаев)
-* **Плагин:** `@capgo/capacitor-updater` (версия 6.53.0).
-* **Скрипт деплоя:** [`scripts/deploy_ota.mjs`](file:///c:/Users/pumpu/Desktop/n.eco-part-storage/scripts/deploy_ota.mjs) (`npm run deploy:ota`).
+### 3.1. Механизм In-App APK Updates
+* **Компоненты:** [`composables/useAppUpdater.ts`](file:///c:/Users/pumpu/Desktop/n.eco-part-storage/composables/useAppUpdater.ts), [`components/AppUpdateModal.vue`](file:///c:/Users/pumpu/Desktop/n.eco-part-storage/components/AppUpdateModal.vue).
 * **Как работает:**
-  1. Nuxt собирает SPA (`npm run generate`) в директорию `dist/`.
-  2. Скрипт упаковывает файлы в `dist.zip` (~1.73 МБ).
-  3. Скрипт авторизуется в PocketBase как суперпользователь и создает запись в коллекции `app_updates` с прикрепленным файлом `bundle_zip`.
-  4. При открытии приложения компонент [`AppUpdateModal.vue`](file:///c:/Users/pumpu/Desktop/n.eco-part-storage/components/AppUpdateModal.vue) через [`useAppUpdater.ts`](file:///c:/Users/pumpu/Desktop/n.eco-part-storage/composables/useAppUpdater.ts) обращается к PocketBase (`getList(1, 1, { sort: '-build_number' })`).
-  5. Если найден новый `build_number`, плагин скачивает zip, распаковывает в кэш приложения и перезагружает WebView.
+  1. При запуске или через Настройки клиент запрашивает актуальный релиз с сервера PocketBase (`app_updates`) или GitHub Releases API.
+  2. Если обнаружена версия новее текущей с прикрепленным `apk_file`, пользователю показывается окно с описанием релиза.
+  3. По нажатию кнопки «Скачать и обновить» файл `.apk` скачивается через `@capacitor/filesystem` в кэш устройства и открывается через `@capacitor-community/file-opener`.
+  4. Обновление устанавливается поверх существующего приложения без удаления данных SQLite / IndexedDB и без потери сессии авторизации.
 
-### 3.2. Уровень 2: Полный нативный APK (GitHub Actions)
+### 3.2. Сборка нативного APK (GitHub Actions)
 * **CI-конфиг:** [`.github/workflows/build-apk.yml`](file:///c:/Users/pumpu/Desktop/n.eco-part-storage/.github/workflows/build-apk.yml).
 * **Скрипт конфигурирования:** [`scripts/configure_android.py`](file:///c:/Users/pumpu/Desktop/n.eco-part-storage/scripts/configure_android.py).
-* **Когда необходим:**
-  * Установка новых нативных плагинов Capacitor (`@capacitor/*`).
-  * Изменение системных разрешений в `AndroidManifest.xml`.
-  * Обновление иконок приложения или виджетов Android.
+* **Когда выполняется:** При каждом пуше тега `v*` (например, `git tag -a v1.1.9 -m "Описание" && git push origin v1.1.9`).
 * **Особенности Android-конфигурации:**
   * `minSdkVersion = 23`, `compileSdkVersion = 35`, Java 17, Gradle 8.
   * Постоянный ключ подписи: `keystore/release.keystore` (пароль `necopart2026`, алиас `necopart`).
